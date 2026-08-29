@@ -67,6 +67,7 @@ export function useShellRuntime({
     fitAddonRef,
     wsRef,
     selectedProject,
+    shellMode,
     minimal,
     isRestarting,
     closeSocket,

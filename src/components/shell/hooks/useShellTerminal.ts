@@ -7,10 +7,11 @@ import { WebglAddon } from '@xterm/addon-webgl';
 import { Terminal } from '@xterm/xterm';
 
 import type { Project } from '../../../types/app';
+import type { ShellMode } from '../types/types';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 import {
+  getTerminalOptions,
   TERMINAL_INIT_DELAY_MS,
-  TERMINAL_OPTIONS,
   TERMINAL_RESIZE_DELAY_MS,
 } from '../constants/constants';
 import {
@@ -18,6 +19,7 @@ import {
   type MobileTerminalSelectionManager,
 } from '../utils/mobileTerminalSelection';
 import { sendSocketMessage } from '../utils/socket';
+import { installTerminalInputSync } from '../utils/terminalInput';
 import { ensureXtermFocusStyles } from '../utils/terminalStyles';
 
 // CLIs running inside the pty (e.g. `claude auth login`'s "press c to copy"
@@ -63,6 +65,7 @@ type UseShellTerminalOptions = {
   fitAddonRef: MutableRefObject<FitAddon | null>;
   wsRef: MutableRefObject<WebSocket | null>;
   selectedProject: Project | null | undefined;
+  shellMode?: ShellMode;
   minimal: boolean;
   isRestarting: boolean;
   closeSocket: () => void;
@@ -80,6 +83,7 @@ export function useShellTerminal({
   fitAddonRef,
   wsRef,
   selectedProject,
+  shellMode,
   minimal,
   isRestarting,
   closeSocket,
@@ -124,7 +128,7 @@ export function useShellTerminal({
       return;
     }
 
-    const nextTerminal = new Terminal(TERMINAL_OPTIONS);
+    const nextTerminal = new Terminal(getTerminalOptions(shellMode));
     terminalRef.current = nextTerminal;
 
     const nextFitAddon = new FitAddon();
@@ -145,6 +149,7 @@ export function useShellTerminal({
     }
 
     nextTerminal.open(terminalContainer);
+
     mobileSelectionRef.current = installMobileTerminalSelection(
       nextTerminal,
       terminalContainer,
@@ -197,6 +202,13 @@ export function useShellTerminal({
     };
 
     terminalContainer.addEventListener('copy', handleTerminalCopy);
+
+    const disposeInputSync = installTerminalInputSync({
+      terminal: nextTerminal,
+      container: terminalContainer,
+      shellMode,
+      send: (message) => sendSocketMessage(wsRef.current, message),
+    });
 
     nextTerminal.attachCustomKeyEventHandler((event) => {
       if (
@@ -255,13 +267,6 @@ export function useShellTerminal({
 
     setIsInitialized(true);
 
-    const dataSubscription = nextTerminal.onData((data) => {
-      sendSocketMessage(wsRef.current, {
-        type: 'input',
-        data,
-      });
-    });
-
     const resizeObserver = new ResizeObserver(() => {
       if (resizeTimeoutRef.current !== null) {
         window.clearTimeout(resizeTimeoutRef.current);
@@ -292,7 +297,7 @@ export function useShellTerminal({
         window.clearTimeout(resizeTimeoutRef.current);
         resizeTimeoutRef.current = null;
       }
-      dataSubscription.dispose();
+      disposeInputSync();
       closeSocket();
       disposeTerminal();
     };
@@ -304,6 +309,7 @@ export function useShellTerminal({
     hasSelectedProject,
     minimal,
     selectedProjectKey,
+    shellMode,
     terminalContainerRef,
     terminalRef,
     wsRef,

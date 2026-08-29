@@ -31,7 +31,16 @@ export type ShellInputMessage = {
   data: string;
 };
 
-export type ShellOutgoingMessage = ShellInitMessage | ShellResizeMessage | ShellInputMessage;
+export type ShellBinaryInputMessage = {
+  type: 'input_binary';
+  data: string;
+};
+
+export type ShellOutgoingMessage =
+  | ShellInitMessage
+  | ShellResizeMessage
+  | ShellInputMessage
+  | ShellBinaryInputMessage;
 
 export type ShellIncomingMessage =
   | { type: 'output'; data: string }

@@ -146,6 +146,9 @@ function parseShellMessage(rawMessage: RawData): ShellIncomingMessage | null {
 }
 
 const SAFE_SESSION_ID_PATTERN = /^[a-zA-Z0-9_.\-:]+$/;
+const BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+const MAX_TERMINAL_BINARY_INPUT_BYTES = 1024;
+const HERDR_REDRAW_DELAY_MS = 16;
 const HERDR_PANE_ENVIRONMENT_KEYS = [
   'HERDR_ENV',
   'HERDR_PANE_ID',
@@ -317,6 +320,20 @@ function buildShellEnvironment(
   return environment;
 }
 
+function decodeTerminalBinaryInput(value: unknown): Buffer | null {
+  const encoded = readString(value);
+  if (!encoded || !BASE64_PATTERN.test(encoded)) {
+    return null;
+  }
+
+  const decoded = Buffer.from(encoded, 'base64');
+  if (decoded.length > MAX_TERMINAL_BINARY_INPUT_BYTES) {
+    return null;
+  }
+
+  return decoded;
+}
+
 /**
  * Used by this module's websocket gateway to connect the standalone Shell UI
  * to a retained PTY while keeping process lifecycle ownership on the server.
@@ -346,6 +363,7 @@ export function handleShellConnection(
         const provider = readString(data.provider, 'claude');
         const initialCommand = readString(data.initialCommand);
         const forceRestart = readBoolean(data.forceRestart);
+        const isHerdrMode = readString(data.shellMode) === 'herdr';
         const isPlainShell =
           readBoolean(data.isPlainShell) ||
           (!!initialCommand && !hasSession) ||
@@ -386,6 +404,25 @@ export function handleShellConnection(
             existingSession.timeoutId = null;
           }
 
+          existingSession.ws = ws;
+          const reconnectCols = readNumber(data.cols, 80);
+          const reconnectRows = readNumber(data.rows, 24);
+
+          if (isHerdrMode) {
+            // Replaying a full-screen TUI's ANSI history reconstructs stale
+            // frames from earlier sizes. Ask Herdr for a fresh frame instead.
+            existingSession.buffer.length = 0;
+            const redrawCols = reconnectCols > 2 ? reconnectCols - 1 : reconnectCols + 1;
+            existingSession.pty.resize(redrawCols, reconnectRows);
+            setTimeout(() => {
+              const activeSession = ptySessionsMap.get(ptySessionKey as string);
+              if (activeSession === existingSession && activeSession.ws === ws) {
+                activeSession.pty.resize(reconnectCols, reconnectRows);
+              }
+            }, HERDR_REDRAW_DELAY_MS);
+            return;
+          }
+
           ws.send(
             JSON.stringify({
               type: 'output',
@@ -404,8 +441,7 @@ export function handleShellConnection(
             });
           }
 
-          existingSession.ws = ws;
-          existingSession.pty.resize(readNumber(data.cols, 80), readNumber(data.rows, 24));
+          existingSession.pty.resize(reconnectCols, reconnectRows);
           return;
         }
 
@@ -586,6 +622,20 @@ export function handleShellConnection(
         const activeSession = ptySessionKey ? ptySessionsMap.get(ptySessionKey) : null;
         if (shellProcess && activeSession?.pty === shellProcess && activeSession.ws === ws) {
           shellProcess.write(readString(data.data));
+        }
+        return;
+      }
+
+      if (data.type === 'input_binary') {
+        const activeSession = ptySessionKey ? ptySessionsMap.get(ptySessionKey) : null;
+        const binaryInput = decodeTerminalBinaryInput(data.data);
+        if (
+          binaryInput &&
+          shellProcess &&
+          activeSession?.pty === shellProcess &&
+          activeSession.ws === ws
+        ) {
+          shellProcess.write(binaryInput);
         }
         return;
       }

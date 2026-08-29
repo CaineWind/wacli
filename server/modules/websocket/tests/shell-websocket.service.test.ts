@@ -25,7 +25,8 @@ function createFakePty() {
 
   return {
     killed: false,
-    writes: [] as string[],
+    writes: [] as Array<string | Buffer>,
+    resizeHistory: [] as Array<{ cols: number; rows: number }>,
     lastResize: null as { cols: number; rows: number } | null,
     onData(listener: (data: string) => void) {
       dataListener = listener;
@@ -41,11 +42,12 @@ function createFakePty() {
     emitExit() {
       exitListener?.({ exitCode: 0 });
     },
-    write(data: string) {
+    write(data: string | Buffer) {
       this.writes.push(data);
     },
     resize(cols: number, rows: number) {
       this.lastResize = { cols, rows };
+      this.resizeHistory.push({ cols, rows });
     },
     kill() {
       this.killed = true;
@@ -239,6 +241,96 @@ test('Herdr shell clients do not inherit a parent pane identity', () => {
   assert.equal(spawnedEnvironment?.HERDR_TAB_ID, undefined);
   assert.equal(spawnedEnvironment?.HERDR_WORKSPACE_ID, undefined);
   assert.equal(spawnedEnvironment?.HERDR_SOCKET_PATH, 'C:\\herdr\\herdr.sock');
+
+  pty.emitExit();
+});
+
+test('Herdr reconnect redraws the live TUI without replaying stale terminal frames', async () => {
+  const pty = createFakePty();
+  const dependencies = {
+    resolveProviderSessionId: () => null,
+    spawnPty: () => pty as never,
+  };
+  const initMessage = JSON.stringify({
+    type: 'init',
+    projectPath: process.cwd(),
+    sessionId: `herdr-reconnect-${Date.now()}`,
+    hasSession: false,
+    provider: 'plain-shell',
+    initialCommand: 'herdr',
+    isPlainShell: true,
+    shellMode: 'herdr',
+    cols: 120,
+    rows: 40,
+  });
+
+  const firstSocket = createFakeSocket();
+  handleShellConnection(firstSocket as never, dependencies);
+  firstSocket.emit('message', initMessage);
+  pty.emitData('stale-full-screen-frame');
+
+  const replacementSocket = createFakeSocket();
+  handleShellConnection(replacementSocket as never, dependencies);
+  replacementSocket.emit('message', initMessage);
+  await new Promise((resolve) => setTimeout(resolve, 25));
+
+  assert.equal(
+    replacementSocket.frames.some((frame) => frame.includes('stale-full-screen-frame')),
+    false,
+  );
+  assert.deepEqual(pty.resizeHistory.slice(-2), [
+    { cols: 119, rows: 40 },
+    { cols: 120, rows: 40 },
+  ]);
+
+  pty.emitData('fresh-frame-after-redraw');
+  assert.equal(
+    replacementSocket.frames.some((frame) => frame.includes('fresh-frame-after-redraw')),
+    true,
+  );
+
+  pty.emitExit();
+});
+
+test('Herdr forwards binary xterm mouse reports to the PTY without UTF-8 conversion', () => {
+  const pty = createFakePty();
+  const socket = createFakeSocket();
+  const dependencies = {
+    resolveProviderSessionId: () => null,
+    spawnPty: () => pty as never,
+  };
+
+  handleShellConnection(socket as never, dependencies);
+  socket.emit(
+    'message',
+    JSON.stringify({
+      type: 'init',
+      projectPath: process.cwd(),
+      sessionId: `herdr-mouse-${Date.now()}`,
+      hasSession: false,
+      provider: 'plain-shell',
+      initialCommand: 'herdr',
+      isPlainShell: true,
+      shellMode: 'herdr',
+    }),
+  );
+
+  const mouseReport = Buffer.from([0x1b, 0x5b, 0x4d, 0x20, 0xff, 0x21]);
+  socket.emit(
+    'message',
+    JSON.stringify({ type: 'input_binary', data: mouseReport.toString('base64') }),
+  );
+
+  assert.equal(pty.writes.length, 1);
+  assert.ok(Buffer.isBuffer(pty.writes[0]));
+  assert.deepEqual(pty.writes[0], mouseReport);
+
+  socket.emit('message', JSON.stringify({ type: 'input_binary', data: 'not base64!' }));
+  socket.emit(
+    'message',
+    JSON.stringify({ type: 'input_binary', data: Buffer.alloc(1025).toString('base64') }),
+  );
+  assert.equal(pty.writes.length, 1);
 
   pty.emitExit();
 });

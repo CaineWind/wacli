@@ -1,8 +1,11 @@
 import type { ITerminalOptions } from '@xterm/xterm';
 
+import type { ShellMode } from '../types/types';
+
 export const SHELL_RESTART_DELAY_MS = 200;
 export const TERMINAL_INIT_DELAY_MS = 100;
 export const TERMINAL_RESIZE_DELAY_MS = 50;
+export const HERDR_MOUSE_TRACKING_SEQUENCE = '\x1b[?1002h\x1b[?1006h';
 
 // CLI prompt overlay detection
 export const PROMPT_DEBOUNCE_MS = 500;
@@ -67,3 +70,15 @@ export const TERMINAL_OPTIONS: ITerminalOptions = {
     ],
   },
 };
+
+export function getTerminalOptions(shellMode: ShellMode = 'default'): ITerminalOptions {
+  if (shellMode !== 'herdr') {
+    return { ...TERMINAL_OPTIONS };
+  }
+
+  return {
+    ...TERMINAL_OPTIONS,
+    convertEol: false,
+    scrollback: 0,
+  };
+}
