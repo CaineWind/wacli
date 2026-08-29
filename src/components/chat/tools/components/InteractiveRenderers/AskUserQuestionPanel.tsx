@@ -3,7 +3,10 @@ import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import type { PermissionPanelProps } from '../../configs/permissionPanelRegistry';
 import type { Question } from '../../../types/types';
 
-import { buildQuestionAnswerPayload } from './askUserQuestionAnswers';
+import {
+  buildQuestionAnswerPayload,
+  getUserInputProviderLabel,
+} from './askUserQuestionAnswers';
 
 export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
   request,
@@ -72,14 +75,14 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
   }, []);
 
   const buildAnswers = useCallback(() => {
-    const valuesByQuestion = questions.map((_q, idx) => {
+    const answers = questions.map((question, idx) => {
       const selected = Array.from(selections.get(idx) || []);
       const isOther = otherActive.get(idx) || false;
       const otherText = (otherTexts.get(idx) || '').trim();
       if (isOther && otherText) selected.push(otherText);
-      return selected;
+      return { question, values: selected };
     });
-    return buildQuestionAnswerPayload(questions, valuesByQuestion, request.provider);
+    return buildQuestionAnswerPayload(answers, request.provider);
   }, [questions, selections, otherActive, otherTexts, request.provider]);
 
   const handleSubmit = useCallback(() => {
@@ -172,7 +175,7 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
 
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                {request.provider === 'codex' ? 'Codex' : 'Claude'} needs your input
+                {getUserInputProviderLabel(request.provider)} needs your input
               </span>
               {q.header && (
                 <span className="inline-flex items-center rounded border border-blue-100 bg-blue-50 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider text-blue-600 dark:border-blue-800/50 dark:bg-blue-900/30 dark:text-blue-400">

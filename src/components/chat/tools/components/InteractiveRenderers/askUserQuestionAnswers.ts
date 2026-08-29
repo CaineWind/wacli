@@ -1,15 +1,25 @@
-import type { Question } from '../../../types/types';
+import type { Provider, Question } from '../../../types/types';
 
 type CodexQuestionAnswer = { answers: string[] };
+export type QuestionAnswerSelection = { question: Question; values: string[] };
+
+const PROVIDER_LABELS: Record<Provider, string> = {
+  claude: 'Claude',
+  codex: 'Codex',
+  cursor: 'Cursor',
+  opencode: 'OpenCode',
+};
+
+export function getUserInputProviderLabel(provider?: Provider): string {
+  return PROVIDER_LABELS[provider || 'claude'];
+}
 
 export function buildQuestionAnswerPayload(
-  questions: Question[],
-  valuesByQuestion: string[][],
-  provider?: string,
+  selections: QuestionAnswerSelection[],
+  provider?: Provider,
 ): Record<string, string | CodexQuestionAnswer> {
   const payload: Record<string, string | CodexQuestionAnswer> = {};
-  questions.forEach((question, index) => {
-    const values = valuesByQuestion[index] || [];
+  selections.forEach(({ question, values }) => {
     if (values.length === 0) {
       if (provider === 'codex' && question.id) {
         payload[question.id] = { answers: [] };
