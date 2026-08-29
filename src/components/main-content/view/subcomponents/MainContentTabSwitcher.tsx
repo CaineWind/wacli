@@ -81,7 +81,9 @@ export default function MainContentTabSwitcher({
     <PillBar
       role="tablist"
       aria-label={t('tabs.views', { defaultValue: 'Workspace views' })}
-      className="min-w-max border border-border/40 bg-muted/50 shadow-inner shadow-black/[0.025] dark:shadow-black/10"
+      className={tabs.length === 1
+        ? 'min-w-max bg-transparent p-0 shadow-none'
+        : 'min-w-max border border-border/40 bg-muted/50 shadow-inner shadow-black/[0.025] dark:shadow-black/10'}
     >
       {tabs.map((tab, index) => {
         const isActive = tab.id === activeTab;
