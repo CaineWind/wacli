@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host,
-      port: parseInt(env.VITE_PORT) || 5173,
+      port: parseInt(env.VITE_PORT) || 5200,
       proxy: {
         '/api': `http://${proxyHost}:${serverPort}`,
         '/ws': {
