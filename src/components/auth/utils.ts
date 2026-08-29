@@ -13,5 +13,18 @@ export function resolveApiErrorMessage(payload: ApiErrorPayload | null, fallback
     return fallback;
   }
 
-  return payload.error ?? payload.message ?? fallback;
+  if (typeof payload.error === 'string') {
+    return payload.error;
+  }
+
+  if (
+    typeof payload.error === 'object'
+    && payload.error !== null
+    && 'message' in payload.error
+    && typeof payload.error.message === 'string'
+  ) {
+    return payload.error.message;
+  }
+
+  return typeof payload.message === 'string' ? payload.message : fallback;
 }
