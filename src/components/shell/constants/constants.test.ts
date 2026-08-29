@@ -16,7 +16,10 @@ test('Herdr uses full-screen TUI terminal semantics', () => {
 });
 
 test('Herdr uses a compact font on mobile-width terminal surfaces', () => {
-  assert.equal(getTerminalOptions('herdr', 440).fontSize, 12);
+  assert.equal(getTerminalOptions('herdr', 440).fontSize, 9);
+  assert.equal(getTerminalOptions('herdr', 480).fontSize, 9);
+  assert.equal(getTerminalOptions('herdr', 481).fontSize, 12);
+  assert.equal(getTerminalOptions('herdr', 767).fontSize, 12);
   assert.equal(getTerminalOptions('herdr', 768).fontSize, 14);
   assert.equal(getTerminalOptions('default', 440).fontSize, 14);
 });

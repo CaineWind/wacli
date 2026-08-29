@@ -6,6 +6,8 @@ export const SHELL_RESTART_DELAY_MS = 200;
 export const TERMINAL_INIT_DELAY_MS = 100;
 export const TERMINAL_RESIZE_DELAY_MS = 50;
 export const TERMINAL_MOBILE_BREAKPOINT_PX = 768;
+export const HERDR_NARROW_MOBILE_BREAKPOINT_PX = 480;
+export const HERDR_NARROW_MOBILE_FONT_SIZE = 9;
 export const HERDR_MOBILE_FONT_SIZE = 12;
 export const HERDR_MOUSE_TRACKING_SEQUENCE = '\x1b[?1002h\x1b[?1006h';
 
@@ -91,9 +93,11 @@ export function getTerminalOptions(
 
   return {
     ...TERMINAL_OPTIONS,
-    fontSize: viewportWidth < TERMINAL_MOBILE_BREAKPOINT_PX
-      ? HERDR_MOBILE_FONT_SIZE
-      : TERMINAL_OPTIONS.fontSize,
+    fontSize: viewportWidth <= HERDR_NARROW_MOBILE_BREAKPOINT_PX
+      ? HERDR_NARROW_MOBILE_FONT_SIZE
+      : viewportWidth < TERMINAL_MOBILE_BREAKPOINT_PX
+        ? HERDR_MOBILE_FONT_SIZE
+        : TERMINAL_OPTIONS.fontSize,
     convertEol: false,
     cursorBlink: false,
     scrollback: 0,
