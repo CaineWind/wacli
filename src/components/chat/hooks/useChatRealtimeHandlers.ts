@@ -286,6 +286,7 @@ export function useChatRealtimeHandlers({
               const nextPendingPermissionRequests = [...previousPendingPermissionRequests, {
                 requestId: msg.requestId as string,
                 toolName: (msg.toolName as string) || 'UnknownTool',
+                provider: msg.provider as PendingPermissionRequest['provider'],
                 input: msg.input,
                 context: msg.context,
                 sessionId: sid || null,

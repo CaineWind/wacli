@@ -1,13 +1,16 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+
 import type { PermissionPanelProps } from '../../configs/permissionPanelRegistry';
 import type { Question } from '../../../types/types';
+
+import { buildQuestionAnswerPayload } from './askUserQuestionAnswers';
 
 export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
   request,
   onDecision,
 }) => {
   const input = request.input as { questions?: Question[] } | undefined;
-  const questions: Question[] = input?.questions || [];
+  const questions = useMemo(() => input?.questions || [], [input?.questions]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [selections, setSelections] = useState<Map<number, Set<string>>>(() => new Map());
@@ -69,16 +72,15 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
   }, []);
 
   const buildAnswers = useCallback(() => {
-    const answers: Record<string, string> = {};
-    questions.forEach((q, idx) => {
+    const valuesByQuestion = questions.map((_q, idx) => {
       const selected = Array.from(selections.get(idx) || []);
       const isOther = otherActive.get(idx) || false;
       const otherText = (otherTexts.get(idx) || '').trim();
       if (isOther && otherText) selected.push(otherText);
-      if (selected.length > 0) answers[q.question] = selected.join(', ');
+      return selected;
     });
-    return answers;
-  }, [questions, selections, otherActive, otherTexts]);
+    return buildQuestionAnswerPayload(questions, valuesByQuestion, request.provider);
+  }, [questions, selections, otherActive, otherTexts, request.provider]);
 
   const handleSubmit = useCallback(() => {
     onDecision(request.requestId, { allow: true, updatedInput: { ...input, answers: buildAnswers() } });
@@ -170,7 +172,7 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
 
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                Claude needs your input
+                {request.provider === 'codex' ? 'Codex' : 'Claude'} needs your input
               </span>
               {q.header && (
                 <span className="inline-flex items-center rounded border border-blue-100 bg-blue-50 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider text-blue-600 dark:border-blue-800/50 dark:bg-blue-900/30 dark:text-blue-400">

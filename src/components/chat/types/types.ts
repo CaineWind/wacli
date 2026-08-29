@@ -94,6 +94,7 @@ export interface PermissionGrantResult {
 export interface PendingPermissionRequest {
   requestId: string;
   toolName: string;
+  provider?: Provider;
   input?: unknown;
   context?: unknown;
   sessionId?: string | null;
@@ -106,6 +107,7 @@ export interface QuestionOption {
 }
 
 export interface Question {
+  id?: string;
   question: string;
   header?: string;
   options: QuestionOption[];

@@ -479,10 +479,15 @@ function resolveCodexApproval(requestId: string, decision: ProviderPermissionDec
       ? updatedInput.answers as Record<string, unknown>
       : {};
     const answers = Object.fromEntries((approval.questions || []).map((question) => {
-      const answer = submittedAnswers[question.question];
-      const values = typeof answer === 'string' && answer.trim()
-        ? answer.split(',').map((value) => value.trim()).filter(Boolean)
-        : [];
+      const answer = submittedAnswers[question.id] ?? submittedAnswers[question.question];
+      const values = answer && typeof answer === 'object' && Array.isArray((answer as AnyRecord).answers)
+        ? (answer as AnyRecord).answers
+            .filter((value: unknown): value is string => typeof value === 'string')
+            .map((value: string) => value.trim())
+            .filter(Boolean)
+        : typeof answer === 'string' && answer.trim()
+          ? [answer.trim()]
+          : [];
       return [question.id, { answers: values }];
     }));
     approval.client.respond(approval.rpcRequestId, { answers });

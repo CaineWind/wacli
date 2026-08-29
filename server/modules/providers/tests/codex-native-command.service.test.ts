@@ -160,9 +160,17 @@ test('plan turns bridge app-server command approvals through the runtime gateway
     }
     const userInput = messages.filter((message) => message.kind === 'permission_request').at(-1);
     assert.equal(userInput?.toolName, 'AskUserQuestion');
+    assert.equal(userInput?.provider, 'codex');
+    assert.deepEqual(userInput?.input?.questions, [{
+      id: 'scope',
+      header: 'Scope',
+      question: 'Which area?',
+      multiSelect: false,
+      options: [{ label: 'Backend', description: 'Server code' }],
+    }]);
     codexNativeRuntime.permissions?.resolve(userInput?.requestId as string, {
       allow: true,
-      updatedInput: { answers: { 'Which area?': 'Backend' } },
+      updatedInput: { answers: { scope: { answers: ['Backend'] } } },
     });
     await run;
   });
