@@ -295,6 +295,44 @@ export type ProviderRuntimeWriter = {
   isSSEStreamWriter?: boolean;
 };
 
+//----------------- CODEX APP-SERVER PROTOCOL EVENTS ------------
+
+/**
+ * Provider-neutral subset of one Codex app-server notification.
+ *
+ * The Codex JSON-RPC client emits this shape to its runtime adapter. Method and
+ * parameter validation stays in the adapter because the protocol can add new
+ * notification variants independently of CloudCLI releases.
+ */
+export type CodexAppServerNotification = {
+  method: string;
+  params: AnyRecord;
+};
+
+/**
+ * Server-initiated Codex JSON-RPC request that may require a UI response.
+ *
+ * The Codex client forwards approval-capable requests to the runtime while it
+ * rejects request methods that CloudCLI does not implement.
+ */
+export type CodexAppServerRequest = {
+  id: number;
+  method: string;
+  params: AnyRecord;
+};
+
+/**
+ * Terminal process event emitted by the Codex JSON-RPC client.
+ *
+ * Runtime operations subscribe to this event so an unexpected CLI exit always
+ * settles the chat run even when Codex cannot emit its normal turn completion.
+ */
+export type CodexAppServerExit = {
+  error: Error;
+};
+
+// ---------------------------
+
 export type ProviderPermissionDecision = {
   allow: boolean;
   updatedInput?: unknown;

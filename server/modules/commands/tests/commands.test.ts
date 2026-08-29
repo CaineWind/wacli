@@ -72,6 +72,39 @@ async function executeCommand(
   }
 }
 
+async function listCommands(provider: string): Promise<Array<{ name: string }>> {
+  const missingDirectory = Object.assign(new Error('missing'), { code: 'ENOENT' });
+  const router = createCommandsRouter({
+    fileSystem: {
+      access: async () => { throw missingDirectory; },
+    } as unknown as typeof import('node:fs/promises'),
+    homeDirectory: () => '/home/test',
+    appRoot: '/app',
+    models: createModelsService() as never,
+    runtime: {
+      uptime: () => 0,
+      memoryUsage: () => ({ rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 }),
+      version: 'v24', platform: 'linux', pid: 1,
+    },
+  });
+  const app = express().use(express.json()).use('/api/commands', router);
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  try {
+    const address = server.address() as AddressInfo;
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/commands/list`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ provider }),
+    });
+    assert.equal(response.status, 200);
+    const result = await response.json() as { builtIn: Array<{ name: string }> };
+    return result.builtIn;
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+}
+
 test('models command returns models only for the active provider using injected catalog', async () => {
   const result = await executeCommand('/models', { provider: 'codex' });
   const data = result.data as Record<string, unknown>;
@@ -111,4 +144,28 @@ test('cost and status commands report the same resolved model as /models', async
 
   assert.equal((cost.data as { model: string }).model, 'haiku');
   assert.equal((status.data as { model: string }).model, 'haiku');
+});
+
+test('command list exposes native app-server commands only for Codex', async () => {
+  const codexNames = (await listCommands('codex')).map((command) => command.name);
+  const claudeNames = (await listCommands('claude')).map((command) => command.name);
+
+  assert.equal(codexNames.includes('/plan'), true);
+  assert.equal(codexNames.includes('/review'), true);
+  assert.equal(codexNames.includes('/compact'), true);
+  assert.equal(codexNames.includes('/model'), true);
+  assert.equal(codexNames.includes('/mcp'), true);
+  assert.equal(claudeNames.includes('/plan'), false);
+  assert.equal(claudeNames.includes('/review'), false);
+  assert.equal(claudeNames.includes('/compact'), false);
+});
+
+test('Codex help includes provider-native commands and model aliases use the model picker', async () => {
+  const help = await executeCommand('/help', { provider: 'codex' });
+  const model = await executeCommand('/model', { provider: 'codex' });
+  const helpData = help.data as { content: string };
+
+  assert.match(helpData.content, /Codex and CloudCLI Commands/);
+  assert.match(helpData.content, /\/plan/);
+  assert.equal(model.action, 'models');
 });

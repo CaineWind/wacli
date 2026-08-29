@@ -69,6 +69,9 @@ const isPromiseLike = (value: unknown): value is Promise<unknown> =>
 const isSkillCommand = (command: SlashCommand) =>
   command.type === 'skill' || command.metadata?.type === 'skill';
 
+const shouldInsertCommand = (command: SlashCommand) =>
+  isSkillCommand(command) || command.metadata?.passthrough === true;
+
 const dedupeProviderSkills = (skills: ProviderSkill[]): ProviderSkill[] => {
   const seenCommands = new Set<string>();
 
@@ -186,6 +189,7 @@ export function useSlashCommands({
           },
           body: JSON.stringify({
             projectPath: workspacePath || selectedProject.path,
+            provider,
           }),
         });
 
@@ -332,7 +336,7 @@ export function useSlashCommands({
 
   const selectCommandFromKeyboard = useCallback(
     (command: SlashCommand) => {
-      if (isSkillCommand(command)) {
+      if (shouldInsertCommand(command)) {
         insertCommandIntoInput(command);
         return;
       }
@@ -354,7 +358,7 @@ export function useSlashCommands({
       }
 
       trackCommandUsage(command);
-      if (isSkillCommand(command)) {
+      if (shouldInsertCommand(command)) {
         insertCommandIntoInput(command);
         return;
       }

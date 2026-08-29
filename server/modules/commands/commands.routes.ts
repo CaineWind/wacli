@@ -206,17 +206,54 @@ const builtInCommands = [
   },
 ];
 
+const codexNativeCommands = [
+  {
+    name: "/plan",
+    description: "Toggle Codex plan mode; add a prompt to plan immediately",
+    namespace: "builtin",
+    metadata: { type: "provider", provider: "codex", passthrough: true },
+  },
+  {
+    name: "/review",
+    description: "Review uncommitted changes with Codex",
+    namespace: "builtin",
+    metadata: { type: "provider", provider: "codex", passthrough: true },
+  },
+  {
+    name: "/compact",
+    description: "Compact the current Codex thread context",
+    namespace: "builtin",
+    metadata: { type: "provider", provider: "codex", passthrough: true },
+  },
+  {
+    name: "/model",
+    description: "Select the Codex model used by this conversation",
+    namespace: "builtin",
+    metadata: { type: "provider", provider: "codex" },
+  },
+  {
+    name: "/mcp",
+    description: "Open settings to configure MCP servers",
+    namespace: "builtin",
+    metadata: { type: "provider", provider: "codex" },
+  },
+];
+
 /**
  * Built-in command handlers
  * Each handler returns { type: 'builtin', action: string, data: any }
  */
 const builtInHandlers = {
   "/help": async (args, context) => {
-    const helpText = `# Claude Code Commands
+    const isCodex = readModelProvider(context?.provider) === "codex";
+    const helpCommands = isCodex
+      ? [...builtInCommands, ...codexNativeCommands]
+      : builtInCommands;
+    const helpText = `# ${isCodex ? "Codex and CloudCLI" : "CloudCLI"} Commands
 
 ## Built-in Commands
 
-${builtInCommands
+${helpCommands
   .map(
     (cmd) => `### ${cmd.name}
 ${cmd.description}
@@ -249,7 +286,7 @@ Custom commands can be created in:
       data: {
         content: helpText,
         format: "markdown",
-        commands: builtInCommands.map((command) => ({
+        commands: helpCommands.map((command) => ({
           name: command.name,
           description: command.description,
           namespace: command.namespace,
@@ -259,6 +296,7 @@ Custom commands can be created in:
   },
 
   "/models": (args, context) => executeModelsCommand(args, context, providerModelsService),
+  "/model": (args, context) => executeModelsCommand(args, context, providerModelsService),
 
   "/cost": async (args, context) => {
     const tokenUsage = context?.tokenUsage || {};
@@ -437,6 +475,13 @@ Custom commands can be created in:
       },
     };
   },
+  "/mcp": async () => ({
+    type: "builtin",
+    action: "config",
+    data: {
+      message: "Opening MCP settings...",
+    },
+  }),
 };
 
 /**
@@ -445,8 +490,14 @@ Custom commands can be created in:
  */
 router.post("/list", async (req, res) => {
   try {
-    const { projectPath } = req.body;
-    const allCommands = [...builtInCommands];
+    const projectPath = typeof req.body?.projectPath === "string"
+      ? req.body.projectPath
+      : "";
+    const provider = readModelProvider(req.body?.provider);
+    const providerBuiltInCommands = provider === "codex"
+      ? [...builtInCommands, ...codexNativeCommands]
+      : builtInCommands;
+    const allCommands = [...providerBuiltInCommands];
 
     // Scan project-level commands (.claude/commands/)
     if (projectPath) {
@@ -478,7 +529,7 @@ router.post("/list", async (req, res) => {
     customCommands.sort((a, b) => a.name.localeCompare(b.name));
 
     res.json({
-      builtIn: builtInCommands,
+      builtIn: providerBuiltInCommands,
       custom: customCommands,
       count: allCommands.length,
     });

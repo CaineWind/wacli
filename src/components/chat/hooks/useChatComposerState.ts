@@ -789,7 +789,11 @@ export function useChatComposerState({
                 metadata: { type: 'builtin' },
               } as SlashCommand)
             : undefined);
-        if (matchedCommand && matchedCommand.type !== 'skill') {
+        if (
+          matchedCommand
+          && matchedCommand.type !== 'skill'
+          && matchedCommand.metadata?.passthrough !== true
+        ) {
           executeCommand(matchedCommand, isHelpAlias ? '/help' : commandInput);
           setInput('');
           inputValueRef.current = '';
