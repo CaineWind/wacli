@@ -11,7 +11,7 @@ export default function ShellMinimalView({
     <div className="relative h-full w-full bg-gray-900">
       <div
         ref={terminalContainerRef}
-        className="h-full w-full focus:outline-none"
+        className="h-full w-full pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] focus:outline-none md:pb-0"
         style={{ outline: 'none' }}
       />
     </div>

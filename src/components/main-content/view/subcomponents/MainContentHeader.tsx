@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../../../lib/utils';
 import type { MainContentHeaderProps } from '../../types/types';
 
+import MainContentHeaderRow from './MainContentHeaderRow';
 import MobileMenuButton from './MobileMenuButton';
 import MainContentTabSwitcher from './MainContentTabSwitcher';
 import MainContentTitle from './MainContentTitle';
@@ -82,7 +83,7 @@ export default function MainContentHeader({
 
   return (
     <header className="pwa-header-safe flex-shrink-0 border-b border-border/60 bg-background/95 px-3 py-1.5 backdrop-blur-sm sm:px-4 sm:py-2">
-      <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+      <MainContentHeaderRow hasSelectedProject={Boolean(selectedProject)}>
         <div className="flex min-w-0 items-center gap-2 sm:max-w-[min(34%,24rem)] sm:flex-[1_1_18rem]">
           {isMobile && <MobileMenuButton onMenuClick={onMenuClick} />}
           {selectedProject && (
@@ -142,7 +143,7 @@ export default function MainContentHeader({
             )}
           </div>
         </div>
-      </div>
+      </MainContentHeaderRow>
     </header>
   );
 }

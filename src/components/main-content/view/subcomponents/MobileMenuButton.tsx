@@ -5,8 +5,8 @@ export default function MobileMenuButton({ onMenuClick, compact = false }: Mobil
   const { handleMobileMenuClick, handleMobileMenuTouchEnd } = useMobileMenuHandlers(onMenuClick);
 
   const buttonClasses = compact
-    ? 'p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent/60 pwa-menu-button'
-    : 'p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent/60 touch-manipulation active:scale-95 pwa-menu-button flex-shrink-0';
+    ? 'flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent/60 hover:text-foreground pwa-menu-button'
+    : 'flex h-10 w-10 flex-shrink-0 touch-manipulation items-center justify-center rounded-lg text-muted-foreground hover:bg-accent/60 hover:text-foreground active:scale-95 pwa-menu-button';
 
   return (
     <button
