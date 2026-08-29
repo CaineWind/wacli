@@ -7,6 +7,7 @@ import type { Project, ProjectSession } from '../../../types/app';
 import type { ShellMode } from '../types/types';
 import { TERMINAL_INIT_DELAY_MS } from '../constants/constants';
 import { getShellWebSocketUrl, parseShellMessage, sendSocketMessage } from '../utils/socket';
+import { resolveShellProjectPath } from '../utils/shellProject';
 
 const ANSI_ESCAPE_REGEX =
   /(?:\u001B\[[0-?]*[ -/]*[@-~]|\u009B[0-?]*[ -/]*[@-~]|\u001B\][^\u0007\u001B]*(?:\u0007|\u001B\\)|\u009D[^\u0007\u009C]*(?:\u0007|\u009C)|\u001B[PX^_][^\u001B]*\u001B\\|[\u0090\u0098\u009E\u009F][^\u009C]*\u009C|\u001B[@-Z\\-_])/g;
@@ -135,7 +136,13 @@ export function useShellConnection({
             const currentTerminal = terminalRef.current;
             const currentFitAddon = fitAddonRef.current;
             const currentProject = selectedProjectRef.current;
-            if (!currentTerminal || !currentFitAddon || !currentProject) {
+            const currentShellMode = shellModeRef.current;
+            const currentProjectPath = resolveShellProjectPath(currentProject, currentShellMode);
+            if (
+              !currentTerminal ||
+              !currentFitAddon ||
+              currentProjectPath === null
+            ) {
               return;
             }
 
@@ -145,7 +152,7 @@ export function useShellConnection({
 
             sendSocketMessage(socket, {
               type: 'init',
-              projectPath: currentProject.fullPath || currentProject.path || '',
+              projectPath: currentProjectPath,
               sessionId: isPlainShellRef.current
                 ? shellSessionIdRef.current ?? null
                 : selectedSessionRef.current?.id || null,

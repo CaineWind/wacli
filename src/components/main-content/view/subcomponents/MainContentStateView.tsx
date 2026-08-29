@@ -1,16 +1,23 @@
 import { Folder } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
 import type { MainContentStateViewProps } from '../../types/types';
+
 import MobileMenuButton from './MobileMenuButton';
 
-export default function MainContentStateView({ mode, isMobile, onMenuClick }: MainContentStateViewProps) {
+export default function MainContentStateView({
+  mode,
+  isMobile,
+  onMenuClick,
+  showMobileHeader = true,
+}: MainContentStateViewProps) {
   const { t } = useTranslation();
 
   const isLoading = mode === 'loading';
 
   return (
     <div className="flex h-full flex-col">
-      {isMobile && (
+      {isMobile && showMobileHeader && (
         <div className="pwa-header-safe flex-shrink-0 border-b border-border/50 bg-background/80 p-2 backdrop-blur-sm sm:p-3">
           <MobileMenuButton onMenuClick={onMenuClick} compact />
         </div>

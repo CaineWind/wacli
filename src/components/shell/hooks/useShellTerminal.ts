@@ -21,6 +21,7 @@ import {
 import { sendSocketMessage } from '../utils/socket';
 import { installTerminalInputSync } from '../utils/terminalInput';
 import { ensureXtermFocusStyles } from '../utils/terminalStyles';
+import { resolveShellProjectPath } from '../utils/shellProject';
 
 // CLIs running inside the pty (e.g. `claude auth login`'s "press c to copy"
 // device-flow prompt) write to the clipboard via an OSC 52 escape sequence,
@@ -91,8 +92,9 @@ export function useShellTerminal({
   const [isInitialized, setIsInitialized] = useState(false);
   const resizeTimeoutRef = useRef<number | null>(null);
   const mobileSelectionRef = useRef<MobileTerminalSelectionManager | null>(null);
-  const selectedProjectKey = selectedProject?.fullPath || selectedProject?.path || '';
-  const hasSelectedProject = Boolean(selectedProject);
+  const selectedProjectPath = resolveShellProjectPath(selectedProject, shellMode);
+  const selectedProjectKey = selectedProjectPath ?? '';
+  const canInitializeTerminal = selectedProjectPath !== null;
 
   useEffect(() => {
     ensureXtermFocusStyles();
@@ -124,7 +126,7 @@ export function useShellTerminal({
 
   useEffect(() => {
     const terminalContainer = terminalContainerRef.current;
-    if (!terminalContainer || !hasSelectedProject || isRestarting || terminalRef.current) {
+    if (!terminalContainer || !canInitializeTerminal || isRestarting || terminalRef.current) {
       return;
     }
 
@@ -306,7 +308,7 @@ export function useShellTerminal({
     disposeTerminal,
     fitAddonRef,
     isRestarting,
-    hasSelectedProject,
+    canInitializeTerminal,
     minimal,
     selectedProjectKey,
     shellMode,

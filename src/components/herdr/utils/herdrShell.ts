@@ -1,6 +1,6 @@
-import type { Project } from '../../../types/app';
-
 type SessionStorage = Pick<Storage, 'getItem' | 'setItem'>;
+
+const HERDR_CLIENT_SESSION_KEY = 'cloudcli:herdr-client';
 
 function createHerdrClientSessionId(): string {
   const randomId = typeof crypto.randomUUID === 'function'
@@ -9,17 +9,16 @@ function createHerdrClientSessionId(): string {
   return `herdr-${randomId}`;
 }
 
-export function getHerdrClientSessionId(projectId: string, storage?: SessionStorage): string {
-  const sessionKey = `cloudcli:herdr-client:${projectId}`;
+export function getHerdrClientSessionId(storage?: SessionStorage): string {
   const clientSessionId = createHerdrClientSessionId();
 
   try {
     const resolvedStorage = storage ?? sessionStorage;
-    const existingSessionId = resolvedStorage.getItem(sessionKey);
+    const existingSessionId = resolvedStorage.getItem(HERDR_CLIENT_SESSION_KEY);
     if (existingSessionId) {
       return existingSessionId;
     }
-    resolvedStorage.setItem(sessionKey, clientSessionId);
+    resolvedStorage.setItem(HERDR_CLIENT_SESSION_KEY, clientSessionId);
   } catch {
     // Browsers can disable session storage; an in-memory id still isolates this mount.
   }
@@ -28,12 +27,11 @@ export function getHerdrClientSessionId(projectId: string, storage?: SessionStor
 }
 
 export function createHerdrShellProps(
-  project: Project,
   isActive: boolean,
   shellSessionId: string,
 ) {
   return {
-    project,
+    project: null,
     command: 'herdr',
     isPlainShell: true,
     autoConnect: true,

@@ -1,19 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { Project } from '../../../types/app';
 import { createHerdrShellProps, getHerdrClientSessionId } from '../utils/herdrShell';
 
-test('launches Herdr directly in a project-scoped terminal', () => {
-  const project: Project = {
-    projectId: 'project-1',
-    displayName: 'Project One',
-    fullPath: 'C:\\workspace\\project-one',
-  };
+test('launches Herdr without requiring a selected project', () => {
+  const shellProps = createHerdrShellProps(true, 'herdr-client-id');
 
-  const shellProps = createHerdrShellProps(project, true, 'herdr-client-id');
-
-  assert.equal(shellProps.project, project);
+  assert.equal(shellProps.project, null);
   assert.equal(shellProps.command, 'herdr');
   assert.equal(shellProps.isPlainShell, true);
   assert.equal(shellProps.autoConnect, true);
@@ -23,18 +16,17 @@ test('launches Herdr directly in a project-scoped terminal', () => {
   assert.equal(shellProps.shellMode, 'herdr');
 });
 
-test('reuses one Herdr client id per project and browser tab', () => {
+test('reuses one global Herdr client id per browser tab', () => {
   const values = new Map<string, string>();
   const storage = {
     getItem: (key: string) => values.get(key) ?? null,
     setItem: (key: string, value: string) => values.set(key, value),
   };
 
-  const firstId = getHerdrClientSessionId('project-1', storage);
-  const repeatedId = getHerdrClientSessionId('project-1', storage);
-  const otherProjectId = getHerdrClientSessionId('project-2', storage);
+  const firstId = getHerdrClientSessionId(storage);
+  const repeatedId = getHerdrClientSessionId(storage);
 
   assert.equal(repeatedId, firstId);
-  assert.notEqual(otherProjectId, firstId);
+  assert.equal(values.size, 1);
   assert.match(firstId, /^herdr-[a-zA-Z0-9-]+$/);
 });

@@ -15,6 +15,7 @@ import {
 import { useShellRuntime } from '../hooks/useShellRuntime';
 import { sendSocketMessage } from '../utils/socket';
 import { getSessionDisplayName } from '../utils/auth';
+import { resolveShellProjectPath } from '../utils/shellProject';
 
 import ShellConnectionOverlay from './subcomponents/ShellConnectionOverlay';
 import ShellEmptyState from './subcomponents/ShellEmptyState';
@@ -196,6 +197,7 @@ export default function Shell({
     () => (sessionDisplayName ? sessionDisplayName.slice(0, 50) : null),
     [sessionDisplayName],
   );
+  const projectDisplayName = selectedProject?.displayName ?? 'Herdr';
 
   const handleRestartShell = useCallback(() => {
     restartAfterInitRef.current = true;
@@ -234,7 +236,7 @@ export default function Shell({
     connectToShell({ forceRestart: true });
   }, [connectToShell, isConnected, isConnecting, isInitialized, isRestarting]);
 
-  if (!selectedProject) {
+  if (resolveShellProjectPath(selectedProject, shellMode) === null) {
     return (
       <ShellEmptyState
         title={t('shell.selectProject.title')}
@@ -260,7 +262,7 @@ export default function Shell({
   const readyDescription = isPlainShell
     ? t('shell.runCommand', {
         command: initialCommand || t('shell.defaultCommand'),
-        projectName: selectedProject.displayName,
+        projectName: projectDisplayName,
       })
     : selectedSession
       ? t('shell.resumeSession', { displayName: sessionDisplayNameLong })
@@ -269,9 +271,9 @@ export default function Shell({
   const connectingDescription = isPlainShell
     ? t('shell.runCommand', {
         command: initialCommand || t('shell.defaultCommand'),
-        projectName: selectedProject.displayName,
+        projectName: projectDisplayName,
       })
-    : t('shell.startCli', { projectName: selectedProject.displayName });
+    : t('shell.startCli', { projectName: projectDisplayName });
 
   const overlayMode = !isInitialized ? 'loading' : isConnecting ? 'connecting' : !isConnected ? 'connect' : null;
   const overlayDescription = overlayMode === 'connecting' ? connectingDescription : readyDescription;

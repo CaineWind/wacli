@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import type { Project, ProjectSession } from '../../../types/app';
 import type { ShellMode } from '../../shell/types/types';
 import Shell from '../../shell/view/Shell';
+import { resolveShellProjectPath } from '../../shell/utils/shellProject';
 
 import StandaloneShellEmptyState from './subcomponents/StandaloneShellEmptyState';
 import StandaloneShellHeader from './subcomponents/StandaloneShellHeader';
@@ -57,7 +58,7 @@ export default function StandaloneShell({
     [onComplete],
   );
 
-  if (!project) {
+  if (resolveShellProjectPath(project, shellMode) === null) {
     return <StandaloneShellEmptyState className={className} />;
   }
 

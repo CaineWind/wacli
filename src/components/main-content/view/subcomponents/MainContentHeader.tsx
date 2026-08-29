@@ -85,12 +85,14 @@ export default function MainContentHeader({
       <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
         <div className="flex min-w-0 items-center gap-2 sm:max-w-[min(34%,24rem)] sm:flex-[1_1_18rem]">
           {isMobile && <MobileMenuButton onMenuClick={onMenuClick} />}
-          <MainContentTitle
-            activeTab={activeTab}
-            selectedProject={selectedProject}
-            selectedSession={selectedSession}
-            shouldShowTasksTab={shouldShowTasksTab}
-          />
+          {selectedProject && (
+            <MainContentTitle
+              activeTab={activeTab}
+              selectedProject={selectedProject}
+              selectedSession={selectedSession}
+              shouldShowTasksTab={shouldShowTasksTab}
+            />
+          )}
         </div>
 
         <div className="-mx-3 min-w-0 sm:mx-0 sm:flex-1">
@@ -109,6 +111,7 @@ export default function MainContentHeader({
               <MainContentTabSwitcher
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
+                hasSelectedProject={Boolean(selectedProject)}
                 shouldShowTasksTab={shouldShowTasksTab}
                 shouldShowBrowserTab={shouldShowBrowserTab}
               />

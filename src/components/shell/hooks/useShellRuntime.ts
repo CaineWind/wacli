@@ -4,6 +4,7 @@ import type { Terminal } from '@xterm/xterm';
 
 import type { UseShellRuntimeOptions, UseShellRuntimeResult } from '../types/types';
 
+import { resolveShellProjectPath } from '../utils/shellProject';
 import { useShellConnection } from './useShellConnection';
 import { useShellTerminal } from './useShellTerminal';
 
@@ -101,13 +102,13 @@ export function useShellRuntime({
   }, [disconnectFromShell, disposeTerminal, isRestarting]);
 
   useEffect(() => {
-    if (selectedProject) {
+    if (resolveShellProjectPath(selectedProject, shellMode) !== null) {
       return;
     }
 
     disconnectFromShell();
     disposeTerminal();
-  }, [disconnectFromShell, disposeTerminal, selectedProject]);
+  }, [disconnectFromShell, disposeTerminal, selectedProject, shellMode]);
 
   useEffect(() => {
     const currentSessionId = selectedSession?.id ?? null;

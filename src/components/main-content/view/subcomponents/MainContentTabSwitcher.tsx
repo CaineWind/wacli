@@ -1,4 +1,3 @@
-import { MessageSquare, Terminal, Folder, GitBranch, ClipboardCheck, MonitorPlay, PanelsTopLeft, type LucideIcon } from 'lucide-react';
 import { Fragment } from 'react';
 import type { Dispatch, KeyboardEvent, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,19 +6,18 @@ import { Tooltip, PillBar, Pill } from '../../../../shared/view/ui';
 import type { AppTab } from '../../../../types/app';
 import { usePlugins } from '../../../../contexts/PluginsContext';
 import PluginIcon from '../../../plugins/view/PluginIcon';
+import {
+  getBuiltInTabs,
+  shouldShowPluginTabs,
+  type BuiltInTab,
+} from '../../utils/mainContentTabs';
 
 type MainContentTabSwitcherProps = {
   activeTab: AppTab;
   setActiveTab: Dispatch<SetStateAction<AppTab>>;
+  hasSelectedProject: boolean;
   shouldShowTasksTab: boolean;
   shouldShowBrowserTab: boolean;
-};
-
-type BuiltInTab = {
-  kind: 'builtin';
-  id: AppTab;
-  labelKey: string;
-  icon: LucideIcon;
 };
 
 type PluginTab = {
@@ -32,44 +30,23 @@ type PluginTab = {
 
 type TabDefinition = BuiltInTab | PluginTab;
 
-const BASE_TABS: BuiltInTab[] = [
-  { kind: 'builtin', id: 'chat',  labelKey: 'tabs.chat',  icon: MessageSquare },
-  { kind: 'builtin', id: 'shell', labelKey: 'tabs.shell', icon: Terminal },
-  { kind: 'builtin', id: 'herdr', labelKey: 'tabs.herdr', icon: PanelsTopLeft },
-  { kind: 'builtin', id: 'files', labelKey: 'tabs.files', icon: Folder },
-  { kind: 'builtin', id: 'git',   labelKey: 'tabs.git',   icon: GitBranch },
-];
-
-const BROWSER_TAB: BuiltInTab = {
-  kind: 'builtin',
-  id: 'browser',
-  labelKey: 'tabs.browser',
-  icon: MonitorPlay,
-};
-
-const TASKS_TAB: BuiltInTab = {
-  kind: 'builtin',
-  id: 'tasks',
-  labelKey: 'tabs.tasks',
-  icon: ClipboardCheck,
-};
-
 export default function MainContentTabSwitcher({
   activeTab,
   setActiveTab,
+  hasSelectedProject,
   shouldShowTasksTab,
   shouldShowBrowserTab,
 }: MainContentTabSwitcherProps) {
   const { t } = useTranslation();
   const { plugins } = usePlugins();
 
-  const builtInTabs: BuiltInTab[] = [
-    ...BASE_TABS,
-    ...(shouldShowBrowserTab ? [BROWSER_TAB] : []),
-    ...(shouldShowTasksTab ? [TASKS_TAB] : []),
-  ];
+  const builtInTabs = getBuiltInTabs({
+    hasSelectedProject,
+    shouldShowBrowserTab,
+    shouldShowTasksTab,
+  });
 
-  const pluginTabs: PluginTab[] = plugins
+  const pluginTabs: PluginTab[] = (shouldShowPluginTabs(hasSelectedProject) ? plugins : [])
     .filter((p) => p.enabled)
     .map((p) => ({
       kind: 'plugin',

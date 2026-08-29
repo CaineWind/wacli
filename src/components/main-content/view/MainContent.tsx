@@ -140,7 +140,35 @@ function MainContent({
   }
 
   if (!selectedProject) {
-    return <MainContentStateView mode="empty" isMobile={isMobile} onMenuClick={onMenuClick} />;
+    return (
+      <div className="flex h-full flex-col">
+        <MainContentHeader
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          selectedProject={null}
+          selectedSession={null}
+          shouldShowTasksTab={false}
+          shouldShowBrowserTab={false}
+          isMobile={isMobile}
+          onMenuClick={onMenuClick}
+        />
+
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {activeTab === 'herdr' ? (
+            <div className="h-full w-full overflow-hidden bg-gray-900">
+              <HerdrPanel isActive />
+            </div>
+          ) : (
+            <MainContentStateView
+              mode="empty"
+              isMobile={isMobile}
+              onMenuClick={onMenuClick}
+              showMobileHeader={false}
+            />
+          )}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -203,7 +231,7 @@ function MainContent({
 
           {activeTab === 'herdr' && (
             <div className="h-full w-full overflow-hidden bg-gray-900">
-              <HerdrPanel project={selectedProject} isActive={activeTab === 'herdr'} />
+              <HerdrPanel isActive={activeTab === 'herdr'} />
             </div>
           )}
 
