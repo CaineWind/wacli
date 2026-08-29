@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import '@xterm/xterm/css/xterm.css';
 import type { Project, ProjectSession } from '../../../types/app';
+import type { ShellMode } from '../types/types';
 import {
   PROMPT_BUFFER_SCAN_LINES,
   PROMPT_DEBOUNCE_MS,
@@ -32,6 +33,8 @@ type ShellProps = {
   minimal?: boolean;
   autoConnect?: boolean;
   isActive?: boolean;
+  shellSessionId?: string | null;
+  shellMode?: ShellMode;
 };
 
 export default function Shell({
@@ -43,6 +46,8 @@ export default function Shell({
   minimal = false,
   autoConnect = false,
   isActive = true,
+  shellSessionId = null,
+  shellMode = 'default',
 }: ShellProps) {
   const { t } = useTranslation('chat');
   const [isRestarting, setIsRestarting] = useState(false);
@@ -71,6 +76,8 @@ export default function Shell({
     isRestarting,
     onProcessComplete,
     onOutputRef,
+    shellSessionId,
+    shellMode,
   });
 
   // Check xterm.js buffer for CLI prompt patterns (❯ N. label)

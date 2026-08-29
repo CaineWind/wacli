@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react';
+
 import type { Project, ProjectSession } from '../../../types/app';
+import type { ShellMode } from '../../shell/types/types';
 import Shell from '../../shell/view/Shell';
+
 import StandaloneShellEmptyState from './subcomponents/StandaloneShellEmptyState';
 import StandaloneShellHeader from './subcomponents/StandaloneShellHeader';
 
@@ -18,6 +21,8 @@ type StandaloneShellProps = {
   showHeader?: boolean;
   compact?: boolean;
   minimal?: boolean;
+  shellSessionId?: string | null;
+  shellMode?: ShellMode;
 };
 
 export default function StandaloneShell({
@@ -34,6 +39,8 @@ export default function StandaloneShell({
   showHeader = true,
   compact = false,
   minimal = false,
+  shellSessionId = null,
+  shellMode = 'default',
 }: StandaloneShellProps) {
   const [isCompleted, setIsCompleted] = useState(false);
 
@@ -70,6 +77,8 @@ export default function StandaloneShell({
           onProcessComplete={handleProcessComplete}
           minimal={minimal}
           autoConnect={minimal ? true : autoConnect}
+          shellSessionId={shellSessionId}
+          shellMode={shellMode}
         />
       </div>
     </div>

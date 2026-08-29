@@ -4,6 +4,8 @@ import type { Terminal } from '@xterm/xterm';
 
 import type { Project, ProjectSession } from '../../../types/app';
 
+export type ShellMode = 'default' | 'herdr';
+
 export type ShellInitMessage = {
   type: 'init';
   projectPath: string;
@@ -15,6 +17,7 @@ export type ShellInitMessage = {
   initialCommand: string | null | undefined;
   isPlainShell: boolean;
   forceRestart?: boolean;
+  shellMode?: ShellMode;
 };
 
 export type ShellResizeMessage = {
@@ -46,6 +49,8 @@ export type UseShellRuntimeOptions = {
   isRestarting: boolean;
   onProcessComplete?: ((exitCode: number) => void) | null;
   onOutputRef?: MutableRefObject<(() => void) | null>;
+  shellSessionId?: string | null;
+  shellMode?: ShellMode;
 };
 
 export type ShellSharedRefs = {
@@ -57,6 +62,8 @@ export type ShellSharedRefs = {
   initialCommandRef: MutableRefObject<string | null | undefined>;
   isPlainShellRef: MutableRefObject<boolean>;
   onProcessCompleteRef: MutableRefObject<((exitCode: number) => void) | null | undefined>;
+  shellSessionIdRef: MutableRefObject<string | null | undefined>;
+  shellModeRef: MutableRefObject<ShellMode | undefined>;
 };
 
 export type UseShellRuntimeResult = {

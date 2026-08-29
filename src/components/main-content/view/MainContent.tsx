@@ -6,6 +6,7 @@ import StandaloneShell from '../../standalone-shell/view/StandaloneShell';
 import GitPanel from '../../git-panel/view/GitPanel';
 import PluginTabContent from '../../plugins/view/PluginTabContent';
 import { BrowserUsePanel } from '../../browser-use';
+import { HerdrPanel } from '../../herdr';
 import type { MainContentProps } from '../types/types';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { usePaletteOpsRegister } from '../../../contexts/PaletteOpsContext';
@@ -197,6 +198,12 @@ function MainContent({
                 showHeader={false}
                 isActive={activeTab === 'shell'}
               />
+            </div>
+          )}
+
+          {activeTab === 'herdr' && (
+            <div className="h-full w-full overflow-hidden bg-gray-900">
+              <HerdrPanel project={selectedProject} isActive={activeTab === 'herdr'} />
             </div>
           )}
 

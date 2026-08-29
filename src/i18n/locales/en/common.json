@@ -20,6 +20,7 @@
   "tabs": {
     "chat": "Chat",
     "shell": "Shell",
+    "herdr": "Herdr",
     "files": "Files",
     "git": "Source Control",
     "tasks": "Tasks",

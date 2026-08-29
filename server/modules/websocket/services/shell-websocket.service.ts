@@ -19,6 +19,7 @@ type ShellIncomingMessage = {
   initialCommand?: string;
   isPlainShell?: boolean;
   forceRestart?: boolean;
+  shellMode?: string;
 };
 
 type PtySessionEntry = {
@@ -107,6 +108,7 @@ type ShellWebSocketDependencies = {
   ) => string | null | undefined;
   spawnPty?: typeof pty.spawn;
   platform?: () => NodeJS.Platform;
+  environment?: NodeJS.ProcessEnv;
 };
 
 /**
@@ -144,6 +146,12 @@ function parseShellMessage(rawMessage: RawData): ShellIncomingMessage | null {
 }
 
 const SAFE_SESSION_ID_PATTERN = /^[a-zA-Z0-9_.\-:]+$/;
+const HERDR_PANE_ENVIRONMENT_KEYS = [
+  'HERDR_ENV',
+  'HERDR_PANE_ID',
+  'HERDR_TAB_ID',
+  'HERDR_WORKSPACE_ID',
+] as const;
 
 function resolveResumeSessionId(
   message: ShellIncomingMessage,
@@ -285,6 +293,30 @@ function prioritizeUserNpmGlobalBin(env: NodeJS.ProcessEnv): { key: string; valu
   return { key: pathKey, value };
 }
 
+function buildShellEnvironment(
+  message: ShellIncomingMessage,
+  dependencies: ShellWebSocketDependencies,
+): NodeJS.ProcessEnv {
+  const baseEnvironment = dependencies.environment ?? process.env;
+  const prioritizedPath = prioritizeUserNpmGlobalBin(baseEnvironment);
+  const environment: NodeJS.ProcessEnv = {
+    ...baseEnvironment,
+    [prioritizedPath.key]: prioritizedPath.value,
+    TERM: 'xterm-256color',
+    COLORTERM: 'truecolor',
+    FORCE_COLOR: '3',
+  };
+
+  if (readString(message.shellMode) === 'herdr') {
+    // The web terminal is a new Herdr client, not a pane nested inside the
+    // Herdr pane that may have launched CloudCLI. Keep HERDR_SOCKET_PATH so it
+    // attaches to the running session, but remove inherited pane identity.
+    HERDR_PANE_ENVIRONMENT_KEYS.forEach((key) => delete environment[key]);
+  }
+
+  return environment;
+}
+
 /**
  * Used by this module's websocket gateway to connect the standalone Shell UI
  * to a retained PTY while keeping process lifecycle ownership on the server.
@@ -373,6 +405,7 @@ export function handleShellConnection(
           }
 
           existingSession.ws = ws;
+          existingSession.pty.resize(readNumber(data.cols, 80), readNumber(data.rows, 24));
           return;
         }
 
@@ -401,20 +434,14 @@ export function handleShellConnection(
           platform === 'win32' ? ['-Command', shellCommand] : ['-c', shellCommand];
         const termCols = readNumber(data.cols, 80);
         const termRows = readNumber(data.rows, 24);
-        const prioritizedPath = prioritizeUserNpmGlobalBin(process.env);
+        const shellEnvironment = buildShellEnvironment(data, dependencies);
 
         shellProcess = (dependencies.spawnPty ?? pty.spawn)(shell, shellArgs, {
           name: 'xterm-256color',
           cols: termCols,
           rows: termRows,
           cwd: resolvedProjectPath,
-          env: {
-            ...process.env,
-            [prioritizedPath.key]: prioritizedPath.value,
-            TERM: 'xterm-256color',
-            COLORTERM: 'truecolor',
-            FORCE_COLOR: '3',
-          },
+          env: shellEnvironment,
         });
 
         ptySessionsMap.set(ptySessionKey, {
@@ -556,14 +583,16 @@ export function handleShellConnection(
       }
 
       if (data.type === 'input') {
-        if (shellProcess) {
+        const activeSession = ptySessionKey ? ptySessionsMap.get(ptySessionKey) : null;
+        if (shellProcess && activeSession?.pty === shellProcess && activeSession.ws === ws) {
           shellProcess.write(readString(data.data));
         }
         return;
       }
 
       if (data.type === 'resize') {
-        if (shellProcess) {
+        const activeSession = ptySessionKey ? ptySessionsMap.get(ptySessionKey) : null;
+        if (shellProcess && activeSession?.pty === shellProcess && activeSession.ws === ws) {
           shellProcess.resize(readNumber(data.cols, 80), readNumber(data.rows, 24));
         }
       }

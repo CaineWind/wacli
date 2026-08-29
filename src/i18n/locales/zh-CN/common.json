@@ -20,6 +20,7 @@
   "tabs": {
     "chat": "聊天",
     "shell": "终端",
+    "herdr": "Herdr",
     "files": "文件",
     "git": "源代码管理",
     "tasks": "任务",

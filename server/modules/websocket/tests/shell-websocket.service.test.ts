@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
 
+import type { IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty';
 import { WebSocket } from 'ws';
 
 import { handleShellConnection } from '@/modules/websocket/services/shell-websocket.service.js';
@@ -24,6 +25,8 @@ function createFakePty() {
 
   return {
     killed: false,
+    writes: [] as string[],
+    lastResize: null as { cols: number; rows: number } | null,
     onData(listener: (data: string) => void) {
       dataListener = listener;
       return { dispose: () => undefined };
@@ -38,8 +41,12 @@ function createFakePty() {
     emitExit() {
       exitListener?.({ exitCode: 0 });
     },
-    write() {},
-    resize() {},
+    write(data: string) {
+      this.writes.push(data);
+    },
+    resize(cols: number, rows: number) {
+      this.lastResize = { cols, rows };
+    },
     kill() {
       this.killed = true;
     },
@@ -60,6 +67,8 @@ test('a stale socket close cannot detach the socket that replaced it', () => {
     provider: 'plain-shell',
     isPlainShell: true,
     initialCommand: 'test-command',
+    cols: 110,
+    rows: 34,
   });
 
   const firstSocket = createFakeSocket();
@@ -73,9 +82,12 @@ test('a stale socket close cannot detach the socket that replaced it', () => {
 
   // This ordering reproduces a delayed close from a backgrounded mobile tab.
   firstSocket.emit('close');
+  firstSocket.emit('message', JSON.stringify({ type: 'input', data: 'stale-input' }));
   pty.emitData('output-after-stale-close');
 
   assert.equal(pty.killed, false);
+  assert.deepEqual(pty.writes, []);
+  assert.deepEqual(pty.lastResize, { cols: 110, rows: 34 });
   assert.equal(replacementSocket.frames.length, 1);
   assert.match(replacementSocket.frames[0], /output-after-stale-close/);
 
@@ -181,4 +193,52 @@ test('Codex shell sessions use the cmd shim on Windows', () => {
   assert.deepEqual(spawnedArgs, ['-Command', 'codex.cmd']);
 
   freshPty.emitExit();
+});
+
+test('Herdr shell clients do not inherit a parent pane identity', () => {
+  const pty = createFakePty();
+  const socket = createFakeSocket();
+  let spawnedEnvironment: NodeJS.ProcessEnv | undefined;
+  const dependencies = {
+    resolveProviderSessionId: () => null,
+    environment: {
+      PATH: process.env.PATH,
+      HERDR_ENV: '1',
+      HERDR_PANE_ID: 'w1:p1',
+      HERDR_TAB_ID: 'w1:t1',
+      HERDR_WORKSPACE_ID: 'w1',
+      HERDR_SOCKET_PATH: 'C:\\herdr\\herdr.sock',
+    },
+    spawnPty: (
+      _shell: string,
+      _args: string | string[],
+      options: IPtyForkOptions | IWindowsPtyForkOptions,
+    ) => {
+      spawnedEnvironment = options.env;
+      return pty as never;
+    },
+  };
+
+  handleShellConnection(socket as never, dependencies);
+  socket.emit(
+    'message',
+    JSON.stringify({
+      type: 'init',
+      projectPath: process.cwd(),
+      sessionId: `herdr-shell-${Date.now()}`,
+      hasSession: false,
+      provider: 'plain-shell',
+      initialCommand: 'herdr',
+      isPlainShell: true,
+      shellMode: 'herdr',
+    })
+  );
+
+  assert.equal(spawnedEnvironment?.HERDR_ENV, undefined);
+  assert.equal(spawnedEnvironment?.HERDR_PANE_ID, undefined);
+  assert.equal(spawnedEnvironment?.HERDR_TAB_ID, undefined);
+  assert.equal(spawnedEnvironment?.HERDR_WORKSPACE_ID, undefined);
+  assert.equal(spawnedEnvironment?.HERDR_SOCKET_PATH, 'C:\\herdr\\herdr.sock');
+
+  pty.emitExit();
 });

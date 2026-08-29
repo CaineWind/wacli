@@ -4,6 +4,7 @@ import type { FitAddon } from '@xterm/addon-fit';
 import type { Terminal } from '@xterm/xterm';
 
 import type { Project, ProjectSession } from '../../../types/app';
+import type { ShellMode } from '../types/types';
 import { TERMINAL_INIT_DELAY_MS } from '../constants/constants';
 import { getShellWebSocketUrl, parseShellMessage, sendSocketMessage } from '../utils/socket';
 
@@ -25,6 +26,8 @@ type UseShellConnectionOptions = {
   closeSocket: () => void;
   clearTerminalScreen: () => void;
   onOutputRef?: MutableRefObject<(() => void) | null>;
+  shellSessionIdRef: MutableRefObject<string | null | undefined>;
+  shellModeRef: MutableRefObject<ShellMode | undefined>;
 };
 
 type UseShellConnectionResult = {
@@ -49,6 +52,8 @@ export function useShellConnection({
   closeSocket,
   clearTerminalScreen,
   onOutputRef,
+  shellSessionIdRef,
+  shellModeRef,
 }: UseShellConnectionOptions): UseShellConnectionResult {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -141,7 +146,9 @@ export function useShellConnection({
             sendSocketMessage(socket, {
               type: 'init',
               projectPath: currentProject.fullPath || currentProject.path || '',
-              sessionId: isPlainShellRef.current ? null : selectedSessionRef.current?.id || null,
+              sessionId: isPlainShellRef.current
+                ? shellSessionIdRef.current ?? null
+                : selectedSessionRef.current?.id || null,
               hasSession: isPlainShellRef.current ? false : Boolean(selectedSessionRef.current),
               provider: isPlainShellRef.current ? 'plain-shell' : (selectedSessionRef.current?.__provider || localStorage.getItem('selected-provider') || 'claude'),
               cols: currentTerminal.cols,
@@ -149,6 +156,7 @@ export function useShellConnection({
               initialCommand: initialCommandRef.current,
               isPlainShell: isPlainShellRef.current,
               forceRestart,
+              shellMode: shellModeRef.current,
             });
           }, TERMINAL_INIT_DELAY_MS);
         };
@@ -187,6 +195,8 @@ export function useShellConnection({
       isPlainShellRef,
       selectedProjectRef,
       selectedSessionRef,
+      shellModeRef,
+      shellSessionIdRef,
       terminalRef,
       wsRef,
     ],

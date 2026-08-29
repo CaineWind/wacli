@@ -17,6 +17,8 @@ export function useShellRuntime({
   isRestarting,
   onProcessComplete,
   onOutputRef,
+  shellSessionId,
+  shellMode,
 }: UseShellRuntimeOptions): UseShellRuntimeResult {
   const terminalContainerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
@@ -28,6 +30,8 @@ export function useShellRuntime({
   const initialCommandRef = useRef(initialCommand);
   const isPlainShellRef = useRef(isPlainShell);
   const onProcessCompleteRef = useRef(onProcessComplete);
+  const shellSessionIdRef = useRef(shellSessionId);
+  const shellModeRef = useRef(shellMode);
   const lastSessionIdRef = useRef<string | null>(selectedSession?.id ?? null);
 
   // Keep mutable values in refs so websocket handlers always read current data.
@@ -37,7 +41,9 @@ export function useShellRuntime({
     initialCommandRef.current = initialCommand;
     isPlainShellRef.current = isPlainShell;
     onProcessCompleteRef.current = onProcessComplete;
-  }, [selectedProject, selectedSession, initialCommand, isPlainShell, onProcessComplete]);
+    shellSessionIdRef.current = shellSessionId;
+    shellModeRef.current = shellMode;
+  }, [selectedProject, selectedSession, initialCommand, isPlainShell, onProcessComplete, shellSessionId, shellMode]);
 
   const closeSocket = useCallback(() => {
     const activeSocket = wsRef.current;
@@ -80,6 +86,8 @@ export function useShellRuntime({
     closeSocket,
     clearTerminalScreen,
     onOutputRef,
+    shellSessionIdRef,
+    shellModeRef,
   });
 
   useEffect(() => {

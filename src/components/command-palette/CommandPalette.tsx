@@ -59,6 +59,7 @@ const NAV_TABS: Array<{ id: AppTab; label: string; keywords: string }> = [
   { id: 'chat', label: 'Go to Chat', keywords: 'chat messages conversation' },
   { id: 'files', label: 'Go to Files', keywords: 'files file tree explorer' },
   { id: 'shell', label: 'Go to Shell', keywords: 'shell terminal console' },
+  { id: 'herdr', label: 'Go to Herdr', keywords: 'herdr agents panes workspace terminal' },
   { id: 'git', label: 'Go to Git', keywords: 'git diff branches' },
   { id: 'tasks', label: 'Go to Tasks', keywords: 'tasks taskmaster' },
 ];
