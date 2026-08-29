@@ -334,6 +334,23 @@ function decodeTerminalBinaryInput(value: unknown): Buffer | null {
   return decoded;
 }
 
+function redrawHerdrViewport(
+  sessionKey: string,
+  session: PtySessionEntry,
+  ws: WebSocket,
+  cols: number,
+  rows: number,
+): void {
+  const redrawCols = cols > 2 ? cols - 1 : cols + 1;
+  session.pty.resize(redrawCols, rows);
+  setTimeout(() => {
+    const activeSession = ptySessionsMap.get(sessionKey);
+    if (activeSession === session && activeSession.ws === ws) {
+      activeSession.pty.resize(cols, rows);
+    }
+  }, HERDR_REDRAW_DELAY_MS);
+}
+
 /**
  * Used by this module's websocket gateway to connect the standalone Shell UI
  * to a retained PTY while keeping process lifecycle ownership on the server.
@@ -346,6 +363,7 @@ export function handleShellConnection(
 
   let shellProcess: IPty | null = null;
   let ptySessionKey: string | null = null;
+  let isHerdrConnection = false;
   let urlDetectionBuffer = '';
   const announcedAuthUrls = new Set<string>();
 
@@ -364,6 +382,7 @@ export function handleShellConnection(
         const initialCommand = readString(data.initialCommand);
         const forceRestart = readBoolean(data.forceRestart);
         const isHerdrMode = readString(data.shellMode) === 'herdr';
+        isHerdrConnection = isHerdrMode;
         const isPlainShell =
           readBoolean(data.isPlainShell) ||
           (!!initialCommand && !hasSession) ||
@@ -412,14 +431,13 @@ export function handleShellConnection(
             // Replaying a full-screen TUI's ANSI history reconstructs stale
             // frames from earlier sizes. Ask Herdr for a fresh frame instead.
             existingSession.buffer.length = 0;
-            const redrawCols = reconnectCols > 2 ? reconnectCols - 1 : reconnectCols + 1;
-            existingSession.pty.resize(redrawCols, reconnectRows);
-            setTimeout(() => {
-              const activeSession = ptySessionsMap.get(ptySessionKey as string);
-              if (activeSession === existingSession && activeSession.ws === ws) {
-                activeSession.pty.resize(reconnectCols, reconnectRows);
-              }
-            }, HERDR_REDRAW_DELAY_MS);
+            redrawHerdrViewport(
+              ptySessionKey,
+              existingSession,
+              ws,
+              reconnectCols,
+              reconnectRows,
+            );
             return;
           }
 
@@ -644,6 +662,26 @@ export function handleShellConnection(
         const activeSession = ptySessionKey ? ptySessionsMap.get(ptySessionKey) : null;
         if (shellProcess && activeSession?.pty === shellProcess && activeSession.ws === ws) {
           shellProcess.resize(readNumber(data.cols, 80), readNumber(data.rows, 24));
+        }
+        return;
+      }
+
+      if (data.type === 'viewport_claim') {
+        const activeSession = ptySessionKey ? ptySessionsMap.get(ptySessionKey) : null;
+        if (
+          isHerdrConnection &&
+          ptySessionKey &&
+          shellProcess &&
+          activeSession?.pty === shellProcess &&
+          activeSession.ws === ws
+        ) {
+          redrawHerdrViewport(
+            ptySessionKey,
+            activeSession,
+            ws,
+            readNumber(data.cols, 80),
+            readNumber(data.rows, 24),
+          );
         }
       }
     } catch (error) {

@@ -36,11 +36,18 @@ export type ShellBinaryInputMessage = {
   data: string;
 };
 
+export type ShellViewportClaimMessage = {
+  type: 'viewport_claim';
+  cols: number;
+  rows: number;
+};
+
 export type ShellOutgoingMessage =
   | ShellInitMessage
   | ShellResizeMessage
   | ShellInputMessage
-  | ShellBinaryInputMessage;
+  | ShellBinaryInputMessage
+  | ShellViewportClaimMessage;
 
 export type ShellIncomingMessage =
   | { type: 'output'; data: string }

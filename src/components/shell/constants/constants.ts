@@ -79,6 +79,12 @@ export function getTerminalOptions(shellMode: ShellMode = 'default'): ITerminalO
   return {
     ...TERMINAL_OPTIONS,
     convertEol: false,
+    cursorBlink: false,
     scrollback: 0,
+    theme: {
+      ...TERMINAL_OPTIONS.theme,
+      cursor: 'rgba(0, 0, 0, 0)',
+      cursorAccent: 'rgba(0, 0, 0, 0)',
+    },
   };
 }

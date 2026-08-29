@@ -8,6 +8,8 @@ test('Herdr uses full-screen TUI terminal semantics', () => {
 
   assert.equal(options.convertEol, false);
   assert.equal(options.scrollback, 0);
+  assert.equal(options.cursorBlink, false);
+  assert.equal(options.theme?.cursor, 'rgba(0, 0, 0, 0)');
 });
 
 test('default shells retain scrollback and line-oriented output behavior', () => {
@@ -15,4 +17,6 @@ test('default shells retain scrollback and line-oriented output behavior', () =>
 
   assert.equal(options.convertEol, true);
   assert.equal(options.scrollback, 10000);
+  assert.equal(options.cursorBlink, true);
+  assert.equal(options.theme?.cursor, '#ffffff');
 });

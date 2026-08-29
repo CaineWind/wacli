@@ -334,3 +334,63 @@ test('Herdr forwards binary xterm mouse reports to the PTY without UTF-8 convers
 
   pty.emitExit();
 });
+
+test('Herdr viewport claims restore the browser dimensions without affecting regular shells', async () => {
+  const herdrPty = createFakePty();
+  const herdrSocket = createFakeSocket();
+  handleShellConnection(herdrSocket as never, {
+    resolveProviderSessionId: () => null,
+    spawnPty: () => herdrPty as never,
+  });
+  herdrSocket.emit('message', JSON.stringify({
+    type: 'init',
+    projectPath: process.cwd(),
+    sessionId: `herdr-viewport-${Date.now()}`,
+    hasSession: false,
+    provider: 'plain-shell',
+    initialCommand: 'herdr',
+    isPlainShell: true,
+    shellMode: 'herdr',
+    cols: 120,
+    rows: 40,
+  }));
+
+  herdrSocket.emit('message', JSON.stringify({
+    type: 'viewport_claim',
+    cols: 120,
+    rows: 40,
+  }));
+  await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.deepEqual(herdrPty.resizeHistory.slice(-2), [
+    { cols: 119, rows: 40 },
+    { cols: 120, rows: 40 },
+  ]);
+
+  const regularPty = createFakePty();
+  const regularSocket = createFakeSocket();
+  handleShellConnection(regularSocket as never, {
+    resolveProviderSessionId: () => null,
+    spawnPty: () => regularPty as never,
+  });
+  regularSocket.emit('message', JSON.stringify({
+    type: 'init',
+    projectPath: process.cwd(),
+    sessionId: `regular-viewport-${Date.now()}`,
+    hasSession: false,
+    provider: 'plain-shell',
+    initialCommand: 'powershell',
+    isPlainShell: true,
+    cols: 100,
+    rows: 30,
+  }));
+  regularSocket.emit('message', JSON.stringify({
+    type: 'viewport_claim',
+    cols: 100,
+    rows: 30,
+  }));
+  await new Promise((resolve) => setTimeout(resolve, 25));
+  assert.deepEqual(regularPty.resizeHistory, []);
+
+  herdrPty.emitExit();
+  regularPty.emitExit();
+});

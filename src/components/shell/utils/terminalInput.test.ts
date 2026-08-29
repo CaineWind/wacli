@@ -19,7 +19,9 @@ test('Herdr terminal input sync forwards events, restores mouse tracking, and di
     parsed: null as (() => void) | null,
   };
   const terminal = {
+    cols: 120,
     modes: { mouseTrackingMode: 'none' },
+    rows: 40,
     writes: [] as string[],
     write(data: string) {
       this.writes.push(data);
@@ -38,13 +40,19 @@ test('Herdr terminal input sync forwards events, restores mouse tracking, and di
     },
   };
   const container = new EventTarget();
-  const messages: Array<{ type: string; data: string }> = [];
+  const focusTarget = new EventTarget();
+  const visibilityTarget = new EventTarget();
+  let isVisible = true;
+  const messages: Array<Record<string, unknown>> = [];
 
   const dispose = installTerminalInputSync({
     terminal: terminal as never,
     container: container as never,
+    focusTarget,
+    isVisible: () => isVisible,
     shellMode: 'herdr',
     send: (message) => messages.push(message),
+    visibilityTarget,
   });
 
   assert.deepEqual(terminal.writes, ['\x1b[?1002h\x1b[?1006h']);
@@ -55,6 +63,27 @@ test('Herdr terminal input sync forwards events, restores mouse tracking, and di
     { type: 'input', data: 'typed' },
     { type: 'input_binary', data: '/w==' },
   ]);
+
+  focusTarget.dispatchEvent(new Event('focus'));
+  container.dispatchEvent(new Event('pointerdown'));
+  container.dispatchEvent(new Event('keydown'));
+  assert.deepEqual(messages.slice(2), [{
+    type: 'viewport_claim',
+    cols: 120,
+    rows: 40,
+  }]);
+
+  focusTarget.dispatchEvent(new Event('blur'));
+  container.dispatchEvent(new Event('keydown'));
+  isVisible = false;
+  visibilityTarget.dispatchEvent(new Event('visibilitychange'));
+  isVisible = true;
+  visibilityTarget.dispatchEvent(new Event('visibilitychange'));
+  assert.deepEqual(messages.slice(2), Array.from({ length: 3 }, () => ({
+    type: 'viewport_claim',
+    cols: 120,
+    rows: 40,
+  })));
 
   const contextMenuEvent = new Event('contextmenu', { cancelable: true });
   container.dispatchEvent(contextMenuEvent);
@@ -69,11 +98,16 @@ test('Herdr terminal input sync forwards events, restores mouse tracking, and di
   const disposedContextMenuEvent = new Event('contextmenu', { cancelable: true });
   container.dispatchEvent(disposedContextMenuEvent);
   assert.equal(disposedContextMenuEvent.defaultPrevented, false);
+  focusTarget.dispatchEvent(new Event('blur'));
+  focusTarget.dispatchEvent(new Event('focus'));
+  assert.equal(messages.length, 5);
 });
 
 test('default shell input sync leaves browser context menus and mouse tracking unchanged', () => {
   const terminal = {
+    cols: 80,
     modes: { mouseTrackingMode: 'none' },
+    rows: 24,
     writes: [] as string[],
     write(data: string) {
       this.writes.push(data);
@@ -83,17 +117,22 @@ test('default shell input sync leaves browser context menus and mouse tracking u
     onWriteParsed: () => ({ dispose: () => undefined }),
   };
   const container = new EventTarget();
+  const focusTarget = new EventTarget();
+  const messages: Array<Record<string, unknown>> = [];
   const dispose = installTerminalInputSync({
     terminal: terminal as never,
     container: container as never,
+    focusTarget,
     shellMode: 'default',
-    send: () => undefined,
+    send: (message) => messages.push(message),
   });
 
   const contextMenuEvent = new Event('contextmenu', { cancelable: true });
   container.dispatchEvent(contextMenuEvent);
   assert.equal(contextMenuEvent.defaultPrevented, false);
   assert.deepEqual(terminal.writes, []);
+  focusTarget.dispatchEvent(new Event('focus'));
+  assert.deepEqual(messages, []);
 
   dispose();
 });
