@@ -106,6 +106,7 @@ type ShellWebSocketDependencies = {
     provider: string,
   ) => string | null | undefined;
   spawnPty?: typeof pty.spawn;
+  platform?: () => NodeJS.Platform;
 };
 
 /**
@@ -183,6 +184,7 @@ function buildShellCommand(
   const initialCommand = readString(message.initialCommand);
   const provider = readString(message.provider, 'claude');
   const resumeSessionId = resolveResumeSessionId(message, dependencies);
+  const platform = dependencies.platform?.() ?? os.platform();
   const isPlainShell =
     readBoolean(message.isPlainShell) ||
     (!!initialCommand && !hasSession) ||
@@ -200,13 +202,14 @@ function buildShellCommand(
   }
 
   if (provider === 'codex') {
+    const codexCommand = platform === 'win32' ? 'codex.cmd' : 'codex';
     if (resumeSessionId) {
-      if (os.platform() === 'win32') {
-        return `codex resume "${resumeSessionId}"; if ($LASTEXITCODE -ne 0) { codex }`;
+      if (platform === 'win32') {
+        return `${codexCommand} resume "${resumeSessionId}"; if ($LASTEXITCODE -ne 0) { ${codexCommand} }`;
       }
-      return `codex resume "${resumeSessionId}" || codex`;
+      return `${codexCommand} resume "${resumeSessionId}" || ${codexCommand}`;
     }
-    return 'codex';
+    return codexCommand;
   }
 
   if (provider === 'opencode') {
@@ -218,7 +221,7 @@ function buildShellCommand(
 
   const command = initialCommand || 'claude';
   if (resumeSessionId) {
-    if (os.platform() === 'win32') {
+    if (platform === 'win32') {
       return `claude --resume "${resumeSessionId}"; if ($LASTEXITCODE -ne 0) { claude }`;
     }
     return `claude --resume "${resumeSessionId}" || claude`;
@@ -392,9 +395,10 @@ export function handleShellConnection(
 
         const shellCommand = buildShellCommand(data, dependencies);
         const resumeSessionId = resolveResumeSessionId(data, dependencies);
-        const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
+        const platform = dependencies.platform?.() ?? os.platform();
+        const shell = platform === 'win32' ? 'powershell.exe' : 'bash';
         const shellArgs =
-          os.platform() === 'win32' ? ['-Command', shellCommand] : ['-c', shellCommand];
+          platform === 'win32' ? ['-Command', shellCommand] : ['-c', shellCommand];
         const termCols = readNumber(data.cols, 80);
         const termRows = readNumber(data.rows, 24);
         const prioritizedPath = prioritizeUserNpmGlobalBin(process.env);

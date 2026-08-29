@@ -117,3 +117,68 @@ test('shell output detects and normalizes a wrapped authentication URL', () => {
 
   pty.emitExit();
 });
+
+test('Codex shell sessions use the cmd shim on Windows', () => {
+  const pty = createFakePty();
+  const socket = createFakeSocket();
+  let spawnedShell = '';
+  let spawnedArgs: string[] = [];
+  const dependencies = {
+    resolveProviderSessionId: () => 'codex-session-id',
+    platform: () => 'win32' as const,
+    spawnPty: (shell: string, args: string | string[]) => {
+      spawnedShell = shell;
+      spawnedArgs = Array.isArray(args) ? args : [args];
+      return pty as never;
+    },
+  };
+
+  handleShellConnection(socket as never, dependencies);
+  socket.emit(
+    'message',
+    JSON.stringify({
+      type: 'init',
+      projectPath: process.cwd(),
+      sessionId: `codex-shell-${Date.now()}`,
+      hasSession: true,
+      provider: 'codex',
+    })
+  );
+
+  assert.equal(spawnedShell, 'powershell.exe');
+  assert.deepEqual(spawnedArgs, [
+    '-Command',
+    'codex.cmd resume "codex-session-id"; if ($LASTEXITCODE -ne 0) { codex.cmd }',
+  ]);
+
+  pty.emitExit();
+
+  const freshPty = createFakePty();
+  const freshSocket = createFakeSocket();
+  const freshDependencies = {
+    resolveProviderSessionId: () => null,
+    platform: () => 'win32' as const,
+    spawnPty: (shell: string, args: string | string[]) => {
+      spawnedShell = shell;
+      spawnedArgs = Array.isArray(args) ? args : [args];
+      return freshPty as never;
+    },
+  };
+
+  handleShellConnection(freshSocket as never, freshDependencies);
+  freshSocket.emit(
+    'message',
+    JSON.stringify({
+      type: 'init',
+      projectPath: process.cwd(),
+      sessionId: `fresh-codex-shell-${Date.now()}`,
+      hasSession: false,
+      provider: 'codex',
+    })
+  );
+
+  assert.equal(spawnedShell, 'powershell.exe');
+  assert.deepEqual(spawnedArgs, ['-Command', 'codex.cmd']);
+
+  freshPty.emitExit();
+});
