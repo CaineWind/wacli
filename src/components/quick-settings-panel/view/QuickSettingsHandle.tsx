@@ -8,11 +8,13 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
 import type { QuickSettingsHandleStyle } from '../types';
 
 type QuickSettingsHandleProps = {
   isOpen: boolean;
   isDragging: boolean;
+  hideOnMobile?: boolean;
   style: QuickSettingsHandleStyle;
   onClick: (event: ReactMouseEvent<HTMLButtonElement>) => void;
   onMouseDown: (event: ReactMouseEvent<HTMLButtonElement>) => void;
@@ -22,6 +24,7 @@ type QuickSettingsHandleProps = {
 export default function QuickSettingsHandle({
   isOpen,
   isDragging,
+  hideOnMobile = false,
   style,
   onClick,
   onMouseDown,
@@ -52,7 +55,7 @@ export default function QuickSettingsHandle({
       onClick={onClick}
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
-      className={`fixed ${placementClass} z-50 ${transitionClass} border bg-white dark:bg-gray-800 ${borderClass} rounded-l-md p-2 shadow-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${cursorClass} touch-none`}
+      className={`fixed ${placementClass} z-50 ${hideOnMobile ? 'hidden md:block' : ''} ${transitionClass} border bg-white dark:bg-gray-800 ${borderClass} rounded-l-md p-2 shadow-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${cursorClass} touch-none`}
       style={{
         ...style,
         touchAction: 'none',

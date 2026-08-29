@@ -10,6 +10,7 @@ import type { Project } from '../../../types/app';
 import type { ShellMode } from '../types/types';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 import {
+  canApplyResponsiveTerminalFontSize,
   getTerminalOptions,
   TERMINAL_INIT_DELAY_MS,
   TERMINAL_RESIZE_DELAY_MS,
@@ -130,7 +131,13 @@ export function useShellTerminal({
       return;
     }
 
-    const nextTerminal = new Terminal(getTerminalOptions(shellMode));
+    const terminalOptions = getTerminalOptions(
+      shellMode,
+      terminalContainer.clientWidth,
+    );
+    let responsiveFontSize = terminalOptions.fontSize;
+    let hasManualFontSizeOverride = false;
+    const nextTerminal = new Terminal(terminalOptions);
     terminalRef.current = nextTerminal;
 
     const nextFitAddon = new FitAddon();
@@ -157,6 +164,7 @@ export function useShellTerminal({
       terminalContainer,
       {
         onFontSizeChange: (fontSize) => {
+          hasManualFontSizeOverride = true;
           nextTerminal.options.fontSize = fontSize;
 
           const currentFitAddon = fitAddonRef.current;
@@ -279,6 +287,23 @@ export function useShellTerminal({
         const currentTerminal = terminalRef.current;
         if (!currentFitAddon || !currentTerminal) {
           return;
+        }
+
+        const nextResponsiveFontSize = getTerminalOptions(
+          shellMode,
+          terminalContainer.clientWidth,
+        ).fontSize;
+        if (
+          canApplyResponsiveTerminalFontSize(
+            currentTerminal.options.fontSize,
+            responsiveFontSize,
+            hasManualFontSizeOverride,
+          ) && nextResponsiveFontSize !== responsiveFontSize
+        ) {
+          currentTerminal.options.fontSize = nextResponsiveFontSize;
+        }
+        if (!hasManualFontSizeOverride) {
+          responsiveFontSize = nextResponsiveFontSize;
         }
 
         currentFitAddon.fit();

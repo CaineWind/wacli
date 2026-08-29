@@ -11,7 +11,13 @@ import QuickSettingsContent from './QuickSettingsContent';
 import QuickSettingsHandle from './QuickSettingsHandle';
 import QuickSettingsPanelHeader from './QuickSettingsPanelHeader';
 
-export default function QuickSettingsPanelView() {
+type QuickSettingsPanelViewProps = {
+  hideHandleOnMobile?: boolean;
+};
+
+export default function QuickSettingsPanelView({
+  hideHandleOnMobile = false,
+}: QuickSettingsPanelViewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useDeviceSettings({ trackPWA: false });
   const { isDarkMode } = useTheme();
@@ -60,6 +66,7 @@ export default function QuickSettingsPanelView() {
       <QuickSettingsHandle
         isOpen={isOpen}
         isDragging={isDragging}
+        hideOnMobile={hideHandleOnMobile}
         style={handleStyle}
         onClick={handleToggleFromHandle}
         onMouseDown={startDrag}

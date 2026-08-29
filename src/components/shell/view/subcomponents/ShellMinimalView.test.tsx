@@ -11,6 +11,7 @@ test('reserves mobile space for terminal shortcuts and the safe area', () => {
     <ShellMinimalView terminalContainerRef={createRef<HTMLDivElement>()} />,
   );
 
-  assert.match(html, /safe-area-inset-bottom/);
-  assert.match(html, /md:pb-0/);
+  assert.match(html, /absolute/);
+  assert.match(html, /bottom-\[calc\(3\.5rem\+env\(safe-area-inset-bottom,0px\)\)\]/);
+  assert.match(html, /md:bottom-0/);
 });

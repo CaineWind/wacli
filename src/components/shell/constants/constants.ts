@@ -5,6 +5,8 @@ import type { ShellMode } from '../types/types';
 export const SHELL_RESTART_DELAY_MS = 200;
 export const TERMINAL_INIT_DELAY_MS = 100;
 export const TERMINAL_RESIZE_DELAY_MS = 50;
+export const TERMINAL_MOBILE_BREAKPOINT_PX = 768;
+export const HERDR_MOBILE_FONT_SIZE = 12;
 export const HERDR_MOUSE_TRACKING_SEQUENCE = '\x1b[?1002h\x1b[?1006h';
 
 // CLI prompt overlay detection
@@ -71,13 +73,27 @@ export const TERMINAL_OPTIONS: ITerminalOptions = {
   },
 };
 
-export function getTerminalOptions(shellMode: ShellMode = 'default'): ITerminalOptions {
+export function canApplyResponsiveTerminalFontSize(
+  currentFontSize: number | undefined,
+  responsiveFontSize: number | undefined,
+  hasManualOverride: boolean,
+): boolean {
+  return !hasManualOverride && currentFontSize === responsiveFontSize;
+}
+
+export function getTerminalOptions(
+  shellMode: ShellMode = 'default',
+  viewportWidth = Number.POSITIVE_INFINITY,
+): ITerminalOptions {
   if (shellMode !== 'herdr') {
     return { ...TERMINAL_OPTIONS };
   }
 
   return {
     ...TERMINAL_OPTIONS,
+    fontSize: viewportWidth < TERMINAL_MOBILE_BREAKPOINT_PX
+      ? HERDR_MOBILE_FONT_SIZE
+      : TERMINAL_OPTIONS.fontSize,
     convertEol: false,
     cursorBlink: false,
     scrollback: 0,

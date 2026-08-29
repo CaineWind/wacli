@@ -275,7 +275,7 @@ function AppContentInner() {
         onShowTab={setActiveTab}
       />
 
-      <QuickSettingsPanel />
+      <QuickSettingsPanel hideHandleOnMobile={activeTab === 'herdr'} />
     </div>
   );
 }
