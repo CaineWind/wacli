@@ -20,7 +20,10 @@ import {
   type MobileTerminalSelectionManager,
 } from '../utils/mobileTerminalSelection';
 import { sendSocketMessage } from '../utils/socket';
-import { installTerminalInputSync } from '../utils/terminalInput';
+import {
+  createHerdrTouchScrollHandler,
+  installTerminalInputSync,
+} from '../utils/terminalInput';
 import { ensureXtermFocusStyles } from '../utils/terminalStyles';
 import { resolveShellProjectPath } from '../utils/shellProject';
 
@@ -157,12 +160,28 @@ export function useShellTerminal({
       console.warn('[Shell] WebGL renderer unavailable, using Canvas fallback');
     }
 
+    const originalTouchAction = terminalContainer.style.touchAction;
+    if (shellMode === 'herdr') {
+      terminalContainer.style.touchAction = 'none';
+    }
+
     nextTerminal.open(terminalContainer);
+
+    const handleHerdrTouchScroll =
+      shellMode === 'herdr'
+        ? createHerdrTouchScrollHandler({
+            terminal: nextTerminal,
+            getBoundingClientRect: () => terminalContainer.getBoundingClientRect(),
+            send: (message) => sendSocketMessage(wsRef.current, message),
+          })
+        : undefined;
 
     mobileSelectionRef.current = installMobileTerminalSelection(
       nextTerminal,
       terminalContainer,
       {
+        onTouchScroll: handleHerdrTouchScroll,
+        onTouchScrollReset: handleHerdrTouchScroll?.reset,
         onFontSizeChange: (fontSize) => {
           hasManualFontSizeOverride = true;
           nextTerminal.options.fontSize = fontSize;
@@ -324,6 +343,7 @@ export function useShellTerminal({
         window.clearTimeout(resizeTimeoutRef.current);
         resizeTimeoutRef.current = null;
       }
+      terminalContainer.style.touchAction = originalTouchAction;
       disposeInputSync();
       closeSocket();
       disposeTerminal();

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  createHerdrTouchScrollHandler,
   encodeTerminalBinaryInput,
   installTerminalInputSync,
 } from './terminalInput';
@@ -10,6 +11,56 @@ test('terminal binary input preserves non-UTF-8 mouse report bytes', () => {
   const report = String.fromCharCode(0x1b, 0x5b, 0x4d, 0x20, 0xff, 0x21);
 
   assert.equal(encodeTerminalBinaryInput(report), 'G1tNIP8h');
+});
+
+function createTouchEvent(
+  type: string,
+  touches: Array<{ clientX: number; clientY: number }>,
+): Event {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'touches', { value: touches });
+  return event;
+}
+
+test('Herdr converts one-finger vertical swipes into mouse wheel input', () => {
+  const terminal = {
+    cols: 120,
+    rows: 40,
+  };
+  const getBoundingClientRect = () => ({
+      bottom: 800,
+      height: 800,
+      left: 0,
+      right: 1200,
+      top: 0,
+      width: 1200,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
+  const messages: Array<Record<string, unknown>> = [];
+  const handleTouchScroll = createHerdrTouchScrollHandler({
+    terminal: terminal as never,
+    getBoundingClientRect,
+    send: (message) => messages.push(message),
+  });
+
+  const handledUp = handleTouchScroll(40, { clientX: 600, clientY: 560 });
+  const handledDown = handleTouchScroll(-60, { clientX: 600, clientY: 620 });
+
+  assert.equal(handledUp, true);
+  assert.equal(handledDown, true);
+  assert.deepEqual(messages, [
+    { type: 'input', data: '\x1b[<65;61;29M'.repeat(2) },
+    { type: 'input', data: '\x1b[<64;61;32M'.repeat(3) },
+  ]);
+
+  messages.length = 0;
+  handleTouchScroll.reset();
+  handleTouchScroll(10, { clientX: 600, clientY: 560 });
+  handleTouchScroll.reset();
+  handleTouchScroll(10, { clientX: 600, clientY: 560 });
+  assert.deepEqual(messages, []);
 });
 
 test('Herdr terminal input sync forwards events, restores mouse tracking, and disposes cleanly', () => {
@@ -130,6 +181,10 @@ test('default shell input sync leaves browser context menus and mouse tracking u
   const contextMenuEvent = new Event('contextmenu', { cancelable: true });
   container.dispatchEvent(contextMenuEvent);
   assert.equal(contextMenuEvent.defaultPrevented, false);
+  container.dispatchEvent(createTouchEvent('touchstart', [{ clientX: 10, clientY: 20 }]));
+  const touchMoveEvent = createTouchEvent('touchmove', [{ clientX: 10, clientY: 0 }]);
+  container.dispatchEvent(touchMoveEvent);
+  assert.equal(touchMoveEvent.defaultPrevented, false);
   assert.deepEqual(terminal.writes, []);
   focusTarget.dispatchEvent(new Event('focus'));
   assert.deepEqual(messages, []);

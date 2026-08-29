@@ -7,7 +7,7 @@ type TerminalCoords = {
   row: number;
 };
 
-type TouchCoords = {
+export type TouchCoords = {
   clientX: number;
   clientY: number;
 };
@@ -65,6 +65,8 @@ export type MobileTerminalSelectionOptions = {
   minFontSize?: number;
   maxFontSize?: number;
   onFontSizeChange?: (fontSize: number) => void;
+  onTouchScrollReset?: () => void;
+  onTouchScroll?: (deltaY: number, touch: TouchCoords) => boolean;
 };
 
 function isTouchSelectionEnvironment(): boolean {
@@ -113,6 +115,8 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   private readonly minFontSize: number;
   private readonly maxFontSize: number;
   private readonly onFontSizeChange: (fontSize: number) => void;
+  private readonly onTouchScrollReset: () => void;
+  private readonly onTouchScroll: ((deltaY: number, touch: TouchCoords) => boolean) | null;
   private isPinching = false;
   private pinchStartDistance = 0;
   private initialFontSize = 0;
@@ -123,6 +127,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   private lastScrollTouchTime = 0;
   private scrollVelocity = 0;
   private inertiaFrame: number | null = null;
+  private didScrollTouch = false;
 
   constructor(
     terminal: Terminal,
@@ -143,6 +148,8 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
         this.terminal.options.fontSize = fontSize;
         this.terminal.refresh(0, this.terminal.rows - 1);
       });
+    this.onTouchScroll = options.onTouchScroll ?? null;
+    this.onTouchScrollReset = options.onTouchScrollReset ?? (() => undefined);
 
     if (window.getComputedStyle(terminalContent).position === 'static') {
       terminalContent.style.position = 'relative';
@@ -270,16 +277,20 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       return;
     }
 
-    this.terminal.element.addEventListener('touchstart', this.onTerminalTouchStart, {
+    this.terminalContent.addEventListener('touchstart', this.onTerminalTouchStart, {
+      capture: true,
       passive: false,
     });
-    this.terminal.element.addEventListener('touchmove', this.onTerminalTouchMove, {
+    this.terminalContent.addEventListener('touchmove', this.onTerminalTouchMove, {
+      capture: true,
       passive: false,
     });
-    this.terminal.element.addEventListener('touchend', this.onTerminalTouchEnd, {
+    this.terminalContent.addEventListener('touchend', this.onTerminalTouchEnd, {
+      capture: true,
       passive: false,
     });
-    this.terminal.element.addEventListener('touchcancel', this.onTerminalTouchCancel, {
+    this.terminalContent.addEventListener('touchcancel', this.onTerminalTouchCancel, {
+      capture: true,
       passive: false,
     });
 
@@ -303,8 +314,17 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   }
 
   private onTerminalTouchStart = (event: TouchEvent): void => {
+    if (!this.isTerminalTouchEvent(event)) {
+      return;
+    }
+
+    if (this.onTouchScroll) {
+      event.stopPropagation();
+      this.onTouchScrollReset();
+    }
     this.cancelInertia();
     this.resetScrollTracking();
+    this.didScrollTouch = false;
 
     if (event.touches.length === 2) {
       event.preventDefault();
@@ -319,6 +339,8 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
 
     const touch = this.toTouchCoords(event.touches[0]);
     this.touchStart = touch;
+    this.lastScrollTouchY = touch.clientY;
+    this.lastScrollTouchTime = performance.now();
 
     if (this.isSelecting) {
       this.pendingClearTouch = { point: touch, moved: false };
@@ -333,8 +355,15 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   };
 
   private onTerminalTouchMove = (event: TouchEvent): void => {
+    if (!this.isTerminalTouchEvent(event)) {
+      return;
+    }
+
     if (event.touches.length === 2 && this.isPinching) {
       event.preventDefault();
+      if (this.onTouchScroll) {
+        event.stopPropagation();
+      }
       this.handlePinchZoom(event);
       return;
     }
@@ -369,16 +398,32 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
 
     if (this.isSelecting && !this.isHandleDragging) {
       event.preventDefault();
+      event.stopPropagation();
       this.extendSelection(touch);
       return;
     }
 
-    // Plain one-finger scrolling: xterm moves the viewport itself; we only
-    // record the finger velocity so we can add inertia when the touch ends.
+    const previousTouchY = this.lastScrollTouchY;
     this.recordScrollSample(touch);
+    if (
+      moved &&
+      previousTouchY !== null &&
+      this.onTouchScroll?.(previousTouchY - touch.clientY, touch)
+    ) {
+      this.didScrollTouch = true;
+      event.preventDefault();
+      event.stopPropagation();
+    }
   };
 
   private onTerminalTouchEnd = (event: TouchEvent): void => {
+    if (!this.isTerminalTouchEvent(event)) {
+      return;
+    }
+
+    if (this.onTouchScroll) {
+      event.stopPropagation();
+    }
     if (this.isPinching) {
       this.endPinchZoom();
       return;
@@ -397,6 +442,9 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     }
 
     if (!this.pendingClearTouch) {
+      if (this.onTouchScroll && !this.didScrollTouch && !this.isSelecting) {
+        this.terminal.focus();
+      }
       this.maybeStartInertia();
       return;
     }
@@ -409,7 +457,11 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     }
   };
 
-  private onTerminalTouchCancel = (): void => {
+  private onTerminalTouchCancel = (event: TouchEvent): void => {
+    if (!this.isTerminalTouchEvent(event)) {
+      return;
+    }
+
     if (this.isPinching) {
       this.endPinchZoom();
     }
@@ -418,6 +470,12 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     this.touchStart = null;
     this.pendingClearTouch = null;
   };
+
+  private isTerminalTouchEvent(event: TouchEvent): boolean {
+    return Boolean(
+      event.target && this.terminal.element?.contains(event.target as Node),
+    );
+  }
 
   private onHandleTouchStart = (event: TouchEvent): void => {
     event.preventDefault();
@@ -1028,10 +1086,18 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     this.clearTapHoldTimeout();
     this.cancelInertia();
 
-    this.terminal.element?.removeEventListener('touchstart', this.onTerminalTouchStart);
-    this.terminal.element?.removeEventListener('touchmove', this.onTerminalTouchMove);
-    this.terminal.element?.removeEventListener('touchend', this.onTerminalTouchEnd);
-    this.terminal.element?.removeEventListener('touchcancel', this.onTerminalTouchCancel);
+    this.terminalContent.removeEventListener('touchstart', this.onTerminalTouchStart, {
+      capture: true,
+    });
+    this.terminalContent.removeEventListener('touchmove', this.onTerminalTouchMove, {
+      capture: true,
+    });
+    this.terminalContent.removeEventListener('touchend', this.onTerminalTouchEnd, {
+      capture: true,
+    });
+    this.terminalContent.removeEventListener('touchcancel', this.onTerminalTouchCancel, {
+      capture: true,
+    });
 
     this.startHandle.removeEventListener('touchstart', this.onHandleTouchStart);
     this.startHandle.removeEventListener('touchmove', this.onHandleTouchMove);
