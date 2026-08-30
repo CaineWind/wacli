@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import PRDEditor from '../../prd-editor';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+
 import { useTaskMaster } from '../context/TaskMasterContext';
 import { useProjectPrdFiles } from '../hooks/useProjectPrdFiles';
 import type { PrdFile, TaskMasterTask, TaskSelection } from '../types';
+
 import TaskBoard from './TaskBoard';
 import TaskDetailModal from './TaskDetailModal';
+
+const PRDEditor = lazy(() => import('../../prd-editor'));
 
 type TaskMasterPanelProps = {
   isVisible: boolean;
@@ -113,6 +116,7 @@ export default function TaskMasterPanel({ isVisible }: TaskMasterPanelProps) {
       />
 
       {isPrdEditorOpen && (
+        <Suspense fallback={<div className="fixed inset-0 z-50 bg-background" />}>
         <PRDEditor
           project={currentProject}
           projectPath={currentProject?.fullPath || currentProject?.path}
@@ -133,6 +137,7 @@ export default function TaskMasterPanel({ isVisible }: TaskMasterPanelProps) {
             await refreshTasks();
           }}
         />
+        </Suspense>
       )}
 
       {prdNotification && (

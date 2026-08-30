@@ -64,8 +64,6 @@ export type TaskMasterProject = Project & {
   taskmaster?: TaskMasterProjectInfo;
 };
 
-export type TaskMasterProjectInput = TaskMasterProject | Project | null;
-
 export type TaskMasterContextError = {
   message: string;
   context: string;
@@ -96,7 +94,6 @@ export type TaskMasterWebSocketMessage = {
 };
 
 export type TaskMasterContextValue = {
-  projects: TaskMasterProject[];
   currentProject: TaskMasterProject | null;
   projectTaskMaster: TaskMasterProjectInfo | null;
   mcpServerStatus: TaskMasterMcpStatus;
@@ -106,8 +103,7 @@ export type TaskMasterContextValue = {
   isLoadingTasks: boolean;
   isLoadingMCP: boolean;
   error: TaskMasterContextError | null;
-  refreshProjects: () => Promise<void>;
-  setCurrentProject: (project: TaskMasterProjectInput) => void;
+  refreshProjectTaskMaster: () => Promise<void>;
   refreshTasks: () => Promise<void>;
   refreshMCPStatus: () => Promise<void>;
   clearError: () => void;

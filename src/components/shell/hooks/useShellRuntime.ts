@@ -3,8 +3,9 @@ import type { FitAddon } from '@xterm/addon-fit';
 import type { Terminal } from '@xterm/xterm';
 
 import type { UseShellRuntimeOptions, UseShellRuntimeResult } from '../types/types';
-
+import { releaseShellSocket } from '../utils/shellClientResources';
 import { resolveShellProjectPath } from '../utils/shellProject';
+
 import { useShellConnection } from './useShellConnection';
 import { useShellTerminal } from './useShellTerminal';
 
@@ -34,6 +35,10 @@ export function useShellRuntime({
   const shellSessionIdRef = useRef(shellSessionId);
   const shellModeRef = useRef(shellMode);
   const lastSessionIdRef = useRef<string | null>(selectedSession?.id ?? null);
+  const connectionKey = JSON.stringify({
+    projectPath: resolveShellProjectPath(selectedProject, shellMode),
+    shellMode: shellMode ?? 'default',
+  });
 
   // Keep mutable values in refs so websocket handlers always read current data.
   useEffect(() => {
@@ -47,19 +52,7 @@ export function useShellRuntime({
   }, [selectedProject, selectedSession, initialCommand, isPlainShell, onProcessComplete, shellSessionId, shellMode]);
 
   const closeSocket = useCallback(() => {
-    const activeSocket = wsRef.current;
-    if (!activeSocket) {
-      return;
-    }
-
-    if (
-      activeSocket.readyState === WebSocket.OPEN ||
-      activeSocket.readyState === WebSocket.CONNECTING
-    ) {
-      activeSocket.close();
-    }
-
-    wsRef.current = null;
+    releaseShellSocket(wsRef);
   }, []);
 
   const { isInitialized, clearTerminalScreen, disposeTerminal } = useShellTerminal({
@@ -75,6 +68,7 @@ export function useShellRuntime({
   });
 
   const { isConnected, isConnecting, connectToShell, disconnectFromShell } = useShellConnection({
+    connectionKey,
     wsRef,
     terminalRef,
     fitAddonRef,

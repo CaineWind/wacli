@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Plus, Terminal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
 import { cn } from '../../../../lib/utils';
-import Shell from '../../../shell/view/Shell';
 import type { TaskMasterProject } from '../../types';
+
+const Shell = lazy(() => import('../../../shell/view/Shell'));
 
 type TaskMasterSetupModalProps = {
   isOpen: boolean;
@@ -55,18 +57,20 @@ export default function TaskMasterSetupModal({ isOpen, project, onClose, onAfter
 
         <div className="flex-1 p-4">
           <div className="h-full overflow-hidden rounded-lg bg-black">
-            <Shell
-              selectedProject={project}
-              selectedSession={null}
-              initialCommand="npx task-master init"
-              isPlainShell
-              isActive
-              onProcessComplete={(exitCode) => {
-                if (exitCode === 0) {
-                  setIsTaskMasterComplete(true);
-                }
-              }}
-            />
+            <Suspense fallback={<div className="h-full bg-black" role="status" aria-label="Loading terminal" />}>
+              <Shell
+                selectedProject={project}
+                selectedSession={null}
+                initialCommand="npx task-master init"
+                isPlainShell
+                isActive
+                onProcessComplete={(exitCode) => {
+                  if (exitCode === 0) {
+                    setIsTaskMasterComplete(true);
+                  }
+                }}
+              />
+            </Suspense>
           </div>
         </div>
 

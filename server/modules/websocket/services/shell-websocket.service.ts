@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -6,6 +7,7 @@ import pty, { type IPty } from 'node-pty';
 import { WebSocket, type RawData } from 'ws';
 
 import { parseIncomingJsonObject } from '@/shared/utils.js';
+import { terminalReplayStore } from '@/modules/websocket/services/terminal-replay-store.js';
 
 type ShellIncomingMessage = {
   type?: string;
@@ -25,7 +27,6 @@ type ShellIncomingMessage = {
 type PtySessionEntry = {
   pty: IPty;
   ws: WebSocket | null;
-  buffer: string[];
   timeoutId: NodeJS.Timeout | null;
   projectPath: string;
   sessionId: string | null;
@@ -36,6 +37,8 @@ const PTY_SESSION_TIMEOUT = 30 * 60 * 1000;
 const SHELL_URL_PARSE_BUFFER_LIMIT = 32768;
 const ANSI_ESCAPE_SEQUENCE_REGEX = /\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1B\\))/g;
 const TRAILING_URL_PUNCTUATION_REGEX = /[)\]}>.,;:!?]+$/;
+const TERMINAL_REPLAY_TRUNCATED_MESSAGE =
+  '\x1b[33m[Earlier terminal output was omitted to limit memory usage]\x1b[0m\r\n';
 
 function stripAnsiSequences(value: string): string {
   return value.replace(ANSI_ESCAPE_SEQUENCE_REGEX, '');
@@ -351,6 +354,29 @@ function redrawHerdrViewport(
   }, HERDR_REDRAW_DELAY_MS);
 }
 
+function buildPtySessionKey({
+  projectPath,
+  sessionId,
+  provider,
+  shellMode,
+  initialCommand,
+}: {
+  projectPath: string;
+  sessionId: string | null;
+  provider: string;
+  shellMode: string;
+  initialCommand: string;
+}): string {
+  const identity = JSON.stringify({
+    projectPath: process.platform === 'win32' ? projectPath.toLowerCase() : projectPath,
+    sessionId: sessionId ?? 'default',
+    provider,
+    shellMode,
+    commandHash: crypto.createHash('sha256').update(initialCommand).digest('hex'),
+  });
+  return `pty:${crypto.createHash('sha256').update(identity).digest('hex')}`;
+}
+
 /**
  * Used by this module's websocket gateway to connect the standalone Shell UI
  * to a retained PTY while keeping process lifecycle ownership on the server.
@@ -397,11 +423,29 @@ export function handleShellConnection(
             initialCommand.includes('cursor-agent login') ||
             initialCommand.includes('auth login'));
 
-        const commandSuffix =
-          isPlainShell && initialCommand
-            ? `_cmd_${Buffer.from(initialCommand).toString('base64').slice(0, 16)}`
-            : '';
-        ptySessionKey = `${projectPath}_${sessionId ?? 'default'}${commandSuffix}`;
+        const resolvedProjectPath = path.resolve(projectPath);
+        try {
+          const stats = fs.statSync(resolvedProjectPath);
+          if (!stats.isDirectory()) {
+            throw new Error('Not a directory');
+          }
+        } catch {
+          ws.send(JSON.stringify({ type: 'error', message: 'Invalid project path' }));
+          return;
+        }
+
+        if (sessionId && !SAFE_SESSION_ID_PATTERN.test(sessionId)) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Invalid session ID' }));
+          return;
+        }
+
+        ptySessionKey = buildPtySessionKey({
+          projectPath: resolvedProjectPath,
+          sessionId,
+          provider,
+          shellMode: readString(data.shellMode),
+          initialCommand: isPlainShell ? initialCommand : '',
+        });
 
         if (isLoginCommand || forceRestart) {
           const oldSession = ptySessionsMap.get(ptySessionKey);
@@ -409,6 +453,7 @@ export function handleShellConnection(
             if (oldSession.timeoutId) {
               clearTimeout(oldSession.timeoutId);
             }
+            terminalReplayStore.delete(ptySessionKey);
             oldSession.pty.kill();
             ptySessionsMap.delete(ptySessionKey);
           }
@@ -430,7 +475,7 @@ export function handleShellConnection(
           if (isHerdrMode) {
             // Replaying a full-screen TUI's ANSI history reconstructs stale
             // frames from earlier sizes. Ask Herdr for a fresh frame instead.
-            existingSession.buffer.length = 0;
+            terminalReplayStore.clear(ptySessionKey);
             redrawHerdrViewport(
               ptySessionKey,
               existingSession,
@@ -448,8 +493,12 @@ export function handleShellConnection(
             })
           );
 
-          if (existingSession.buffer.length > 0) {
-            existingSession.buffer.forEach((bufferedData) => {
+          const replay = terminalReplayStore.snapshot(ptySessionKey);
+          if (replay.truncated) {
+            ws.send(JSON.stringify({ type: 'output', data: TERMINAL_REPLAY_TRUNCATED_MESSAGE }));
+          }
+          if (replay.chunks.length > 0) {
+            replay.chunks.forEach((bufferedData) => {
               ws.send(
                 JSON.stringify({
                   type: 'output',
@@ -460,23 +509,6 @@ export function handleShellConnection(
           }
 
           existingSession.pty.resize(reconnectCols, reconnectRows);
-          return;
-        }
-
-        const resolvedProjectPath = path.resolve(projectPath);
-        try {
-          const stats = fs.statSync(resolvedProjectPath);
-          if (!stats.isDirectory()) {
-            throw new Error('Not a directory');
-          }
-        } catch {
-          ws.send(JSON.stringify({ type: 'error', message: 'Invalid project path' }));
-          return;
-        }
-
-        const safeSessionIdPattern = /^[a-zA-Z0-9_.\-:]+$/;
-        if (sessionId && !safeSessionIdPattern.test(sessionId)) {
-          ws.send(JSON.stringify({ type: 'error', message: 'Invalid session ID' }));
           return;
         }
 
@@ -511,7 +543,6 @@ export function handleShellConnection(
         ptySessionsMap.set(ptySessionKey, {
           pty: shellProcess,
           ws,
-          buffer: [],
           timeoutId: null,
           projectPath,
           sessionId,
@@ -527,11 +558,8 @@ export function handleShellConnection(
             return;
           }
 
-          if (session.buffer.length < 5000) {
-            session.buffer.push(chunk);
-          } else {
-            session.buffer.shift();
-            session.buffer.push(chunk);
+          if (!isHerdrMode) {
+            terminalReplayStore.append(ptySessionKey, chunk);
           }
 
           if (session.ws && session.ws.readyState === WebSocket.OPEN) {
@@ -618,6 +646,7 @@ export function handleShellConnection(
             clearTimeout(session.timeoutId);
           }
 
+          terminalReplayStore.delete(ptySessionKey);
           ptySessionsMap.delete(ptySessionKey);
           shellProcess = null;
         });
@@ -736,6 +765,7 @@ export function handleShellConnection(
       }
 
       session.pty.kill();
+      terminalReplayStore.delete(ptySessionKey as string);
       ptySessionsMap.delete(ptySessionKey as string);
     }, PTY_SESSION_TIMEOUT);
   });

@@ -9,8 +9,7 @@ import { sessionSynchronizerService } from '@/modules/providers/services/session
 import { WS_OPEN_STATE, connectedClients } from '@/modules/websocket/index.js';
 import type { LLMProvider } from '@/shared/types.js';
 import { generateDisplayName } from '@/modules/projects/index.js';
-
-type WatcherEventType = 'add' | 'change';
+import { SessionWatchScheduler } from '@/modules/providers/services/session-watch-scheduler.js';
 
 const PROVIDER_WATCH_PATHS: Array<{ provider: LLMProvider; rootPath: string }> = [
   {
@@ -31,26 +30,24 @@ const PROVIDER_WATCH_PATHS: Array<{ provider: LLMProvider; rootPath: string }> =
   },
 ];
 
-const WATCHER_IGNORED_PATTERNS = [
-  '**/node_modules/**',
-  '**/.git/**',
-  '**/dist/**',
-  '**/build/**',
-  '**/subagents/**',
-  '**/tool-results/**',
-  '**/*.tmp',
-  '**/*.swp',
-  '**/.DS_Store',
-];
+const WATCHER_IGNORED_DIRECTORY_NAMES = new Set([
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  'subagents',
+  'tool-results',
+]);
 
 const PROJECTS_UPDATE_DEBOUNCE_MS = 500;
 const PROJECTS_UPDATE_MAX_WAIT_MS = 2_000;
 
 const watchers: FSWatcher[] = [];
+let watchScheduler: SessionWatchScheduler | null = null;
 
 type PendingWatcherUpdate = {
   providers: Set<LLMProvider>;
-  changeTypes: Set<WatcherEventType>;
+  changeTypes: Set<'add' | 'change'>;
   /**
    * Provider-native session ids reported by the synchronizers. They are
    * translated back to app-facing session rows at flush time, because the
@@ -104,14 +101,14 @@ function schedulePendingWatcherFlush(): void {
 }
 
 function queuePendingWatcherUpdate(
-  eventType: WatcherEventType,
+  eventType: 'add' | 'change',
   provider: LLMProvider,
   updatedSessionId: string | null
 ): void {
   if (!pendingWatcherUpdate) {
     pendingWatcherUpdate = {
       providers: new Set<LLMProvider>(),
-      changeTypes: new Set<WatcherEventType>(),
+      changeTypes: new Set<'add' | 'change'>(),
       updatedSessionIds: new Set<string>(),
     };
   }
@@ -223,40 +220,75 @@ async function flushPendingWatcherUpdate(): Promise<void> {
 /**
  * Handles file watcher updates and triggers provider file-level synchronization.
  */
-async function onUpdate(
-  eventType: WatcherEventType,
-  filePath: string,
-  provider: LLMProvider
-): Promise<void> {
-  if (!isWatcherTargetFile(provider, filePath)) {
-    return;
-  }
+function containsIgnoredDirectory(candidatePath: string, rootPath: string): boolean {
+  const relativePath = path.relative(rootPath, candidatePath);
+  return relativePath
+    .split(path.sep)
+    .filter(Boolean)
+    .some((segment) => WATCHER_IGNORED_DIRECTORY_NAMES.has(segment));
+}
 
-  try {
-    const result = await sessionSynchronizerService.synchronizeProviderFile(provider, filePath);
-    if (!result.indexed) {
-      return;
+/** Used by this module's watcher setup and its filter regression tests. */
+export function createSessionWatcherIgnored(
+  provider: LLMProvider,
+  rootPath: string,
+): (candidatePath: string, stats?: { isDirectory(): boolean; isFile(): boolean }) => boolean {
+  return (candidatePath, stats) => {
+    if (containsIgnoredDirectory(candidatePath, rootPath)) {
+      return true;
     }
 
-    console.log(`Session synchronization triggered by ${eventType} event for provider "${provider}"`, {
-      filePath,
-      sessionId: result.sessionId,
-    });
-    queuePendingWatcherUpdate(eventType, provider, result.sessionId);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`Session watcher sync failed for provider "${provider}"`, {
-      eventType,
-      filePath,
-      error: message,
-    });
-  }
+    if (!stats || stats.isDirectory()) {
+      return false;
+    }
+
+    if (!stats.isFile()) {
+      return true;
+    }
+
+    const basename = path.basename(candidatePath);
+    if (basename === '.DS_Store' || basename.endsWith('.tmp') || basename.endsWith('.swp')) {
+      return true;
+    }
+
+    return !isWatcherTargetFile(provider, candidatePath);
+  };
+}
+
+function createWatchScheduler(): SessionWatchScheduler {
+  return new SessionWatchScheduler({
+    platform: process.platform,
+    synchronize: (event) => sessionSynchronizerService.synchronizeProviderFile(
+      event.provider,
+      event.filePath,
+    ),
+    onSynchronized: (event, result) => {
+      console.log(
+        `Session synchronization triggered by ${event.eventType} event for provider "${event.provider}"`,
+        { filePath: event.filePath, sessionId: result.sessionId },
+      );
+      queuePendingWatcherUpdate(event.eventType, event.provider, result.sessionId);
+    },
+    onError: (event, error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Session watcher sync failed for provider "${event.provider}"`, {
+        eventType: event.eventType,
+        filePath: event.filePath,
+        error: message,
+      });
+    },
+  });
 }
 
 /**
- * Starts provider filesystem watchers and performs initial DB synchronization.
+ * Used by the server bootstrap in `server/index.ts` to start provider
+ * filesystem watchers after the application services are ready.
  */
 export async function initializeSessionsWatcher(): Promise<void> {
+  if (watchers.length > 0 || watchScheduler) {
+    return;
+  }
+
   console.log('Setting up session watchers');
 
   const initialSync = await sessionSynchronizerService.synchronizeSessions();
@@ -265,27 +297,40 @@ export async function initializeSessionsWatcher(): Promise<void> {
     failures: initialSync.failures,
   });
 
+  watchScheduler = createWatchScheduler();
+
   for (const { provider, rootPath } of PROVIDER_WATCH_PATHS) {
     try {
       await fsPromises.mkdir(rootPath, { recursive: true });
+      const watchTarget = provider === 'opencode'
+        ? path.join(rootPath, 'opencode.db')
+        : rootPath;
 
-      const watcher = chokidar.watch(rootPath, {
-        ignored: WATCHER_IGNORED_PATTERNS,
+      const watcher = chokidar.watch(watchTarget, {
+        ignored: createSessionWatcherIgnored(provider, rootPath),
         persistent: true,
         ignoreInitial: true,
         followSymlinks: false,
         depth: 6,
-        usePolling: true,
         interval: 6_000,
         binaryInterval: 6_000,
       });
 
       watcher
         .on('add', (filePath: string) => {
-          void onUpdate('add', filePath, provider);
+          watchScheduler?.enqueue({ eventType: 'add', filePath, provider });
         })
         .on('change', (filePath: string) => {
-          void onUpdate('change', filePath, provider);
+          watchScheduler?.enqueue({ eventType: 'change', filePath, provider });
+        })
+        .on('ready', () => {
+          const watchedDirectoryCount = Object.keys(watcher.getWatched()).length;
+          console.log(`Session watcher ready for provider "${provider}"`, {
+            backend: watcher.options.usePolling ? 'polling' : 'native',
+            rootPath,
+            watchTarget,
+            watchedDirectoryCount,
+          });
         })
         .on('error', (error: unknown) => {
           const message = error instanceof Error ? error.message : String(error);
@@ -304,10 +349,15 @@ export async function initializeSessionsWatcher(): Promise<void> {
 }
 
 /**
- * Stops all active provider session watchers.
+ * Used by the shutdown path in `server/index.ts` to drain scheduler work and
+ * close every provider filesystem watcher before process exit.
  */
 export async function closeSessionsWatcher(): Promise<void> {
   clearPendingWatcherFlushTimer();
+
+  const scheduler = watchScheduler;
+  watchScheduler = null;
+  await scheduler?.close();
 
   await Promise.all(
     watchers.map(async (watcher) => {

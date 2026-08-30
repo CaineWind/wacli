@@ -46,7 +46,7 @@ function ErrorFallback({
           <h3 className="ml-3 text-sm font-medium text-red-800">Something went wrong</h3>
         </div>
         <div className="text-sm text-red-700">
-          <p className="mb-2">An error occurred while loading the chat interface.</p>
+          <p className="mb-2">An error occurred while loading this view.</p>
           {showDetails && (
             <details className="mt-4">
               <summary className="cursor-pointer font-mono text-xs">Error Details</summary>

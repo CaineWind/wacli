@@ -8,12 +8,14 @@ import type { ShellMode } from '../types/types';
 import { TERMINAL_INIT_DELAY_MS } from '../constants/constants';
 import { getShellWebSocketUrl, parseShellMessage, sendSocketMessage } from '../utils/socket';
 import { resolveShellProjectPath } from '../utils/shellProject';
+import { releaseShellSocket } from '../utils/shellClientResources';
 
 const ANSI_ESCAPE_REGEX =
   /(?:\u001B\[[0-?]*[ -/]*[@-~]|\u009B[0-?]*[ -/]*[@-~]|\u001B\][^\u0007\u001B]*(?:\u0007|\u001B\\)|\u009D[^\u0007\u009C]*(?:\u0007|\u009C)|\u001B[PX^_][^\u001B]*\u001B\\|[\u0090\u0098\u009E\u009F][^\u009C]*\u009C|\u001B[@-Z\\-_])/g;
 const PROCESS_EXIT_REGEX = /Process exited with code (\d+)/;
 
 type UseShellConnectionOptions = {
+  connectionKey: string;
   wsRef: MutableRefObject<WebSocket | null>;
   terminalRef: MutableRefObject<Terminal | null>;
   fitAddonRef: MutableRefObject<FitAddon | null>;
@@ -40,6 +42,7 @@ type UseShellConnectionResult = {
 };
 
 export function useShellConnection({
+  connectionKey,
   wsRef,
   terminalRef,
   fitAddonRef,
@@ -61,6 +64,25 @@ export function useShellConnection({
   const connectingRef = useRef(false);
   const forceRestartOnInitRef = useRef(false);
   const suppressAutoConnectRef = useRef(false);
+  const socketInitTimeoutRef = useRef<number | null>(null);
+  const mountedRef = useRef(true);
+  const previousConnectionKeyRef = useRef(connectionKey);
+
+  const clearSocketInitTimeout = useCallback(() => {
+    if (socketInitTimeoutRef.current !== null) {
+      window.clearTimeout(socketInitTimeoutRef.current);
+      socketInitTimeoutRef.current = null;
+    }
+  }, []);
+
+  const updateConnectionState = useCallback((connected: boolean, connecting: boolean) => {
+    if (!mountedRef.current) {
+      return;
+    }
+
+    setIsConnected(connected);
+    setIsConnecting(connecting);
+  }, []);
 
   const handleProcessCompletion = useCallback(
     (output: string) => {
@@ -128,11 +150,20 @@ export function useShellConnection({
         wsRef.current = socket;
 
         socket.onopen = () => {
-          setIsConnected(true);
-          setIsConnecting(false);
+          if (wsRef.current !== socket) {
+            return;
+          }
+
+          updateConnectionState(true, false);
           connectingRef.current = false;
 
-          window.setTimeout(() => {
+          clearSocketInitTimeout();
+          socketInitTimeoutRef.current = window.setTimeout(() => {
+            socketInitTimeoutRef.current = null;
+            if (wsRef.current !== socket) {
+              return;
+            }
+
             const currentTerminal = terminalRef.current;
             const currentFitAddon = fitAddonRef.current;
             const currentProject = selectedProjectRef.current;
@@ -169,31 +200,46 @@ export function useShellConnection({
         };
 
         socket.onmessage = (event) => {
+          if (wsRef.current !== socket) {
+            return;
+          }
+
           const rawPayload = typeof event.data === 'string' ? event.data : String(event.data ?? '');
           handleSocketMessage(rawPayload);
         };
 
         socket.onclose = () => {
-          setIsConnected(false);
-          setIsConnecting(false);
+          if (!releaseShellSocket(wsRef, socket, false)) {
+            return;
+          }
+
+          clearSocketInitTimeout();
+          updateConnectionState(false, false);
           connectingRef.current = false;
           clearTerminalScreen();
         };
 
         socket.onerror = () => {
-          setIsConnected(false);
-          setIsConnecting(false);
+          if (!releaseShellSocket(wsRef, socket)) {
+            return;
+          }
+
+          clearSocketInitTimeout();
+          updateConnectionState(false, false);
           connectingRef.current = false;
+          forceRestartOnInitRef.current = false;
+          clearTerminalScreen();
         };
       } catch {
-        setIsConnected(false);
-        setIsConnecting(false);
+        clearSocketInitTimeout();
+        updateConnectionState(false, false);
         connectingRef.current = false;
         forceRestartOnInitRef.current = false;
       }
     },
     [
       clearTerminalScreen,
+      clearSocketInitTimeout,
       fitAddonRef,
       handleSocketMessage,
       initialCommandRef,
@@ -205,6 +251,7 @@ export function useShellConnection({
       shellModeRef,
       shellSessionIdRef,
       terminalRef,
+      updateConnectionState,
       wsRef,
     ],
   );
@@ -226,13 +273,33 @@ export function useShellConnection({
       suppressAutoConnectRef.current = true;
     }
 
+    clearSocketInitTimeout();
     closeSocket();
     clearTerminalScreen();
     setIsConnected(false);
     setIsConnecting(false);
     connectingRef.current = false;
     forceRestartOnInitRef.current = false;
-  }, [clearTerminalScreen, closeSocket]);
+  }, [clearSocketInitTimeout, clearTerminalScreen, closeSocket]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      clearSocketInitTimeout();
+      closeSocket();
+    };
+  }, [clearSocketInitTimeout, closeSocket]);
+
+  useEffect(() => {
+    if (previousConnectionKeyRef.current === connectionKey) {
+      return;
+    }
+
+    previousConnectionKeyRef.current = connectionKey;
+    disconnectFromShell();
+  }, [connectionKey, disconnectFromShell]);
 
   useEffect(() => {
     if (

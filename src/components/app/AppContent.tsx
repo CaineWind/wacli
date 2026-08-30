@@ -13,6 +13,7 @@ import { useSessionProtection } from '../../hooks/useSessionProtection';
 import { useProjectsState } from '../../hooks/useProjectsState';
 import { useQueuedMessageAutoSend } from '../../hooks/useQueuedMessageAutoSend';
 import { api } from '../../utils/api';
+import { TaskMasterProvider } from '../task-master/context/TaskMasterContext';
 
 type RunningSessionApiItem = {
   sessionId?: unknown;
@@ -76,6 +77,7 @@ function AppContentInner() {
     openSettings,
     refreshProjectsSilently,
     registerOptimisticSession,
+    updateProjectTaskMaster,
     sidebarSharedProps,
     handleNewSession,
     handleProjectSelect,
@@ -205,6 +207,10 @@ function AppContentInner() {
   }, []);
 
   return (
+    <TaskMasterProvider
+      project={selectedProject}
+      onProjectTaskMasterChange={updateProjectTaskMaster}
+    >
     <div className="fixed inset-0 flex bg-background" style={{ bottom: 'var(--keyboard-height, 0px)' }}>
       {!isMobile ? (
         <div className="h-full flex-shrink-0 border-r border-border/50">
@@ -277,5 +283,6 @@ function AppContentInner() {
 
       <QuickSettingsPanel hideHandleOnMobile={activeTab === 'herdr'} />
     </div>
+    </TaskMasterProvider>
   );
 }

@@ -1,14 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 
 import ChatInterface from '../../chat/view/ChatInterface';
-import FileTree from '../../file-tree/view/FileTree';
-import StandaloneShell from '../../standalone-shell/view/StandaloneShell';
-import GitPanel from '../../git-panel/view/GitPanel';
-import PluginTabContent from '../../plugins/view/PluginTabContent';
-import { BrowserUsePanel } from '../../browser-use';
-import { HerdrPanel } from '../../herdr';
 import type { MainContentProps } from '../types/types';
-import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { usePaletteOpsRegister } from '../../../contexts/PaletteOpsContext';
 import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
@@ -16,17 +9,43 @@ import { useFileOpenResolver } from '../../../hooks/useFileOpenResolver';
 import { authenticatedFetch } from '../../../utils/api';
 import { useEditorSidebar } from '../../code-editor/hooks/useEditorSidebar';
 import EditorSidebar from '../../code-editor/view/EditorSidebar';
-import type { Project } from '../../../types/app';
-import { TaskMasterPanel } from '../../task-master';
 
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
 import ErrorBoundary from './ErrorBoundary';
 
-type TaskMasterContextValue = {
-  currentProject?: Project | null;
-  setCurrentProject?: ((project: Project) => void) | null;
-};
+const FileTree = lazy(() => import('../../file-tree/view/FileTree'));
+const StandaloneShell = lazy(() => import('../../standalone-shell/view/StandaloneShell'));
+const GitPanel = lazy(() => import('../../git-panel/view/GitPanel'));
+const PluginTabContent = lazy(() => import('../../plugins/view/PluginTabContent'));
+const BrowserUsePanel = lazy(() => import('../../browser-use').then((module) => ({
+  default: module.BrowserUsePanel,
+})));
+const HerdrPanel = lazy(() => import('../../herdr').then((module) => ({
+  default: module.HerdrPanel,
+})));
+const TaskMasterPanel = lazy(() => import('../../task-master/view/TaskMasterPanel'));
+
+function PanelLoadingFallback() {
+  return (
+    <div className="flex h-full w-full items-center justify-center" role="status" aria-label="Loading view">
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+    </div>
+  );
+}
+
+function DeferredPanel({ children, resetKey }: { children: ReactNode; resetKey: string }) {
+  return (
+    <ErrorBoundary
+      resetKeys={[resetKey]}
+      onRetry={() => window.location.reload()}
+    >
+      <Suspense fallback={<PanelLoadingFallback />}>
+        {children}
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
 
 type TasksSettingsContextValue = {
   tasksEnabled: boolean;
@@ -59,9 +78,9 @@ function MainContent({
   const { preferences } = useUiPreferences();
   const { showRawParameters, showThinking, sendByCtrlEnter } = preferences;
 
-  const { currentProject, setCurrentProject } = useTaskMaster() as TaskMasterContextValue;
   const { tasksEnabled, isTaskMasterInstalled } = useTasksSettings() as TasksSettingsContextValue;
   const [browserUseEnabled, setBrowserUseEnabled] = useState(false);
+  const [hasOpenedTasks, setHasOpenedTasks] = useState(activeTab === 'tasks');
 
   const shouldShowTasksTab = Boolean(tasksEnabled && isTaskMasterInstalled);
   const shouldShowBrowserTab = browserUseEnabled;
@@ -86,21 +105,16 @@ function MainContent({
   const resolvedFileOpen = useFileOpenResolver(selectedProject, handleFileOpen);
 
   useEffect(() => {
-    // Identify projects by DB `projectId`; the TaskMaster context uses the
-    // same identifier to key its internal maps.
-    const selectedProjectId = selectedProject?.projectId;
-    const currentProjectId = currentProject?.projectId;
-
-    if (selectedProject && selectedProjectId !== currentProjectId) {
-      setCurrentProject?.(selectedProject);
-    }
-  }, [selectedProject, currentProject?.projectId, setCurrentProject]);
-
-  useEffect(() => {
     if (!shouldShowTasksTab && activeTab === 'tasks') {
       setActiveTab('chat');
     }
   }, [shouldShowTasksTab, activeTab, setActiveTab]);
+
+  useEffect(() => {
+    if (activeTab === 'tasks') {
+      setHasOpenedTasks(true);
+    }
+  }, [activeTab]);
 
   const loadBrowserUseSettings = useCallback(async () => {
     try {
@@ -156,7 +170,9 @@ function MainContent({
         <div className="min-h-0 flex-1 overflow-hidden">
           {activeTab === 'herdr' ? (
             <div className="h-full w-full overflow-hidden bg-gray-900">
-              <HerdrPanel isActive />
+              <DeferredPanel resetKey="herdr-empty-project">
+                <HerdrPanel isActive />
+              </DeferredPanel>
             </div>
           ) : (
             <MainContentStateView
@@ -214,71 +230,89 @@ function MainContent({
 
           {activeTab === 'files' && (
             <div className="h-full overflow-hidden">
-              <FileTree selectedProject={selectedProject} onFileOpen={handleFileOpen} />
+              <DeferredPanel resetKey="files">
+                <FileTree selectedProject={selectedProject} onFileOpen={handleFileOpen} />
+              </DeferredPanel>
             </div>
           )}
 
           {activeTab === 'shell' && (
             <div className="h-full w-full overflow-hidden">
-              <StandaloneShell
-                project={selectedProject}
-                session={selectedSession}
-                showHeader={false}
-                isActive={activeTab === 'shell'}
-              />
+              <DeferredPanel resetKey="shell">
+                <StandaloneShell
+                  project={selectedProject}
+                  session={selectedSession}
+                  showHeader={false}
+                  isActive={activeTab === 'shell'}
+                />
+              </DeferredPanel>
             </div>
           )}
 
           {activeTab === 'herdr' && (
             <div className="h-full w-full overflow-hidden bg-gray-900">
-              <HerdrPanel isActive={activeTab === 'herdr'} />
+              <DeferredPanel resetKey="herdr">
+                <HerdrPanel isActive={activeTab === 'herdr'} />
+              </DeferredPanel>
             </div>
           )}
 
           {activeTab === 'git' && (
             <div className="h-full overflow-hidden">
-              <GitPanel
-                selectedProject={selectedProject}
-                isMobile={isMobile}
-                onFileOpen={handleFileOpen}
-                onProjectSelect={onProjectSelect}
-                onProjectsRefresh={onProjectsRefresh}
-              />
+              <DeferredPanel resetKey="git">
+                <GitPanel
+                  selectedProject={selectedProject}
+                  isMobile={isMobile}
+                  onFileOpen={handleFileOpen}
+                  onProjectSelect={onProjectSelect}
+                  onProjectsRefresh={onProjectsRefresh}
+                />
+              </DeferredPanel>
             </div>
           )}
 
-          {shouldShowTasksTab && <TaskMasterPanel isVisible={activeTab === 'tasks'} />}
+          {shouldShowTasksTab && hasOpenedTasks && (
+            <DeferredPanel resetKey="tasks">
+              <TaskMasterPanel isVisible={activeTab === 'tasks'} />
+            </DeferredPanel>
+          )}
 
           {shouldShowBrowserTab && activeTab === 'browser' && (
             <div className="h-full overflow-hidden">
-              <BrowserUsePanel isVisible={activeTab === 'browser'} onShowSettings={onShowSettings} />
+              <DeferredPanel resetKey="browser">
+                <BrowserUsePanel isVisible={activeTab === 'browser'} onShowSettings={onShowSettings} />
+              </DeferredPanel>
             </div>
           )}
 
           {activeTab.startsWith('plugin:') && (
             <div className="h-full overflow-hidden">
-              <PluginTabContent
-                pluginName={activeTab.replace('plugin:', '')}
-                selectedProject={selectedProject}
-                selectedSession={selectedSession}
-              />
+              <DeferredPanel resetKey={activeTab}>
+                <PluginTabContent
+                  pluginName={activeTab.replace('plugin:', '')}
+                  selectedProject={selectedProject}
+                  selectedSession={selectedSession}
+                />
+              </DeferredPanel>
             </div>
           )}
         </div>
 
-        <EditorSidebar
-          editingFile={editingFile}
-          isMobile={isMobile}
-          editorExpanded={editorExpanded}
-          editorWidth={editorWidth}
-          hasManualWidth={hasManualWidth}
-          resizeHandleRef={resizeHandleRef}
-          onResizeStart={handleResizeStart}
-          onCloseEditor={handleCloseEditor}
-          onToggleEditorExpand={handleToggleEditorExpand}
-          projectPath={selectedProject.path}
-          fillSpace={activeTab === 'files'}
-        />
+        <DeferredPanel resetKey={`editor:${editingFile?.path ?? 'closed'}`}>
+          <EditorSidebar
+            editingFile={editingFile}
+            isMobile={isMobile}
+            editorExpanded={editorExpanded}
+            editorWidth={editorWidth}
+            hasManualWidth={hasManualWidth}
+            resizeHandleRef={resizeHandleRef}
+            onResizeStart={handleResizeStart}
+            onCloseEditor={handleCloseEditor}
+            onToggleEditorExpand={handleToggleEditorExpand}
+            projectPath={selectedProject.path}
+            fillSpace={activeTab === 'files'}
+          />
+        </DeferredPanel>
       </div>
     </div>
   );

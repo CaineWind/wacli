@@ -587,46 +587,18 @@ export function useProjectsState({
     ));
   }, []);
 
-  // Hydrates TaskMaster details for the given `projectId`. The project
-  // identifier comes directly from the DB-driven /api/projects response.
-  const hydrateProjectTaskMaster = useCallback(async (projectId: string) => {
-    if (!projectId) {
-      return;
-    }
-
-    try {
-      const response = await api.projectTaskmaster(projectId);
-      if (!response.ok) {
-        return;
-      }
-
-      const data = (await response.json()) as { taskmaster?: Project['taskmaster'] };
-      const taskMasterInfo = data.taskmaster;
-      if (!taskMasterInfo) {
-        return;
-      }
-
-      setProjects((previousProjects) =>
-        previousProjects.map((project) =>
-          project.projectId === projectId
-            ? { ...project, taskmaster: taskMasterInfo }
-            : project,
-        ),
-      );
-
-      setSelectedProject((previousProject) => {
-        if (!previousProject || previousProject.projectId !== projectId) {
-          return previousProject;
-        }
-
-        return {
-          ...previousProject,
-          taskmaster: taskMasterInfo,
-        };
-      });
-    } catch (error) {
-      console.error(`Error fetching TaskMaster info for project ${projectId}:`, error);
-    }
+  const updateProjectTaskMaster = useCallback((
+    projectId: string,
+    taskmaster: Project['taskmaster'] | null,
+  ) => {
+    setProjects((previousProjects) => previousProjects.map((project) =>
+      project.projectId === projectId ? { ...project, taskmaster: taskmaster ?? undefined } : project,
+    ));
+    setSelectedProject((previousProject) =>
+      previousProject?.projectId === projectId
+        ? { ...previousProject, taskmaster: taskmaster ?? undefined }
+        : previousProject,
+    );
   }, []);
 
   const openSettings = useCallback((tab = 'tools') => {
@@ -637,14 +609,6 @@ export function useProjectsState({
   useEffect(() => {
     void fetchProjects();
   }, [fetchProjects]);
-
-  useEffect(() => {
-    if (!selectedProject?.projectId) {
-      return;
-    }
-
-    void hydrateProjectTaskMaster(selectedProject.projectId);
-  }, [hydrateProjectTaskMaster, selectedProject?.projectId]);
 
   // Auto-select the project when there is only one, so the user lands on the new session page
   useEffect(() => {
@@ -1194,6 +1158,7 @@ export function useProjectsState({
     fetchProjects,
     refreshProjectsSilently,
     registerOptimisticSession,
+    updateProjectTaskMaster,
     sidebarSharedProps,
     handleProjectSelect,
     handleSessionSelect,

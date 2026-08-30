@@ -11,8 +11,10 @@ import {
   Terminal,
   Zap,
 } from 'lucide-react';
+
 import { cn } from '../../../lib/utils';
 import { useTaskMaster } from '../context/TaskMasterContext';
+
 import TaskDetailModal from './TaskDetailModal';
 import TaskMasterSetupModal from './modals/TaskMasterSetupModal';
 
@@ -54,8 +56,7 @@ export default function NextTaskBanner({ onShowAllTasks = null, onStartTask = nu
     isLoadingTasks,
     projectTaskMaster,
     refreshTasks,
-    refreshProjects,
-    setCurrentProject,
+    refreshProjectTaskMaster,
   } = useTaskMaster();
 
   const [showTaskDetail, setShowTaskDetail] = useState(false);
@@ -70,8 +71,7 @@ export default function NextTaskBanner({ onShowAllTasks = null, onStartTask = nu
   const hasTaskMaster = Boolean(projectTaskMaster?.hasTaskmaster || currentProject.taskmaster?.hasTaskmaster);
 
   const handleSetupRefresh = () => {
-    void refreshProjects();
-    setCurrentProject(currentProject);
+    void refreshProjectTaskMaster();
     void refreshTasks();
   };
 

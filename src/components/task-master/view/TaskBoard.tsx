@@ -1,9 +1,11 @@
 import { useState } from 'react';
+
 import { cn } from '../../../lib/utils';
 import { api } from '../../../utils/api';
 import { useTaskMaster } from '../context/TaskMasterContext';
 import { useTaskBoardState } from '../hooks/useTaskBoardState';
 import type { PrdFile, TaskBoardView, TaskMasterProject, TaskMasterTask, TaskSelection } from '../types';
+
 import TaskBoardContent from './TaskBoardContent';
 import TaskBoardToolbar from './TaskBoardToolbar';
 import TaskEmptyState from './TaskEmptyState';
@@ -36,7 +38,7 @@ export default function TaskBoard({
   existingPRDs = [],
   onRefreshPRDs = null,
 }: TaskBoardProps) {
-  const { projectTaskMaster, refreshProjects, refreshTasks, setCurrentProject } = useTaskMaster();
+  const { projectTaskMaster, refreshProjectTaskMaster, refreshTasks } = useTaskMaster();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -98,10 +100,7 @@ export default function TaskBoard({
   };
 
   const refreshAfterSetup = () => {
-    void refreshProjects();
-    if (currentProject) {
-      setCurrentProject(currentProject);
-    }
+    void refreshProjectTaskMaster();
     void refreshTasks();
     onRefreshPRDs?.(false);
   };

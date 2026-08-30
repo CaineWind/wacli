@@ -1,7 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { MouseEvent, MutableRefObject } from 'react';
+
 import type { CodeEditorFile } from '../types/types';
-import CodeEditor from './CodeEditor';
+
+const CodeEditor = lazy(() => import('./CodeEditor'));
+
+function EditorLoadingFallback() {
+  return (
+    <div className="flex h-full min-h-0 flex-1 items-center justify-center" role="status" aria-label="Loading editor">
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+    </div>
+  );
+}
 
 type EditorSidebarProps = {
   editingFile: CodeEditorFile | null;
@@ -86,6 +96,7 @@ export default function EditorSidebar({
 
   if (isMobile || poppedOut) {
     return (
+      <Suspense fallback={<EditorLoadingFallback />}>
       <CodeEditor
         file={editingFile}
         onClose={() => {
@@ -95,6 +106,7 @@ export default function EditorSidebar({
         projectPath={projectPath}
         isSidebar={false}
       />
+      </Suspense>
     );
   }
 
@@ -118,6 +130,7 @@ export default function EditorSidebar({
         className={`h-full overflow-hidden border-l border-gray-200 dark:border-gray-700 ${useFlexLayout ? 'min-w-0 flex-1' : `min-w-[ flex-shrink-0${MIN_EDITOR_WIDTH}px]`}`}
         style={useFlexLayout ? undefined : { width: `${effectiveWidth}px`, minWidth: `${MIN_EDITOR_WIDTH}px` }}
       >
+        <Suspense fallback={<EditorLoadingFallback />}>
         <CodeEditor
           file={editingFile}
           onClose={onCloseEditor}
@@ -127,6 +140,7 @@ export default function EditorSidebar({
           onToggleExpand={onToggleEditorExpand}
           onPopOut={() => setPoppedOut(true)}
         />
+        </Suspense>
       </div>
     </div>
   );
