@@ -197,6 +197,42 @@ test('Codex shell sessions use the cmd shim on Windows', () => {
   freshPty.emitExit();
 });
 
+test('Herdr starts directly without a PowerShell wrapper on Windows', () => {
+  const pty = createFakePty();
+  const socket = createFakeSocket();
+  let spawnedShell = '';
+  let spawnedArgs: string[] = [];
+  const dependencies = {
+    resolveProviderSessionId: () => null,
+    platform: () => 'win32' as const,
+    spawnPty: (shell: string, args: string | string[]) => {
+      spawnedShell = shell;
+      spawnedArgs = Array.isArray(args) ? args : [args];
+      return pty as never;
+    },
+  };
+
+  handleShellConnection(socket as never, dependencies);
+  socket.emit(
+    'message',
+    JSON.stringify({
+      type: 'init',
+      projectPath: process.cwd(),
+      sessionId: `herdr-direct-${Date.now()}`,
+      hasSession: false,
+      provider: 'plain-shell',
+      initialCommand: 'herdr',
+      isPlainShell: true,
+      shellMode: 'herdr',
+    })
+  );
+
+  assert.equal(spawnedShell, 'herdr.exe');
+  assert.deepEqual(spawnedArgs, []);
+
+  pty.emitExit();
+});
+
 test('Herdr shell clients do not inherit a parent pane identity', () => {
   const pty = createFakePty();
   const socket = createFakeSocket();

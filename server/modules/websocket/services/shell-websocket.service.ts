@@ -483,9 +483,19 @@ export function handleShellConnection(
         const shellCommand = buildShellCommand(data, dependencies);
         const resumeSessionId = resolveResumeSessionId(data, dependencies);
         const platform = dependencies.platform?.() ?? os.platform();
-        const shell = platform === 'win32' ? 'powershell.exe' : 'bash';
-        const shellArgs =
-          platform === 'win32' ? ['-Command', shellCommand] : ['-c', shellCommand];
+        // Herdr is already an interactive executable. Launching it through
+        // PowerShell can briefly expose a console window before ConPTY attaches.
+        const startsHerdrDirectly = isHerdrMode && platform === 'win32';
+        const shell = startsHerdrDirectly
+          ? 'herdr.exe'
+          : platform === 'win32'
+            ? 'powershell.exe'
+            : 'bash';
+        const shellArgs = startsHerdrDirectly
+          ? []
+          : platform === 'win32'
+            ? ['-Command', shellCommand]
+            : ['-c', shellCommand];
         const termCols = readNumber(data.cols, 80);
         const termRows = readNumber(data.rows, 24);
         const shellEnvironment = buildShellEnvironment(data, dependencies);
