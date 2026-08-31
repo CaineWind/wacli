@@ -89,6 +89,29 @@ function getDistance(start: TouchCoords, end: TouchCoords): number {
   return Math.hypot(end.clientX - start.clientX, end.clientY - start.clientY);
 }
 
+export type HerdrTerminalFocusScheduler = {
+  cancel: () => void;
+  schedule: (canFocus: () => boolean) => void;
+};
+
+export function createHerdrTerminalFocusScheduler(
+  focus: () => void,
+): HerdrTerminalFocusScheduler {
+  let requestId = 0;
+
+  return {
+    cancel: () => { requestId++; },
+    schedule: (canFocus) => {
+      const scheduledRequestId = ++requestId;
+      queueMicrotask(() => {
+        if (scheduledRequestId === requestId && canFocus()) {
+          focus();
+        }
+      });
+    },
+  };
+}
+
 class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   private readonly terminal: Terminal;
   private readonly terminalContent: HTMLElement;
@@ -128,6 +151,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   private scrollVelocity = 0;
   private inertiaFrame: number | null = null;
   private didScrollTouch = false;
+  private readonly terminalFocusScheduler: HerdrTerminalFocusScheduler;
 
   constructor(
     terminal: Terminal,
@@ -137,6 +161,9 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     this.terminal = terminal;
     this.terminalContent = terminalContent;
     this.originalPosition = terminalContent.style.position;
+    this.terminalFocusScheduler = createHerdrTerminalFocusScheduler(
+      () => this.terminal.focus(),
+    );
 
     const minFontSize = Number(options.minFontSize) || DEFAULT_MIN_FONT_SIZE;
     const maxFontSize = Number(options.maxFontSize) || DEFAULT_MAX_FONT_SIZE;
@@ -318,6 +345,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       return;
     }
 
+    this.cancelPendingTerminalFocus();
     if (this.onTouchScroll) {
       event.stopPropagation();
       this.onTouchScrollReset();
@@ -432,18 +460,22 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     this.clearTapHoldTimeout();
     this.touchStart = null;
 
-    // A long-press selection (or a tap dismissing one) must not let the browser
-    // synthesize the mouse click that refocuses xterm's hidden textarea — that
-    // is what pops up the mobile keyboard. A plain tap leaves isSelecting false
-    // and falls through, so it still focuses the terminal and shows the keyboard.
+    // Selection gestures keep the hidden textarea blurred. A plain Herdr tap
+    // restores focus in a microtask, after the browser's touch default action
+    // has finished moving focus away from xterm.
     if (this.isSelecting || this.isHandleDragging) {
       event.preventDefault();
       this.blurTerminalInput();
     }
 
     if (!this.pendingClearTouch) {
-      if (this.onTouchScroll && !this.didScrollTouch && !this.isSelecting) {
-        this.terminal.focus();
+      if (
+        this.onTouchScroll
+        && !this.didScrollTouch
+        && !this.isSelecting
+        && !this.isHandleDragging
+      ) {
+        this.scheduleTerminalFocus();
       }
       this.maybeStartInertia();
       return;
@@ -462,6 +494,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       return;
     }
 
+    this.cancelPendingTerminalFocus();
     if (this.isPinching) {
       this.endPinchZoom();
     }
@@ -565,6 +598,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   };
 
   private startSelection(touch: TouchCoords): void {
+    this.cancelPendingTerminalFocus();
     const coords = this.touchToTerminalCoords(touch);
     if (!coords) {
       return;
@@ -747,6 +781,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       return;
     }
 
+    this.cancelPendingTerminalFocus();
     this.clearTapHoldTimeout();
     if (this.isSelecting) {
       this.clearSelection();
@@ -1053,6 +1088,23 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     textarea?.blur();
   }
 
+  private scheduleTerminalFocus(): void {
+    this.terminalFocusScheduler.schedule(
+      () => (
+        !this.isDestroyed
+        && !this.didScrollTouch
+        && !this.isSelecting
+        && !this.isHandleDragging
+        && !this.isPinching
+        && this.pendingClearTouch === null
+      ),
+    );
+  }
+
+  private cancelPendingTerminalFocus(): void {
+    this.terminalFocusScheduler.cancel();
+  }
+
   private getTerminalScreenElement(): HTMLElement | null {
     return (
       this.terminal.element?.querySelector<HTMLElement>('.xterm-screen') ??
@@ -1083,6 +1135,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     }
 
     this.isDestroyed = true;
+    this.cancelPendingTerminalFocus();
     this.clearTapHoldTimeout();
     this.cancelInertia();
 
