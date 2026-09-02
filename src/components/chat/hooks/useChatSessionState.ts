@@ -147,7 +147,6 @@ export function useChatSessionState({
   const wasNearTopRef = useRef(false);
   const [searchTarget, setSearchTarget] = useState<{ timestamp?: string; uuid?: string; snippet?: string } | null>(null);
   const searchScrollActiveRef = useRef(false);
-  const isLoadingSessionRef = useRef(false);
   const isLoadingMoreRef = useRef(false);
   const allMessagesLoadedRef = useRef(false);
   const topLoadLockRef = useRef(false);
@@ -230,7 +229,8 @@ export function useChatSessionState({
   /*  Derive processing state for the viewed session                  */
   /* ---------------------------------------------------------------- */
 
-  const activeSessionId = selectedSession?.id || currentSessionId || null;
+  const selectedSessionId = selectedSession?.id ?? null;
+  const activeSessionId = selectedSessionId || currentSessionId || null;
 
   // The activity indicator always reflects the latest status of the session
   // being viewed — never stale local UI state from the last time it was
@@ -324,7 +324,10 @@ export function useChatSessionState({
     setPendingUserMessage(null);
   }, [activeSessionId, pendingUserMessage, sessionStore]);
 
-  const storeMessages = activeSessionId ? sessionStore.getMessages(activeSessionId) : [];
+  const storeMessages = useMemo(
+    () => (activeSessionId ? sessionStore.getMessages(activeSessionId) : []),
+    [activeSessionId, sessionStore],
+  );
 
   // Reset viewHiddenCount when store messages change
   const prevStoreLenRef = useRef(0);
@@ -397,6 +400,7 @@ export function useChatSessionState({
       if (!hasMoreMessages || !selectedSession || !selectedProject) return false;
 
       isLoadingMoreRef.current = true;
+      setIsLoadingMoreMessages(true);
       const scrollRestoreState = captureScrollRestoreState(container);
 
       try {
@@ -442,6 +446,7 @@ export function useChatSessionState({
         return true;
       } finally {
         isLoadingMoreRef.current = false;
+        setIsLoadingMoreMessages(false);
       }
     },
     [hasMoreMessages, isActive, isLoadingMoreMessages, selectedProject, selectedSession, sessionStore],
@@ -590,7 +595,7 @@ export function useChatSessionState({
 
   // Main session loading effect — store-based
   useEffect(() => {
-    if (!selectedSession || !selectedProject) {
+    if (!selectedSessionId || !selectedProject) {
       // A freshly created session can be mid-run before the router has a
       // canonical selectedSession (the URL effect synthesizes one on the
       // next render). Keep the active view intact instead of wiping it.
@@ -613,7 +618,6 @@ export function useChatSessionState({
       return;
     }
 
-    const selectedSessionId = selectedSession.id;
     const sessionKey = `${selectedSessionId}:${selectedProject.projectId}`;
 
     const existingSlot = sessionStore.getSessionSlot(selectedSessionId);
@@ -682,10 +686,11 @@ export function useChatSessionState({
     });
   }, [
     isActive,
+    currentSessionId,
     resetStreamingState,
     requestLatestMessages,
     selectedProject,
-    selectedSession?.id,
+    selectedSessionId,
     sessionStore,
   ]);
 

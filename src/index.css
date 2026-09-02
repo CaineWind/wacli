@@ -603,9 +603,10 @@
   .chat-message.error {
     contain-intrinsic-size: auto 96px;
   }
+}
 
-  /* Mobile touch optimization and safe areas */
-  @media (max-width: 768px) {
+/* Mobile touch optimization and safe areas */
+@media (max-width: 768px) {
     * {
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
@@ -635,29 +636,32 @@
     }
     
     /* Better mobile touch targets */
-    .mobile-touch-target {
-      @apply min-h-[44px] min-w-[44px];
-    }
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
     
     /* Chat message improvements */
-    .chat-message.user {
-      @apply justify-end;
-    }
+  .chat-message.user {
+    justify-content: flex-end;
+  }
     
-    .chat-message.user > div {
-      @apply max-w-[85%];
-    }
+  .chat-message.user > div {
+    max-width: 85%;
+  }
     
-    .chat-message.assistant > div,
-    .chat-message.error > div {
-      @apply w-full sm:max-w-[95%];
-    }
+  .chat-message.assistant > div,
+  .chat-message.error > div {
+    width: 100%;
+  }
     
     /* Session name truncation on mobile */
-    .session-name-mobile {
-      @apply truncate;
-      max-width: calc(100vw - 120px); /* Account for sidebar padding and buttons */
-    }
+  .session-name-mobile {
+    max-width: calc(100vw - 120px); /* Account for sidebar padding and buttons */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
     
     /* Enable text selection on mobile for terminal */
     .xterm,
@@ -683,23 +687,31 @@
       opacity: 1 !important;
     }
     
-    @media (hover: none) and (pointer: coarse) {
-      .group-hover\:opacity-100 {
-        opacity: 1 !important;
-      }
-      
-      .hover\:bg-gray-50:hover,
-      .hover\:bg-gray-100:hover,
-      .hover\:bg-red-200:hover,
-      .dark\:hover\:bg-gray-700:hover,
-      .dark\:hover\:bg-red-900\/50:hover {
-        background-color: inherit;
-      }
-    }
+}
+
+@media (min-width: 640px) and (max-width: 768px) {
+  .chat-message.assistant > div,
+  .chat-message.error > div {
+    max-width: 95%;
   }
+}
+
+@media (max-width: 768px) and (hover: none) and (pointer: coarse) {
+    .group-hover\:opacity-100 {
+      opacity: 1 !important;
+    }
+
+    .hover\:bg-gray-50:hover,
+    .hover\:bg-gray-100:hover,
+    .hover\:bg-red-200:hover,
+    .dark\:hover\:bg-gray-700:hover,
+    .dark\:hover\:bg-red-900\/50:hover {
+      background-color: inherit;
+    }
+}
   
   /* Touch device optimizations for all screen sizes */
-  @media (hover: none) and (pointer: coarse) {
+@media (hover: none) and (pointer: coarse) {
     .touch\:opacity-100 {
       opacity: 1 !important;
     }
@@ -741,7 +753,9 @@
     .active\:scale-95:active {
       transform: scale(0.98) !important;
     }
-  }
+}
+
+@layer components {
   
   /* Safe area support for iOS devices */
   .ios-bottom-safe {

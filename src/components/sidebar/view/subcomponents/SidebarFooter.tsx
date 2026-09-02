@@ -4,8 +4,8 @@ import type { TFunction } from 'i18next';
 import { IS_PLATFORM } from '../../../../shared/utils';
 import type { ReleaseInfo } from '../../../../shared/types';
 
-const GITHUB_ISSUES_URL = 'https://github.com/siteboon/claudecodeui/issues/new';
-const GITHUB_REPO_URL = 'https://github.com/siteboon/claudecodeui';
+const GITHUB_ISSUES_URL = 'https://github.com/CaineWind/wacli/issues/new';
+const GITHUB_REPO_URL = 'https://github.com/CaineWind/wacli';
 
 const DISCORD_INVITE_URL = 'https://discord.gg/buxwujPNRE';
 

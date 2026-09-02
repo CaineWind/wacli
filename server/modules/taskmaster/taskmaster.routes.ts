@@ -102,9 +102,10 @@ export function createTaskmasterRouter(dependencies: TaskmasterRouterDependencie
     async function checkTaskMasterInstallation() {
         return new Promise((resolve) => {
             // Check if task-master command is available
-            const child = spawn('which', ['task-master'], {
+            const locator = process.platform === 'win32' ? 'where.exe' : 'which';
+            const child = spawn(locator, ['task-master'], {
                 stdio: ['ignore', 'pipe', 'pipe'],
-                shell: true
+                shell: false
             });
 
             let output = '';
@@ -123,7 +124,7 @@ export function createTaskmasterRouter(dependencies: TaskmasterRouterDependencie
                     // TaskMaster is installed, get version
                     const versionChild = spawn('task-master', ['--version'], {
                         stdio: ['ignore', 'pipe', 'pipe'],
-                        shell: true
+                        shell: false
                     });
 
                     let versionOutput = '';
