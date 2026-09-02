@@ -68,7 +68,28 @@ export default tseslint.config(
       // --- React Refresh (Vite HMR) ---
       "react-refresh/only-export-components": [
         "warn",
-        { allowConstantExport: true },
+        {
+          allowConstantExport: true,
+          allowExportNames: [
+            "alertVariants",
+            "badgeVariants",
+            "buttonVariants",
+            "useAuth",
+            "useCollapsible",
+            "useConfirmation",
+            "useDialog",
+            "usePaletteOps",
+            "usePaletteOpsRegister",
+            "usePermission",
+            "usePlugins",
+            "usePromptInput",
+            "useReasoning",
+            "useTaskMaster",
+            "useTasksSettings",
+            "useTheme",
+            "useWebSocket",
+          ],
+        },
       ],
 
       // --- Import ordering & hygiene ---

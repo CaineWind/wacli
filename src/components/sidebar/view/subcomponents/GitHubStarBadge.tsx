@@ -3,7 +3,7 @@ import { Star, X } from 'lucide-react';
 import { useGitHubStars } from '../../../../hooks/useGitHubStars';
 import { IS_PLATFORM } from '../../../../shared/utils';
 
-const GITHUB_REPO_URL = 'https://github.com/siteboon/claudecodeui';
+const GITHUB_REPO_URL = 'https://github.com/CaineWind/wacli';
 
 function GitHubIcon({ className }: { className?: string }) {
   return (

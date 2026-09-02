@@ -3,6 +3,8 @@ import test from 'node:test';
 
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import '@/i18n/config.js';
+
 import QuickSettingsHandle from './QuickSettingsHandle';
 
 test('quick settings handle stays out of the mobile terminal viewport', () => {

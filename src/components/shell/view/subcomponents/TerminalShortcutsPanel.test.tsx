@@ -4,6 +4,8 @@ import test from 'node:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Terminal } from '@xterm/xterm';
 
+import '@/i18n/config.js';
+
 import TerminalShortcutsPanel from './TerminalShortcutsPanel';
 
 test('renders a touch-friendly scrolling shortcut bar inside mobile safe areas', () => {
