@@ -11,6 +11,13 @@ Both commands use an audit threshold of low, so any reported vulnerability
 fails CI. Dependency install scripts are version-pinned in allowScripts, and
 CI installs with npm 12's strict-allow-scripts policy.
 
+## Security overrides
+
+`@humanfs/node` is pinned to `0.16.8` through `package.json` overrides until
+ESLint adopts that patched release directly. This prevents GHSA-p498-v437-472g
+in the development dependency tree. Remove the override after the direct
+dependency constraint resolves to `0.16.8` or newer, then rerun both audits.
+
 ## Tracked upstream deprecations
 
 Last reviewed: 2026-09-02
