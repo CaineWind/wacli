@@ -115,7 +115,7 @@ export default defineConfig(({ mode }) => {
           screenshots: [
             {
               src: 'screenshots/setup-screen.png',
-              sizes: '4096x1593',
+              sizes: '2559x1297',
               type: 'image/png',
               form_factor: 'wide',
               label: 'WindCli desktop setup',

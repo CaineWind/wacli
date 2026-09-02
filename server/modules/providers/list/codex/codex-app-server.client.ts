@@ -78,7 +78,7 @@ export class CodexAppServerClient {
     await client.request('initialize', {
       clientInfo: {
         name: 'cloudcli',
-        title: 'CloudCLI',
+        title: 'WindCli',
         version: '1.0.0',
       },
       capabilities: {
@@ -187,7 +187,7 @@ export class CodexAppServerClient {
         id: message.id,
         error: {
           code: -32601,
-          message: `CloudCLI does not handle app-server request ${message.method}`,
+          message: `WindCli does not handle app-server request ${message.method}`,
         },
       });
       return;

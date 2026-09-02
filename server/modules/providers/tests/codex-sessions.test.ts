@@ -64,7 +64,7 @@ const writeCodexTranscript = async (
   return filePath;
 };
 
-test('Codex synchronizer preserves the title assigned when CloudCLI creates a session', { concurrency: false }, async () => {
+test('Codex synchronizer preserves the title assigned when WindCli creates a session', { concurrency: false }, async () => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'codex-session-sync-app-'));
   const workspacePath = path.join(tempRoot, 'workspace');
   await mkdir(workspacePath, { recursive: true });

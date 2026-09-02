@@ -1,15 +1,14 @@
 <div align="center">
- <img src="../public/logo.svg" alt="CloudCLI UI" width="64" height="64">
- <h1>Cloud CLI (일명 Claude Code UI)</h1>
+ <img src="../public/logo.svg" alt="WindCli" width="64" height="64">
+ <h1>WindCli</h1>
  <p><a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a>, <a href="https://docs.cursor.com/en/cli/overview">Cursor CLI</a>, <a href="https://developers.openai.com/codex">Codex</a>, 용 데스크톱 및 모바일 UI입니다.<br>로컬 또는 원격에서 실행하여 어디서나 활성 프로젝트와 세션을 확인하세요.</p>
 </div>
 
 <p align="center">
- <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">문서</a> · <a href="https://github.com/CaineWind/wacli/issues">버그 신고</a> · <a href="../CONTRIBUTING.md">기여 안내</a>
+ <a href="https://github.com/CaineWind/wacli/issues">버그 신고</a> · <a href="../CONTRIBUTING.md">기여 안내</a>
 </p>
 
 <p align="center">
- <a href="https://cloudcli.ai"><img src="https://img.shields.io/badge/☁️_CloudCLI_Cloud-Try_Now-0066FF?style=for-the-badge" alt="CloudCLI Cloud"></a>
  <a href="https://discord.gg/buxwujPNRE"><img src="https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord 커뮤니티"></a>
  <br><br>
  <a href="https://trendshift.io/repositories/15586" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15586" alt="siteboon%2Fclaudecodeui | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
@@ -18,6 +17,8 @@
 <div align="right"><i><a href="./README.md">English</a> · <a href="./README.ru.md">Русский</a> · <a href="./README.de.md">Deutsch</a> · <b>한국어</b> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.zh-TW.md">繁體中文</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.tr.md">Türkçe</a></i></div>
 
 ---
+
+> CloudCLI Cloud는 업스트림 프로젝트의 외부 서비스이며 WindCli 프로젝트에서 운영하지 않습니다.
 
 ## 스크린샷
 
@@ -58,7 +59,7 @@
 - **파일 탐색기** - 구문 강조 및 실시간 편집을 갖춘 인터랙티브 파일 트리
 - **Git 탐색기** - 변경 사항 보기, 스테이징 및 커밋. 브랜치 전환 기능 포함
 - **세션 관리** - 대화를 재개하고, 여러 세션을 관리하며 기록을 추적
-- **플러그인 시스템** - 커스텀 탭, 백엔드 서비스, 통합을 추가하여 CloudCLI 확장. [직접 빌드 →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
+- **플러그인 시스템** - 커스텀 탭, 백엔드 서비스, 통합을 추가하여 WindCli 확장. [직접 빌드 →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
 - **TaskMaster AI 통합** *(선택사항)* - AI 중심의 작업 계획, PRD 파싱, 워크플로 자동화를 통한 고급 프로젝트 관리
 - **모델 호환성** - Claude, GPT 모델 계열에서 작동 (`GET /api/providers/:provider/models` API에서 전체 지원 모델 확인)
 
@@ -74,7 +75,7 @@
 
 #### npm
 
-**npx**로 즉시 CloudCLI UI를 실행하세요 (Node.js v22+ 필요):
+**npx**로 즉시 WindCli를 실행하세요 (Node.js v22+ 필요):
 
 ```bash
 npx wind-agent-cli
@@ -89,7 +90,7 @@ cloudcli
 
 `http://localhost:3001`을 열면 기존 세션이 자동으로 발견됩니다.
 
-자세한 구성 옵션, PM2, 원격 서버 설정 등은 **[문서 →](https://cloudcli.ai/docs)**를 참고하세요.
+자세한 구성 옵션, PM2, 원격 서버 설정 등은 **[문서 →](https://github.com/CaineWind/wacli/blob/main/docs/README.md)**를 참고하세요.
 
 #### Docker Sandboxes (실험적)
 
@@ -105,9 +106,9 @@ Claude Code, Codex를 지원합니다. 자세한 내용은 [샌드박스 문서]
 
 ## 어느 옵션이 적합한가요?
 
-CloudCLI UI는 CloudCLI Cloud를 구동하는 오픈 소스 UI 계층입니다. 로컬 머신에서 직접 셀프 호스트하거나, CloudCLI Cloud(완전 관리형 클라우드 환경, 팀 기능, 심화 통합 제공)를 사용할 수 있습니다.
+WindCli는 CloudCLI Cloud를 구동하는 오픈 소스 UI 계층입니다. 로컬 머신에서 직접 셀프 호스트하거나, CloudCLI Cloud(완전 관리형 클라우드 환경, 팀 기능, 심화 통합 제공)를 사용할 수 있습니다.
 
-| | CloudCLI UI (셀프 호스트) | CloudCLI Cloud |
+| | WindCli (셀프 호스트) | CloudCLI Cloud |
 |---|---|---|
 | **적합한 대상** | 로컬 에이전트 세션을 위한 전체 UI가 필요한 개발자 | 어디서든 접근 가능한 클라우드에서 에이전트를 운영하고자 하는 팀 및 개발자 |
 | **접근 방법** | `[yourip]:port`를 통해 브라우저 접속 | 브라우저, IDE, REST API, n8n |
@@ -124,7 +125,7 @@ CloudCLI UI는 CloudCLI Cloud를 구동하는 오픈 소스 UI 계층입니다. 
 | **팀 공유** | 아니오 | 예 |
 | **플랫폼 비용** | 무료, 오픈 소스 | 월 €7부터 |
 
-> 둘 다 자체 AI 구독(Claude, Cursor 등)을 그대로 사용합니다 — CloudCLI는 환경만 제공합니다.
+> 둘 다 자체 AI 구독(Claude, Cursor 등)을 그대로 사용합니다 — WindCli는 환경만 제공합니다.
 
 ---
 
@@ -151,7 +152,7 @@ CloudCLI UI는 CloudCLI Cloud를 구동하는 오픈 소스 UI 계층입니다. 
 
 ## 플러그인
 
-CloudCLI는 커스텀 탭과 선택적 Node.js 백엔드가 포함된 플러그인 시스템을 제공합니다. Settings > Plugins에서 Git 저장소에서 플러그인을 설치하거나 직접 빌드할 수 있습니다.
+WindCli는 커스텀 탭과 선택적 Node.js 백엔드가 포함된 플러그인 시스템을 제공합니다. Settings > Plugins에서 Git 저장소에서 플러그인을 설치하거나 직접 빌드할 수 있습니다.
 
 ### 이용 가능한 플러그인
 
@@ -161,7 +162,7 @@ CloudCLI는 커스텀 탭과 선택적 Node.js 백엔드가 포함된 플러그�
 | **[Web Terminal](https://github.com/cloudcli-ai/cloudcli-plugin-terminal)** | 다중 탭을 지원하는 전체 xterm.js 터미널 |
 | **[Claude Watch](https://github.com/satsuki19980613/cloudcli-claude-watch)** | 장시간 실행 중인 Claude Code 세션의 중단 상태를 감시하고 프로세스 제어를 제공 |
 | **[CloudCLI Scheduler](https://github.com/grostim/cloudcli-cron)** | 워크스페이스 범위 예약 프롬프트를 만들고 Codex, Claude Code 같은 로컬 CLI로 실행 |
-| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | CloudCLI 안에서 Claude Code 세션 인텔리전스와 토큰 소모 가시성을 제공 |
+| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | WindCli 안에서 Claude Code 세션 인텔리전스와 토큰 소모 가시성을 제공 |
 | **[Sessions](https://github.com/strykereye2/cloudcli-plugin-session-manager)** | 활성 Claude Code 세션을 보고, 관리하고, 종료 |
 | **[Token Cost Calculator](https://github.com/NightmareAway/cloudcli-plugin-token-cost-calculator)** | 모델 가격과 토큰 사용량으로 API 비용을 계산하고 모델 가격 프리셋을 지원 |
 | **[Task Queue](https://github.com/TadMSTR/cloudcli-plugin-task-queue)** | 에이전트 작업을 보고, 필터링하고, 실행하는 작업 큐 대시보드 |
@@ -182,10 +183,10 @@ CloudCLI는 커스텀 탭과 선택적 Node.js 백엔드가 포함된 플러그�
 
 Claude Code Remote Control은 이미 로컬 터미널에서 실행 중인 세션으로 메시지를 전송합니다. 이 경우 기계가 켜져 있어야 하고 터미널을 열어 둬야 하며, 네트워크 연결 없이 약 10분 후 타임아웃됩니다.
 
-CloudCLI UI와 CloudCLI Cloud는 Claude Code를 확장하며 별도로 존재하지 않습니다 — MCP 서버, 권한, 설정, 세션은 Claude Code에서 그대로 사용됩니다.
+WindCli와 CloudCLI Cloud는 Claude Code를 확장하며 별도로 존재하지 않습니다 — MCP 서버, 권한, 설정, 세션은 Claude Code에서 그대로 사용됩니다.
 
-- **모든 세션을 다룬다** — CloudCLI UI는 `~/.claude` 폴더에서 모든 세션을 자동 발견합니다. Remote Control은 단일 활성 세션만 노출합니다.
-- **설정은 그대로** — CloudCLI UI에서 변경한 MCP, 도구 권한, 프로젝트 설정은 Claude Code에 즉시 반영됩니다.
+- **모든 세션을 다룬다** — WindCli는 `~/.claude` 폴더에서 모든 세션을 자동 발견합니다. Remote Control은 단일 활성 세션만 노출합니다.
+- **설정은 그대로** — WindCli에서 변경한 MCP, 도구 권한, 프로젝트 설정은 Claude Code에 즉시 반영됩니다.
 - **지원 에이전트가 더 많음** — Claude Code, Cursor CLI, Codex 지원.
 - **전체 UI 제공** — 단일 채팅 창이 아닌 파일 탐색기, Git 통합, MCP 관리 및 셸 터미널 포함.
 - **CloudCLI Cloud는 클라우드에서 실행** — 노트북을 닫아도 에이전트가 실행됩니다. 터미널을 계속 확인할 필요 없음.
@@ -195,12 +196,12 @@ CloudCLI UI와 CloudCLI Cloud는 Claude Code를 확장하며 별도로 존재하
 <details>
 <summary>AI 구독을 별도로 결제해야 하나요?</summary>
 
-네. CloudCLI는 환경만 제공합니다. Claude, Cursor, Codex 구독 비용은 별도로 부과됩니다. CloudCLI Cloud는 관리형 환경을 월 €7부터 제공합니다.
+네. WindCli는 환경만 제공합니다. Claude, Cursor, Codex 구독 비용은 별도로 부과됩니다. CloudCLI Cloud는 관리형 환경을 월 €7부터 제공합니다.
 
 </details>
 
 <details>
-<summary>CloudCLI UI를 휴대폰에서 사용할 수 있나요?</summary>
+<summary>WindCli를 휴대폰에서 사용할 수 있나요?</summary>
 
 네. 셀프 호스트인 경우 기계에서 서버를 실행하고 네트워크의 아무 브라우저에서 `[yourip]:port`를 열면 됩니다. CloudCLI Cloud는 어떤 기기에서도 열 수 있으며, 네이티브 앱도 준비 중입니다.
 
@@ -209,7 +210,7 @@ CloudCLI UI와 CloudCLI Cloud는 Claude Code를 확장하며 별도로 존재하
 <details>
 <summary>UI에서 변경하면 로컬 Claude Code 설정에 영향을 주나요?</summary>
 
-네, 셀프 호스트에서는 그렇습니다. CloudCLI UI는 Claude Code가 사용하는 동일한 `~/.claude` 설정을 읽고 씁니다. UI에서 추가한 MCP 서버가 Claude Code에 즉시 나타납니다.
+네, 셀프 호스트에서는 그렇습니다. WindCli는 Claude Code가 사용하는 동일한 `~/.claude` 설정을 읽고 씁니다. UI에서 추가한 MCP 서버가 Claude Code에 즉시 나타납니다.
 
 </details>
 
@@ -217,7 +218,7 @@ CloudCLI UI와 CloudCLI Cloud는 Claude Code를 확장하며 별도로 존재하
 
 ## 커뮤니티 및 지원
 
-- **[문서](https://cloudcli.ai/docs)** — 설치, 구성, 기능, 문제 해결 안내
+- **[문서](https://github.com/CaineWind/wacli/blob/main/docs/README.md)** — 설치, 구성, 기능, 문제 해결 안내
 - **[Discord](https://discord.gg/buxwujPNRE)** — 도움 및 커뮤니티 참여
 - **[GitHub Issues](https://github.com/CaineWind/wacli/issues)** — 버그 보고 및 기능 요청
 - **[기여 안내](../CONTRIBUTING.md)** — 프로젝트 참여 방법

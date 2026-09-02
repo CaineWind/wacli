@@ -86,7 +86,7 @@
     "openInEditor": "Ouvrir dans l'éditeur"
   },
   "mainContent": {
-    "loading": "Chargement de CloudCLI",
+    "loading": "Chargement de WindCli",
     "settingUpWorkspace": "Préparation de votre espace de travail...",
     "chooseProject": "Choisissez votre projet",
     "selectProjectDescription": "Sélectionnez un projet dans la barre latérale pour commencer à coder avec Claude. Chaque projet contient vos sessions de chat et l'historique des fichiers.",
@@ -247,7 +247,7 @@
     "viewFullRelease": "Voir les notes de version complètes",
     "updateProgress": "Progression de la mise à jour :",
     "manualUpgrade": "Mise à jour manuelle :",
-    "npmUpgradeCommand": "npm install -g @cloudcli-ai/cloudcli@latest",
+    "npmUpgradeCommand": "npm install -g wind-agent-cli@latest",
     "manualUpgradeHint": "Ou cliquez sur « Mettre à jour maintenant » pour lancer la mise à jour automatiquement.",
     "updateCompleted": "Mise à jour effectuée avec succès !",
     "restartServer": "Veuillez redémarrer le serveur pour appliquer les modifications.",

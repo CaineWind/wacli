@@ -1,15 +1,14 @@
 <div align="center">
- <img src="../public/logo.svg" alt="CloudCLI UI" width="64" height="64">
+ <img src="../public/logo.svg" alt="WindCli" width="64" height="64">
  <h1>Cloud CLI（又名 Claude Code UI）</h1>
  <p><a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a>、<a href="https://docs.cursor.com/en/cli/overview">Cursor CLI</a>、<a href="https://developers.openai.com/codex">Codex</a> 的桌面和移动端 UI。可在本地或远程使用，从任何地方查看激活的项目与会话。</p>
 </div>
 
 <p align="center">
- <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">文档</a> · <a href="https://github.com/CaineWind/wacli/issues">Bug 报告</a> · <a href="../CONTRIBUTING.md">贡献指南</a>
+ <a href="https://github.com/CaineWind/wacli/issues">Bug 报告</a> · <a href="../CONTRIBUTING.md">贡献指南</a>
 </p>
 
 <p align="center">
- <a href="https://cloudcli.ai"><img src="https://img.shields.io/badge/☁️_CloudCLI_Cloud-Try_Now-0066FF?style=for-the-badge" alt="CloudCLI Cloud"></a>
  <a href="https://discord.gg/buxwujPNRE"><img src="https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="加入 Discord 社区"></a>
  <br><br>
  <a href="https://trendshift.io/repositories/15586" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15586" alt="siteboon%2Fclaudecodeui | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
@@ -18,6 +17,8 @@
 <div align="right"><i><a href="./README.md">English</a> · <a href="./README.ru.md">Русский</a> · <a href="./README.de.md">Deutsch</a> · <a href="./README.ko.md">한국어</a> · <b>简体中文</b> · <a href="./README.zh-TW.md">繁體中文</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.tr.md">Türkçe</a></i></div>
 
 ---
+
+> CloudCLI Cloud 是上游项目的第三方服务，并非由 WindCli 项目运营。
 
 ## 截图
 
@@ -58,7 +59,7 @@
 - **文件浏览器** - 交互式文件树，支持语法高亮与实时编辑
 - **Git 浏览器** - 查看、暂存并提交更改，还可切换分支
 - **会话管理** - 恢复对话、管理多个会话并跟踪历史记录
-- **插件系统** - 通过自定义选项卡、后端服务与集成扩展 CloudCLI。 [开始构建 →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
+- **插件系统** - 通过自定义选项卡、后端服务与集成扩展 WindCli。 [开始构建 →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
 - **TaskMaster AI 集成** *(可选)* - 结合 AI 任务规划、PRD 分析与工作流自动化，实现高级项目管理
 - **模型兼容性** - 支持 Claude、GPT 模型家族（完整支持列表可通过 `GET /api/providers/:provider/models` 接口获取）
 
@@ -74,7 +75,7 @@
 
 #### npm
 
-启动 CloudCLI UI，只需一行 `npx`（需要 Node.js v22+）：
+启动 WindCli，只需一行 `npx`（需要 Node.js v22+）：
 
 ```bash
 npx wind-agent-cli
@@ -89,7 +90,7 @@ cloudcli
 
 打开 `http://localhost:3001`，系统会自动发现所有现有会话。
 
-更多配置选项、PM2、远程服务器设置等，请参阅 **[文档 →](https://cloudcli.ai/docs)**。
+更多配置选项、PM2、远程服务器设置等，请参阅 **[文档 →](https://github.com/CaineWind/wacli/blob/main/docs/README.md)**。
 
 #### Docker Sandboxes（实验性）
 
@@ -105,9 +106,9 @@ npx wind-agent-cli@latest sandbox ~/my-project
 
 ## 哪个选项更适合你？
 
-CloudCLI UI 是 CloudCLI Cloud 的开源 UI 层。你可以在本地机器上自托管它，也可以使用提供团队功能与深入集成的 CloudCLI Cloud。
+WindCli 是 CloudCLI Cloud 的开源 UI 层。你可以在本地机器上自托管它，也可以使用提供团队功能与深入集成的 CloudCLI Cloud。
 
-| | CloudCLI UI（自托管） | CloudCLI Cloud |
+| | WindCli（自托管） | CloudCLI Cloud |
 |---|---|---|
 | **适合对象** | 需要为本地代理会话提供完整 UI 的开发者 | 需要部署在云端，随时从任何地方访问代理的团队与开发者 |
 | **访问方式** | 通过 `[yourip]:port` 在浏览器中访问 | 浏览器、任意 IDE、REST API、n8n |
@@ -124,7 +125,7 @@ CloudCLI UI 是 CloudCLI Cloud 的开源 UI 层。你可以在本地机器上自
 | **团队共享** | 否 | 是 |
 | **平台费用** | 免费开源 | 起价 €7/月 |
 
-> 两种方式都使用你自己的 AI 订阅（Claude、Cursor 等）— CloudCLI 提供环境，而非 AI。
+> 两种方式都使用你自己的 AI 订阅（Claude、Cursor 等）— WindCli 提供环境，而非 AI。
 
 ---
 
@@ -151,7 +152,7 @@ CloudCLI UI 是 CloudCLI Cloud 的开源 UI 层。你可以在本地机器上自
 
 ## 插件
 
-CloudCLI 配备插件系统，允许你添加带自定义前端 UI 和可选 Node.js 后端的选项卡。在 Settings > Plugins 中直接从 Git 仓库安装插件，或自行开发。
+WindCli 配备插件系统，允许你添加带自定义前端 UI 和可选 Node.js 后端的选项卡。在 Settings > Plugins 中直接从 Git 仓库安装插件，或自行开发。
 
 ### 可用插件
 
@@ -161,7 +162,7 @@ CloudCLI 配备插件系统，允许你添加带自定义前端 UI 和可选 Nod
 | **[Web Terminal](https://github.com/cloudcli-ai/cloudcli-plugin-terminal)** | 支持多标签页的完整 xterm.js 终端 |
 | **[Claude Watch](https://github.com/satsuki19980613/cloudcli-claude-watch)** | 监控长时间运行的 Claude Code 会话是否卡住，并提供进程控制 |
 | **[CloudCLI Scheduler](https://github.com/grostim/cloudcli-cron)** | 创建工作区范围的定时提示词，并通过 Codex、Claude Code 等本地 CLI 执行 |
-| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | 在 CloudCLI 中提供 Claude Code 会话智能分析，包括 token 消耗可视化 |
+| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | 在 WindCli 中提供 Claude Code 会话智能分析，包括 token 消耗可视化 |
 | **[Sessions](https://github.com/strykereye2/cloudcli-plugin-session-manager)** | 查看、管理并终止活动的 Claude Code 会话 |
 | **[Token Cost Calculator](https://github.com/NightmareAway/cloudcli-plugin-token-cost-calculator)** | 根据模型价格和 token 用量计算 API 成本，并支持模型价格预设 |
 | **[Task Queue](https://github.com/TadMSTR/cloudcli-plugin-task-queue)** | 用于查看、筛选和启动代理任务的任务队列仪表板 |
@@ -182,10 +183,10 @@ CloudCLI 配备插件系统，允许你添加带自定义前端 UI 和可选 Nod
 
 Claude Code Remote Control 让你发送消息到本地终端中已经运行的会话。该方式要求你的机器保持开机，终端保持开启，断开网络后约 10 分钟会话会超时。
 
-CloudCLI UI 与 CloudCLI Cloud 是对 Claude Code 的扩展，而非旁观 — MCP 服务器、权限、设置、会话与 Claude Code 完全一致。
+WindCli 与 CloudCLI Cloud 是对 Claude Code 的扩展，而非旁观 — MCP 服务器、权限、设置、会话与 Claude Code 完全一致。
 
-- **覆盖全部会话** — CloudCLI UI 会自动扫描 `~/.claude` 文件夹中的每个会话。Remote Control 只暴露当前活动的会话。
-- **设置统一** — 在 CloudCLI UI 中修改的 MCP、工具权限等设置会立即写入 Claude Code。
+- **覆盖全部会话** — WindCli 会自动扫描 `~/.claude` 文件夹中的每个会话。Remote Control 只暴露当前活动的会话。
+- **设置统一** — 在 WindCli 中修改的 MCP、工具权限等设置会立即写入 Claude Code。
 - **支持更多 Agents** — Claude Code、Cursor CLI、Codex。
 - **完整 UI** — 除了聊天界面，还包括文件浏览器、Git 集成、MCP 管理和 Shell 终端。
 - **CloudCLI Cloud 保持运行于云端** — 关闭本地设备也不会中断代理运行，无需监控终端。
@@ -195,12 +196,12 @@ CloudCLI UI 与 CloudCLI Cloud 是对 Claude Code 的扩展，而非旁观 — M
 <details>
 <summary>需要额外购买 AI 订阅吗？</summary>
 
-需要。CloudCLI 只提供环境。你仍需自行获取 Claude、Cursor 或 Codex 订阅。CloudCLI Cloud 从 €7/月起提供托管环境。
+需要。WindCli 只提供环境。你仍需自行获取 Claude、Cursor 或 Codex 订阅。CloudCLI Cloud 从 €7/月起提供托管环境。
 
 </details>
 
 <details>
-<summary>能在手机上使用 CloudCLI UI 吗？</summary>
+<summary>能在手机上使用 WindCli 吗？</summary>
 
 可以。自托管时，在你的设备上运行服务器，然后在网络中的任意浏览器打开 `[yourip]:port`。CloudCLI Cloud 可从任意设备访问，内置原生应用也在开发中。
 
@@ -209,7 +210,7 @@ CloudCLI UI 与 CloudCLI Cloud 是对 Claude Code 的扩展，而非旁观 — M
 <details>
 <summary>UI 中的更改会影响本地 Claude Code 配置吗？</summary>
 
-会的。自托管模式下，CloudCLI UI 读取并写入 Claude Code 使用的 `~/.claude` 配置。通过 UI 添加的 MCP 服务器会立即在 Claude Code 中可见。
+会的。自托管模式下，WindCli 读取并写入 Claude Code 使用的 `~/.claude` 配置。通过 UI 添加的 MCP 服务器会立即在 Claude Code 中可见。
 
 </details>
 
@@ -217,7 +218,7 @@ CloudCLI UI 与 CloudCLI Cloud 是对 Claude Code 的扩展，而非旁观 — M
 
 ## 社区与支持
 
-- **[文档](https://cloudcli.ai/docs)** — 安装、配置、功能与故障排除指南
+- **[文档](https://github.com/CaineWind/wacli/blob/main/docs/README.md)** — 安装、配置、功能与故障排除指南
 - **[Discord](https://discord.gg/buxwujPNRE)** — 获取帮助并与社区交流
 - **[GitHub Issues](https://github.com/CaineWind/wacli/issues)** — 报告 Bug 与建议功能
 - **[贡献指南](../CONTRIBUTING.md)** — 如何参与项目贡献

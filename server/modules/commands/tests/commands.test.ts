@@ -165,7 +165,7 @@ test('Codex help includes provider-native commands and model aliases use the mod
   const model = await executeCommand('/model', { provider: 'codex' });
   const helpData = help.data as { content: string };
 
-  assert.match(helpData.content, /Codex and CloudCLI Commands/);
+  assert.match(helpData.content, /Codex and WindCli Commands/);
   assert.match(helpData.content, /\/plan/);
   assert.equal(model.action, 'models');
 });
