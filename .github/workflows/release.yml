@@ -1,56 +1,93 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      increment:
-        description: "Version bump: patch, minor, major, or explicit (e.g. 1.27.0)"
-        required: true
-        default: "patch"
-        type: string
-      release_name:
-        description: 'Custom release name (optional, defaults to "CloudCLI UI vX.Y.Z")'
-        required: false
-        type: string
+  push:
+    tags:
+      - "v*.*.*"
 
 permissions:
-  contents: read
+  contents: write
+  id-token: write
 
-# This workflow publishes releases with write credentials, so actions are pinned
-# to immutable commit SHAs. The trailing comments keep the original major tag
-# visible for maintenance context.
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
-  release:
+  npm:
+    name: Publish npm package
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Checkout tagged source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          fetch-depth: 0
-          token: ${{ secrets.RELEASE_PAT }}
+          persist-credentials: false
 
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
+          cache: npm
           registry-url: https://registry.npmjs.org
 
-      - name: git config
-        run: |
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Use an npm version with trusted publishing support
+        run: npm install --global npm@11
 
-      - run: npm ci
-
-      - name: Release
+      - name: Validate release tag
+        shell: bash
         run: |
-          ARGS="--ci --increment=${{ inputs.increment }}"
-          if [ -n "${{ inputs.release_name }}" ]; then
-            ARGS="$ARGS --github.releaseName=\"${{ inputs.release_name }}\""
+          VERSION="$(node -p "require('./package.json').version")"
+          PACKAGE_NAME="$(node -p "require('./package.json').name")"
+          test "${GITHUB_REF_NAME}" = "v${VERSION}"
+          test "$PACKAGE_NAME" = "wind-agent-cli"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Quality gates
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run test:client
+          npm test
+          npm run build
+
+      - name: Pack release artifact
+        id: pack
+        shell: bash
+        run: |
+          TARBALL="$(npm pack --ignore-scripts)"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether this version is already published
+        id: registry
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "wind-agent-cli@${VERSION}" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
           fi
-          npx release-it $ARGS
+
+      - name: Publish to npm with provenance
+        if: steps.registry.outputs.published != 'true'
+        run: npm publish "./${{ steps.pack.outputs.tarball }}" --access public --provenance
+
+      - name: Verify npm release
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          test "$(npm view "wind-agent-cli@${VERSION}" version)" = "$VERSION"
+
+      - name: Create or update GitHub Release
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        shell: bash
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "wacli $GITHUB_REF_NAME"
+          fi
+          gh release upload "$GITHUB_REF_NAME" "$TARBALL" --clobber

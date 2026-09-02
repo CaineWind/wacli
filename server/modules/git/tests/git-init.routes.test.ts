@@ -8,6 +8,50 @@ import express from 'express';
 
 import { createGitRouter } from '@/modules/git/git.routes.js';
 
+test('git status hides every spawned Git console window', async () => {
+  const spawnOptions: Array<{ windowsHide?: boolean }> = [];
+  const spawnProcess = ((_command: string, args: string[], options: { windowsHide?: boolean }) => {
+    spawnOptions.push(options);
+    const child = new EventEmitter() as EventEmitter & { stdout: PassThrough; stderr: PassThrough };
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    process.nextTick(() => {
+      if (args.includes('--is-inside-work-tree')) child.stdout.write('true\n');
+      if (args.includes('--show-toplevel')) child.stdout.write('/workspace/repo\n');
+      if (args.includes('symbolic-ref')) child.stdout.write('main\n');
+      child.stdout.end();
+      child.stderr.end();
+      child.emit('close', 0);
+    });
+    return child;
+  }) as Parameters<typeof createGitRouter>[0]['spawnProcess'];
+  const unexpectedProvider = async (): Promise<never> => { throw new Error('unexpected provider call'); };
+  const router = createGitRouter({
+    fileSystem: { access: async () => undefined } as unknown as Parameters<typeof createGitRouter>[0]['fileSystem'],
+    spawnProcess,
+    resolveProjectPathById: () => '/workspace/repo',
+    queryClaude: unexpectedProvider,
+    queryCursor: unexpectedProvider,
+  });
+  const app = express();
+  app.use('/api/git', router);
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+
+  try {
+    const address = server.address() as AddressInfo;
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/git/status?project=project-1`);
+    const body = await response.json() as { branch: string };
+    assert.equal(response.status, 200);
+    assert.equal(body.branch, 'main');
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+
+  assert.ok(spawnOptions.length > 1, 'status should exercise multiple Git subprocesses');
+  assert.equal(spawnOptions.every((options) => options.windowsHide === true), true);
+});
+
 test('git init does not run when repository validation fails for an execution error', async () => {
   const commands: string[][] = [];
   const spawnProcess = ((_command: string, args: string[]) => {

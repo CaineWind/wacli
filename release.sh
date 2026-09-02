@@ -1,4 +1,9 @@
 #!/bin/bash
-# Load environment variables from .env
-export $(grep -v '^#' .env | grep '^GITHUB_TOKEN=' | xargs)
-exec npx release-it "$@"
+set -euo pipefail
+
+increment="${1:-patch}"
+
+npx release-it --increment="$increment"
+
+echo "Release commit and tag created locally."
+echo "Push them with: git push origin main --follow-tags"

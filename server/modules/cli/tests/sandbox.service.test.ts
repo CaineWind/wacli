@@ -37,6 +37,9 @@ test('creates a sandbox through injected filesystem, subprocess, and clock adapt
   ]]);
   assert.deepEqual(waits, [5_000]);
   assert.ok(commands.some((argumentsList) => argumentsList[0] === 'ports'));
+  assert.ok(commands.some((argumentsList) => argumentsList.includes(
+    'nohup wacli start --port 3001 > /tmp/cloudcli-ui.log 2>&1 & disown',
+  )));
 });
 
 test('does not spawn when the workspace does not exist', async () => {

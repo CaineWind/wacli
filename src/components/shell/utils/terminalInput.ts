@@ -25,10 +25,18 @@ const MAX_HERDR_WHEEL_STEPS_PER_EVENT = 12;
 const HERDR_WHEEL_UP_BUTTON = 64;
 const HERDR_WHEEL_DOWN_BUTTON = 65;
 
+function normalizeHerdrImeWhitespace(data: unknown): string | null {
+  if (typeof data !== 'string' || !/^[ \u00a0\u3000]+$/.test(data)) {
+    return null;
+  }
+
+  return ' '.repeat(data.length);
+}
+
 type InstallTerminalInputSyncOptions = {
   terminal: Pick<
     Terminal,
-    'cols' | 'modes' | 'onBinary' | 'onData' | 'onWriteParsed' | 'rows' | 'write'
+    'cols' | 'input' | 'modes' | 'onBinary' | 'onData' | 'onWriteParsed' | 'rows' | 'write'
   >;
   container: TerminalContainer;
   focusTarget?: EventListenerTarget | null;
@@ -53,6 +61,28 @@ export type HerdrTouchScrollHandler = ((
 
 export function encodeTerminalBinaryInput(data: string): string {
   return btoa(data);
+}
+
+export function encodeHerdrRightClickInput(
+  terminal: Pick<Terminal, 'cols' | 'rows'>,
+  touch?: TouchPoint,
+  rect?: DOMRect,
+): string {
+  const col = touch && rect
+    ? clamp(
+        Math.floor(((touch.clientX - rect.left) / Math.max(1, rect.width)) * terminal.cols) + 1,
+        1,
+        terminal.cols,
+      )
+    : Math.max(1, Math.ceil(terminal.cols / 2));
+  const row = touch && rect
+    ? clamp(
+        Math.floor(((touch.clientY - rect.top) / Math.max(1, rect.height)) * terminal.rows) + 1,
+        1,
+        terminal.rows,
+      )
+    : Math.max(1, Math.ceil(terminal.rows / 2));
+  return `\x1b[<2;${col};${row}M\x1b[<2;${col};${row}m`;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -135,6 +165,54 @@ export function installTerminalInputSync({
   send,
 }: InstallTerminalInputSyncOptions): () => void {
   let hasClaimedHerdrViewport = false;
+  let compositionCommitData: string | null = null;
+  let pendingImeWhitespace: ReturnType<typeof setTimeout> | null = null;
+
+  const clearPendingImeWhitespace = () => {
+    if (pendingImeWhitespace !== null) {
+      clearTimeout(pendingImeWhitespace);
+      pendingImeWhitespace = null;
+    }
+  };
+
+  const resetImeWhitespaceFallback = () => {
+    clearPendingImeWhitespace();
+    compositionCommitData = null;
+  };
+
+  const handleCompositionEnd = (event: Event) => {
+    clearPendingImeWhitespace();
+    compositionCommitData = (event as CompositionEvent).data ?? '';
+  };
+
+  const handleImeTextInput = (event: Event) => {
+    if (compositionCommitData === null) {
+      return;
+    }
+
+    const inputEvent = event as InputEvent;
+    if (inputEvent.inputType && inputEvent.inputType !== 'insertText') {
+      return;
+    }
+
+    const whitespace = normalizeHerdrImeWhitespace(inputEvent.data);
+    if (whitespace === null) {
+      if (inputEvent.data && inputEvent.data !== compositionCommitData) {
+        resetImeWhitespaceFallback();
+      }
+      return;
+    }
+
+    if (pendingImeWhitespace !== null) {
+      return;
+    }
+
+    pendingImeWhitespace = setTimeout(() => {
+      pendingImeWhitespace = null;
+      compositionCommitData = null;
+      terminal.input(whitespace, true);
+    }, 0);
+  };
 
   const ensureHerdrMouseTracking = () => {
     if (shellMode === 'herdr' && terminal.modes.mouseTrackingMode === 'none') {
@@ -180,7 +258,20 @@ export function installTerminalInputSync({
   focusTarget?.addEventListener('blur', releaseHerdrViewportClaim);
   visibilityTarget?.addEventListener('visibilitychange', claimVisibleHerdrViewport);
 
-  const dataSubscription = terminal.onData((data) => send({ type: 'input', data }));
+  if (shellMode === 'herdr') {
+    container.addEventListener('compositionend', handleCompositionEnd, true);
+    container.addEventListener('beforeinput', handleImeTextInput, true);
+    container.addEventListener('input', handleImeTextInput, true);
+  }
+
+  const dataSubscription = terminal.onData((data) => {
+    if (compositionCommitData !== null) {
+      if (normalizeHerdrImeWhitespace(data) !== null || data !== compositionCommitData) {
+        resetImeWhitespaceFallback();
+      }
+    }
+    send({ type: 'input', data });
+  });
   const binarySubscription = terminal.onBinary((data) => {
     send({ type: 'input_binary', data: encodeTerminalBinaryInput(data) });
   });
@@ -195,6 +286,12 @@ export function installTerminalInputSync({
     focusTarget?.removeEventListener('focus', claimHerdrViewport);
     focusTarget?.removeEventListener('blur', releaseHerdrViewportClaim);
     visibilityTarget?.removeEventListener('visibilitychange', claimVisibleHerdrViewport);
+    if (shellMode === 'herdr') {
+      container.removeEventListener('compositionend', handleCompositionEnd, true);
+      container.removeEventListener('beforeinput', handleImeTextInput, true);
+      container.removeEventListener('input', handleImeTextInput, true);
+    }
+    resetImeWhitespaceFallback();
     dataSubscription.dispose();
     binarySubscription.dispose();
     writeParsedSubscription.dispose();

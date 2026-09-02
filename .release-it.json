@@ -6,12 +6,11 @@
     "requireCleanWorkingDir": true
   },
   "npm": {
-    "publish": true,
-    "publishArgs": ["--access public"]
+    "publish": false
   },
   "github": {
-    "release": true,
-    "releaseName": "CloudCLI UI v${version}"
+    "release": false,
+    "releaseName": "wacli v${version}"
   },
   "hooks": {
     "before:init": ["npm run build"]

@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
- <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">ドキュメント</a> · <a href="https://discord.gg/buxwujPNRE">Discord</a> · <a href="https://github.com/siteboon/claudecodeui/issues">バグ報告</a> · <a href="../CONTRIBUTING.md">コントリビュート</a>
+ <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">ドキュメント</a> · <a href="https://github.com/CaineWind/wacli/issues">バグ報告</a> · <a href="../CONTRIBUTING.md">コントリビュート</a>
 </p>
 
 <p align="center">
@@ -77,13 +77,13 @@
 **npx** で今すぐ CloudCLI UI を試せます（**Node.js** v22+ が必要）：
 
 ```bash
-npx @cloudcli-ai/cloudcli
+npx wind-agent-cli
 ```
 
 または、普段使いするなら **グローバル** にインストール：
 
 ```bash
-npm install -g @cloudcli-ai/cloudcli
+npm install -g wind-agent-cli
 cloudcli
 ```
 
@@ -96,7 +96,7 @@ cloudcli
 ハイパーバイザーレベルの分離でエージェントをサンドボックスで実行します。デフォルトでは Claude Code が起動します。[`sbx` CLI](https://docs.docker.com/ai/sandboxes/get-started/) が必要です。
 
 ```
-npx @cloudcli-ai/cloudcli@latest sandbox ~/my-project
+npx wind-agent-cli@latest sandbox ~/my-project
 ```
 
 Claude Code、Codex に対応。詳細は[サンドボックスのドキュメント](../docker/)をご覧ください。
@@ -111,7 +111,7 @@ CloudCLI UI は、CloudCLI Cloud を支えるオープンソースの UI レイ�
 |---|---|---|
 | **対象ユーザー** | 自分のマシン上でローカルの agent セッションに対してフル UI を使いたい開発者 | クラウド上で動く agents をどこからでも利用したいチーム／開発者 |
 | **アクセス方法** | ブラウザ（`[yourip]:port`） | ブラウザ、任意の IDE、REST API、n8n |
-| **セットアップ** | `npx @cloudcli-ai/cloudcli` | セットアップ不要 |
+| **セットアップ** | `npx wind-agent-cli` | セットアップ不要 |
 | **マシンの稼働継続** | はい | いいえ |
 | **モバイルアクセス** | 同一ネットワーク内の任意のブラウザ | 任意のデバイス（ネイティブアプリも準備中） |
 | **利用可能なセッション** | `~/.claude` から全セッションを自動検出 | クラウド環境内の全セッション |
@@ -218,7 +218,7 @@ CloudCLI UI と CloudCLI Cloud は、Claude Code の横に別物として存在�
 
 - **[ドキュメント](https://cloudcli.ai/docs)** — インストール、設定、機能、トラブルシューティング
 - **[Discord](https://discord.gg/buxwujPNRE)** — ヘルプを得たり、ユーザー同士で交流したりできます
-- **[GitHub Issues](https://github.com/siteboon/claudecodeui/issues)** — バグ報告と機能要望
+- **[GitHub Issues](https://github.com/CaineWind/wacli/issues)** — バグ報告と機能要望
 - **[コントリビューションガイド](../CONTRIBUTING.md)** — プロジェクトへの貢献方法
 
 ## ライセンス

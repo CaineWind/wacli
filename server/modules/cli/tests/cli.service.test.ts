@@ -78,6 +78,16 @@ test('passes only sandbox arguments to the injected sandbox service', async () =
   assert.deepEqual(harness.getSandboxArguments(), ['ls']);
 });
 
+test('shows wacli as the installed command', async () => {
+  const harness = createHarness();
+
+  const exitCode = await harness.service.run(['help']);
+
+  assert.equal(exitCode, 0);
+  assert.match(harness.logMessages.join('\n'), /wacli \[command\] \[options\]/);
+  assert.match(harness.logMessages.join('\n'), /\$ wacli status/);
+});
+
 test('returns a failure code for an unknown command without exiting the process', async () => {
   const harness = createHarness();
 

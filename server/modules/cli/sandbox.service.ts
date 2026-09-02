@@ -109,8 +109,8 @@ function showSandboxHelp(output: CliOutput): void {
 ${terminalTextStyles.bright('CloudCLI Sandbox')} — Run CloudCLI inside Docker Sandboxes
 
 Usage:
-  cloudcli sandbox <workspace>            Create and start a sandbox
-  cloudcli sandbox <subcommand> [name]    Manage sandboxes
+  wacli sandbox <workspace>            Create and start a sandbox
+  wacli sandbox <subcommand> [name]    Manage sandboxes
 
 Subcommands:
   ${terminalTextStyles.bright('(default)')}    Create a sandbox and start the web UI
@@ -129,13 +129,13 @@ Options:
       --port <port>         Host port for the web UI (default: 3001)
 
 Examples:
-  $ cloudcli sandbox ~/my-project
-  $ cloudcli sandbox ~/my-project --agent codex --port 8080
-  $ cloudcli sandbox ~/my-project --env SERVER_PORT=8080 --env HOST=0.0.0.0
-  $ cloudcli sandbox ls
-  $ cloudcli sandbox stop my-project
-  $ cloudcli sandbox start my-project
-  $ cloudcli sandbox rm my-project
+  $ wacli sandbox ~/my-project
+  $ wacli sandbox ~/my-project --agent codex --port 8080
+  $ wacli sandbox ~/my-project --env SERVER_PORT=8080 --env HOST=0.0.0.0
+  $ wacli sandbox ls
+  $ wacli sandbox stop my-project
+  $ wacli sandbox start my-project
+  $ wacli sandbox rm my-project
 
 Prerequisites:
   1. Install sbx CLI: https://docs.docker.com/ai/sandboxes/get-started/
@@ -160,7 +160,7 @@ function requireSandboxName(options: SandboxOptions, output: CliOutput): string 
     return options.name;
   }
 
-  output.error(`\n${terminalTextStyles.error('❌')} Sandbox name required: cloudcli sandbox ${options.subcommand} <name>\n`);
+  output.error(`\n${terminalTextStyles.error('❌')} Sandbox name required: wacli sandbox ${options.subcommand} <name>\n`);
   return null;
 }
 
@@ -285,7 +285,7 @@ export function createSandboxCommandService(
             sandboxName,
             'bash',
             '-c',
-            'nohup cloudcli start --port 3001 > /tmp/cloudcli-ui.log 2>&1 & disown',
+            'nohup wacli start --port 3001 > /tmp/cloudcli-ui.log 2>&1 & disown',
           ]);
           if (!publishSandboxPort(options, dependencies)) {
             return 1;
@@ -298,9 +298,9 @@ export function createSandboxCommandService(
         case 'create': {
           if (!options.workspace) {
             dependencies.output.error(
-              `\n${terminalTextStyles.error('❌')} Workspace path required: cloudcli sandbox <path>\n`,
+              `\n${terminalTextStyles.error('❌')} Workspace path required: wacli sandbox <path>\n`,
             );
-            dependencies.output.log(`   Example: ${terminalTextStyles.bright('cloudcli sandbox ~/my-project')}\n`);
+            dependencies.output.log(`   Example: ${terminalTextStyles.bright('wacli sandbox ~/my-project')}\n`);
             return 1;
           }
 
@@ -387,7 +387,7 @@ export function createSandboxCommandService(
             sandboxName,
             'bash',
             '-c',
-            'nohup cloudcli start --port 3001 > /tmp/cloudcli-ui.log 2>&1 & disown',
+            'nohup wacli start --port 3001 > /tmp/cloudcli-ui.log 2>&1 & disown',
           ]);
           if (!publishSandboxPort(options, dependencies)) {
             return 1;
@@ -400,7 +400,7 @@ export function createSandboxCommandService(
           dependencies.output.log(`  ${terminalTextStyles.dim('$')} sbx stop ${sandboxName}`);
           dependencies.output.log(`  ${terminalTextStyles.dim('$')} sbx start ${sandboxName}`);
           dependencies.output.log(`  ${terminalTextStyles.dim('$')} sbx rm ${sandboxName}`);
-          dependencies.output.log(`\n${terminalTextStyles.dim('  Or install globally:')} npm install -g @cloudcli-ai/cloudcli\n`);
+          dependencies.output.log(`\n${terminalTextStyles.dim('  Or install globally:')} npm install -g wind-agent-cli\n`);
           return 0;
         }
 

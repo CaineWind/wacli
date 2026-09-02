@@ -1,12 +1,15 @@
 {
-  "name": "@cloudcli-ai/cloudcli",
+  "name": "wind-agent-cli",
   "version": "1.37.2",
   "productName": "CloudCLI",
   "description": "A web-based UI for Claude Code CLI",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "main": "dist-server/server/index.js",
   "bin": {
-    "cloudcli": "dist-server/server/modules/cli/cli.js"
+    "wacli": "dist-server/server/modules/cli/cli.js"
   },
   "files": [
     "electron/",
@@ -18,13 +21,16 @@
     "scripts/",
     "README.md"
   ],
-  "homepage": "https://cloudcli.ai",
+  "homepage": "https://github.com/CaineWind/wacli#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/siteboon/claudecodeui.git"
+    "url": "git+https://github.com/CaineWind/wacli.git"
   },
   "bugs": {
-    "url": "https://github.com/siteboon/claudecodeui/issues"
+    "url": "https://github.com/CaineWind/wacli/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "dev": "concurrently --kill-others \"npm run server:dev\" \"npm run client\"",
@@ -55,7 +61,7 @@
     "start": "npm run build && npm run server",
     "release": "./release.sh",
     "prepublishOnly": "npm run build",
-    "postinstall": "node scripts/fix-node-pty.js",
+    "postinstall": "node scripts/fix-node-pty.js && node scripts/fix-codex-sdk-windows-hide.js",
     "prepare": "husky",
     "update:platform": "./update-platform.sh"
   },

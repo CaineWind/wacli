@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
- <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">Документация</a> · <a href="https://discord.gg/buxwujPNRE">Discord</a> · <a href="https://github.com/siteboon/claudecodeui/issues">Сообщить об ошибке</a> · <a href="../CONTRIBUTING.md">Участие в разработке</a>
+ <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">Документация</a> · <a href="https://github.com/CaineWind/wacli/issues">Сообщить об ошибке</a> · <a href="../CONTRIBUTING.md">Участие в разработке</a>
 </p>
 
 <p align="center">
@@ -81,13 +81,13 @@
 Попробовать CloudCLI UI можно сразу через **npx** (требуется **Node.js** v22+):
 
 ```bash
-npx @cloudcli-ai/cloudcli
+npx wind-agent-cli
 ```
 
 Или установить **глобально** для регулярного использования:
 
 ```bash
-npm install -g @cloudcli-ai/cloudcli
+npm install -g wind-agent-cli
 cloudcli
 ```
 
@@ -100,7 +100,7 @@ cloudcli
 Запускайте агентов в изолированных песочницах с гипервизорной изоляцией. По умолчанию запускается Claude Code. Требуется [`sbx` CLI](https://docs.docker.com/ai/sandboxes/get-started/).
 
 ```
-npx @cloudcli-ai/cloudcli@latest sandbox ~/my-project
+npx wind-agent-cli@latest sandbox ~/my-project
 ```
 
 Поддерживаются Claude Code и Codex. Подробнее в [документации sandbox](../docker/).
@@ -115,7 +115,7 @@ CloudCLI UI — это open source UI-слой, на котором постро
 |---|---|---|
 | **Лучше всего подходит для** | Разработчиков, которым нужен полноценный UI для локальных агентских сессий на своей машине | Команд и разработчиков, которым нужны агенты в облаке с доступом откуда угодно |
 | **Как вы получаете доступ** | Браузер через `[yourip]:port` | Браузер, любая IDE, REST API, n8n |
-| **Настройка** | `npx @cloudcli-ai/cloudcli` | Настройка не требуется |
+| **Настройка** | `npx wind-agent-cli` | Настройка не требуется |
 | **Машина должна оставаться включённой** | Да | Нет |
 | **Доступ с мобильных устройств** | Любой браузер в вашей сети | Любое устройство, нативное приложение в разработке |
 | **Доступные сессии** | Все сессии автоматически обнаруживаются из `~/.claude` | Все сессии внутри вашей облачной среды |
@@ -226,7 +226,7 @@ CloudCLI UI и CloudCLI Cloud расширяют Claude Code, а не работ
 
 - **[Документация](https://cloudcli.ai/docs)** — установка, настройка, возможности и устранение неполадок
 - **[Discord](https://discord.gg/buxwujPNRE)** — помощь и общение с другими пользователями
-- **[GitHub Issues](https://github.com/siteboon/claudecodeui/issues)** — сообщения об ошибках и запросы новых функций
+- **[GitHub Issues](https://github.com/CaineWind/wacli/issues)** — сообщения об ошибках и запросы новых функций
 - **[Руководство для контрибьюторов](../CONTRIBUTING.md)** — как участвовать в развитии проекта
 
 ## Лицензия

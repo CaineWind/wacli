@@ -40,6 +40,7 @@ export type MobileTerminalSelectionManager = {
 };
 
 const LONG_PRESS_MS = 600;
+const TWO_FINGER_TAP_MS = 350;
 const MOVE_THRESHOLD_PX = 8;
 const HANDLE_SIZE_PX = 22;
 const FINGER_OFFSET_PX = 40;
@@ -61,13 +62,26 @@ type ContextMenuItem = {
   action: () => void;
 };
 
+type TwoFingerTapCandidate = {
+  center: TouchCoords;
+  distance: number;
+  moved: boolean;
+  timestamp: number;
+};
+
 export type MobileTerminalSelectionOptions = {
   minFontSize?: number;
   maxFontSize?: number;
   onFontSizeChange?: (fontSize: number) => void;
+  onTwoFingerTap?: (touch: TouchCoords) => void;
+  onPaste?: () => void | Promise<void>;
   onTouchScrollReset?: () => void;
   onTouchScroll?: (deltaY: number, touch: TouchCoords) => boolean;
 };
+
+export function getMobileTerminalContextMenuLabels(): string[] {
+  return ['Paste', 'Copy', 'Select All'];
+}
 
 function isTouchSelectionEnvironment(): boolean {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
@@ -87,6 +101,14 @@ function clamp(value: number, min: number, max: number): number {
 
 function getDistance(start: TouchCoords, end: TouchCoords): number {
   return Math.hypot(end.clientX - start.clientX, end.clientY - start.clientY);
+}
+
+export function isMobileTerminalTwoFingerTap(
+  startTimestamp: number,
+  currentTimestamp: number,
+  moved: boolean,
+): boolean {
+  return !moved && currentTimestamp - startTimestamp <= TWO_FINGER_TAP_MS;
 }
 
 export type HerdrTerminalFocusScheduler = {
@@ -138,10 +160,14 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   private readonly minFontSize: number;
   private readonly maxFontSize: number;
   private readonly onFontSizeChange: (fontSize: number) => void;
+  private readonly onTwoFingerTap: ((touch: TouchCoords) => void) | null;
+  private readonly onPaste: () => void | Promise<void>;
   private readonly onTouchScrollReset: () => void;
   private readonly onTouchScroll: ((deltaY: number, touch: TouchCoords) => boolean) | null;
   private isPinching = false;
+  private isFinishingPinch = false;
   private pinchStartDistance = 0;
+  private twoFingerTapCandidate: TwoFingerTapCandidate | null = null;
   private initialFontSize = 0;
   private lastZoomTime = 0;
 
@@ -177,6 +203,8 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       });
     this.onTouchScroll = options.onTouchScroll ?? null;
     this.onTouchScrollReset = options.onTouchScrollReset ?? (() => undefined);
+    this.onTwoFingerTap = options.onTwoFingerTap ?? null;
+    this.onPaste = options.onPaste ?? (() => undefined);
 
     if (window.getComputedStyle(terminalContent).position === 'static') {
       terminalContent.style.position = 'relative';
@@ -241,9 +269,11 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     menu.style.whiteSpace = 'nowrap';
     menu.style.userSelect = 'none';
 
+    const [pasteLabel, copyLabel, selectAllLabel] = getMobileTerminalContextMenuLabels();
     const items: ContextMenuItem[] = [
-      { label: 'Copy', action: () => this.copySelection() },
-      { label: 'Select All', action: () => this.selectAllText() },
+      { label: pasteLabel, action: () => void this.pasteFromClipboard() },
+      { label: copyLabel, action: () => this.copySelection() },
+      { label: selectAllLabel, action: () => this.selectAllText() },
     ];
 
     for (const item of items) {
@@ -387,6 +417,11 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       return;
     }
 
+    if (this.isFinishingPinch) {
+      event.preventDefault();
+      return;
+    }
+
     if (event.touches.length === 2 && this.isPinching) {
       event.preventDefault();
       if (this.onTouchScroll) {
@@ -449,11 +484,32 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       return;
     }
 
+    if (this.isFinishingPinch) {
+      event.preventDefault();
+      this.isFinishingPinch = event.touches.length > 0;
+      return;
+    }
+
     if (this.onTouchScroll) {
       event.stopPropagation();
     }
     if (this.isPinching) {
+      const candidate = this.twoFingerTapCandidate;
+      const isTwoFingerTap = Boolean(
+        candidate
+        && isMobileTerminalTwoFingerTap(
+          candidate.timestamp,
+          performance.now(),
+          candidate.moved,
+        ),
+      );
       this.endPinchZoom();
+      this.isFinishingPinch = event.touches.length > 0;
+      if (isTwoFingerTap && candidate && this.onTwoFingerTap) {
+        event.preventDefault();
+        this.blurTerminalInput();
+        this.onTwoFingerTap(candidate.center);
+      }
       return;
     }
 
@@ -498,6 +554,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     if (this.isPinching) {
       this.endPinchZoom();
     }
+    this.isFinishingPinch = false;
 
     this.clearTapHoldTimeout();
     this.touchStart = null;
@@ -762,6 +819,12 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     this.clearSelection();
   }
 
+  private async pasteFromClipboard(): Promise<void> {
+    await this.onPaste();
+    this.clearSelection();
+    this.terminal.focus();
+  }
+
   private selectAllText(): void {
     this.terminal.selectAll();
     this.selectionStart = null;
@@ -783,6 +846,8 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
 
     this.cancelPendingTerminalFocus();
     this.clearTapHoldTimeout();
+    this.touchStart = null;
+    this.pendingClearTouch = null;
     if (this.isSelecting) {
       this.clearSelection();
     }
@@ -790,6 +855,12 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     this.isPinching = true;
     this.initialFontSize = this.terminal.options.fontSize ?? DEFAULT_MIN_FONT_SIZE;
     this.pinchStartDistance = this.getTouchDistance(event.touches[0], event.touches[1]);
+    this.twoFingerTapCandidate = {
+      center: this.getTouchCenter(event.touches[0], event.touches[1]),
+      distance: this.pinchStartDistance,
+      moved: false,
+      timestamp: performance.now(),
+    };
     this.lastZoomTime = 0;
   }
 
@@ -798,13 +869,21 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       return;
     }
 
+    const currentCenter = this.getTouchCenter(event.touches[0], event.touches[1]);
+    const currentDistance = this.getTouchDistance(event.touches[0], event.touches[1]);
+    if (this.twoFingerTapCandidate) {
+      this.twoFingerTapCandidate.moved =
+        this.twoFingerTapCandidate.moved
+        || getDistance(this.twoFingerTapCandidate.center, currentCenter) > MOVE_THRESHOLD_PX
+        || Math.abs(this.twoFingerTapCandidate.distance - currentDistance) > MOVE_THRESHOLD_PX;
+    }
+
     const now = Date.now();
     if (now - this.lastZoomTime < ZOOM_THROTTLE_MS) {
       return;
     }
     this.lastZoomTime = now;
 
-    const currentDistance = this.getTouchDistance(event.touches[0], event.touches[1]);
     const scale = currentDistance / this.pinchStartDistance;
     const nextFontSize = clamp(
       Math.round(this.initialFontSize * scale),
@@ -820,11 +899,19 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   private endPinchZoom(): void {
     this.isPinching = false;
     this.pinchStartDistance = 0;
+    this.twoFingerTapCandidate = null;
     this.initialFontSize = 0;
   }
 
   private getTouchDistance(first: Touch, second: Touch): number {
     return Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY);
+  }
+
+  private getTouchCenter(first: Touch, second: Touch): TouchCoords {
+    return {
+      clientX: (first.clientX + second.clientX) / 2,
+      clientY: (first.clientY + second.clientY) / 2,
+    };
   }
 
   private getViewportElement(): HTMLElement | null {
@@ -1096,6 +1183,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
         && !this.isSelecting
         && !this.isHandleDragging
         && !this.isPinching
+        && !this.isFinishingPinch
         && this.pendingClearTouch === null
       ),
     );

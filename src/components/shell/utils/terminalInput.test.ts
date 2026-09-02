@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   createHerdrTouchScrollHandler,
   encodeTerminalBinaryInput,
+  encodeHerdrRightClickInput,
   installTerminalInputSync,
 } from './terminalInput';
 
@@ -13,12 +14,45 @@ test('terminal binary input preserves non-UTF-8 mouse report bytes', () => {
   assert.equal(encodeTerminalBinaryInput(report), 'G1tNIP8h');
 });
 
+test('Herdr mobile control panel action emits an SGR right click at the tapped cell', () => {
+  assert.equal(
+    encodeHerdrRightClickInput(
+      { cols: 80, rows: 24 },
+      { clientX: 100, clientY: 60 },
+      {
+        bottom: 240,
+        height: 240,
+        left: 0,
+        right: 400,
+        top: 0,
+        width: 400,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      } as DOMRect,
+    ),
+    '\x1b[<2;21;7M\x1b[<2;21;7m',
+  );
+});
+
 function createTouchEvent(
   type: string,
   touches: Array<{ clientX: number; clientY: number }>,
 ): Event {
   const event = new Event(type, { bubbles: true, cancelable: true });
   Object.defineProperty(event, 'touches', { value: touches });
+  return event;
+}
+
+function createTextInputEvent(
+  type: 'beforeinput' | 'compositionend' | 'input',
+  data: string,
+): Event {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperties(event, {
+    data: { value: data },
+    inputType: { value: type === 'compositionend' ? undefined : 'insertText' },
+  });
   return event;
 }
 
@@ -152,6 +186,67 @@ test('Herdr terminal input sync forwards events, restores mouse tracking, and di
   focusTarget.dispatchEvent(new Event('blur'));
   focusTarget.dispatchEvent(new Event('focus'));
   assert.equal(messages.length, 5);
+});
+
+test('Herdr restores a mobile IME space after Chinese composition without duplicating xterm input', async () => {
+  const listeners = {
+    data: null as ((data: string) => void) | null,
+  };
+  const terminal = {
+    cols: 80,
+    modes: { mouseTrackingMode: 'drag' },
+    rows: 24,
+    input(data: string) {
+      listeners.data?.(data);
+    },
+    onBinary: () => ({ dispose: () => undefined }),
+    onData(listener: (data: string) => void) {
+      listeners.data = listener;
+      return { dispose: () => { listeners.data = null; } };
+    },
+    onWriteParsed: () => ({ dispose: () => undefined }),
+    write: () => undefined,
+  };
+  const container = new EventTarget();
+  const messages: Array<Record<string, unknown>> = [];
+  const dispose = installTerminalInputSync({
+    terminal: terminal as never,
+    container: container as never,
+    focusTarget: null,
+    shellMode: 'herdr',
+    send: (message) => messages.push(message),
+    visibilityTarget: null,
+  });
+
+  container.dispatchEvent(createTextInputEvent('compositionend', '中文'));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(messages, []);
+
+  container.dispatchEvent(createTextInputEvent('beforeinput', ' '));
+  container.dispatchEvent(createTextInputEvent('input', ' '));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(messages, [{ type: 'input', data: ' ' }]);
+
+  messages.length = 0;
+  container.dispatchEvent(createTextInputEvent('compositionend', '参数'));
+  container.dispatchEvent(createTextInputEvent('input', '\u3000'));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(messages, [{ type: 'input', data: ' ' }]);
+
+  messages.length = 0;
+  container.dispatchEvent(createTextInputEvent('compositionend', '命令'));
+  container.dispatchEvent(createTextInputEvent('beforeinput', ' '));
+  listeners.data?.(' ');
+  container.dispatchEvent(createTextInputEvent('input', ' '));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(messages, [{ type: 'input', data: ' ' }]);
+
+  messages.length = 0;
+  dispose();
+  container.dispatchEvent(createTextInputEvent('compositionend', '销毁'));
+  container.dispatchEvent(createTextInputEvent('input', ' '));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(messages, []);
 });
 
 test('default shell input sync leaves browser context menus and mouse tracking unchanged', () => {

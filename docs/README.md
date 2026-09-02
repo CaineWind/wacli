@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
- <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">Documentation</a> · <a href="https://discord.gg/buxwujPNRE">Discord</a> · <a href="https://github.com/siteboon/claudecodeui/issues">Bug Reports</a> · <a href="../CONTRIBUTING.md">Contributing</a>
+ <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">Documentation</a> · <a href="https://github.com/CaineWind/wacli/issues">Bug Reports</a> · <a href="../CONTRIBUTING.md">Contributing</a>
 </p>
 
 <p align="center">
@@ -81,14 +81,14 @@ The fastest way to get started — no local setup required. Get a fully managed,
 Try CloudCLI UI instantly with **npx** (requires **Node.js** v22+):
 
 ```
-npx @cloudcli-ai/cloudcli
+npx wind-agent-cli
 ```
 
 Or install **globally** for regular use:
 
 ```
-npm install -g @cloudcli-ai/cloudcli
-cloudcli
+npm install -g wind-agent-cli
+wacli
 ```
 
 Open `http://localhost:3001` — all your existing sessions are discovered automatically.
@@ -100,7 +100,7 @@ Visit the **[documentation →](https://cloudcli.ai/docs)** for full configurati
 Run agents in isolated sandboxes with hypervisor-level isolation. Starts Claude Code by default. Requires the [`sbx` CLI](https://docs.docker.com/ai/sandboxes/get-started/).
 
 ```
-npx @cloudcli-ai/cloudcli@latest sandbox ~/my-project
+npx wind-agent-cli@latest sandbox ~/my-project
 ```
 
 Supports Claude Code and Codex. See the [sandbox docs](../docker/) for setup and advanced options.
@@ -111,7 +111,7 @@ CloudCLI Desktop is an optional native companion for CloudCLI Cloud and Local Cl
 
 - **[macOS](https://cloudcli.ai/download/macos)**
 - **[Windows](https://cloudcli.ai/download/windows)**
-- **[Download page](https://cloudcli.ai/download)** · **[GitHub Releases and checksums](https://github.com/siteboon/claudecodeui/releases)**
+- **[Download page](https://cloudcli.ai/download)** · **[GitHub Releases and checksums](https://github.com/CaineWind/wacli/releases)**
 
 Use it to open CloudCLI Cloud environments, switch between local and remote workspaces, and copy mobile/browser URLs. To work locally, choose **Local CloudCLI** in the desktop app; it will use your running local server or start one for you.
 
@@ -126,7 +126,7 @@ CloudCLI UI is the open source UI layer that powers CloudCLI Cloud. You can self
 |---|---|---|---|
 | **Best for** | Local agent sessions on your own machine | Isolated agents with web/mobile IDE | Teams who want agents in the cloud |
 | **How you access it** | Browser via `[yourip]:port` | Browser via `localhost:port` | Browser, any IDE, REST API, n8n |
-| **Setup** | `npx @cloudcli-ai/cloudcli` | `npx @cloudcli-ai/cloudcli@latest sandbox ~/project` | No setup required |
+| **Setup** | `npx wind-agent-cli` | `npx wind-agent-cli@latest sandbox ~/project` | No setup required |
 | **Isolation** | Runs on your host | Hypervisor-level sandbox (microVM) | Full cloud isolation |
 | **Machine needs to stay on** | Yes | Yes | No |
 | **Mobile access** | Any browser on your network | Any browser on your network | Any device |
@@ -236,7 +236,7 @@ Yes, for self-hosted. CloudCLI UI reads from and writes to the same `~/.claude` 
 
 - **[Documentation](https://cloudcli.ai/docs)** — installation, configuration, features, and troubleshooting
 - **[Discord](https://discord.gg/buxwujPNRE)** — get help and connect with other users
-- **[GitHub Issues](https://github.com/siteboon/claudecodeui/issues)** — bug reports and feature requests
+- **[GitHub Issues](https://github.com/CaineWind/wacli/issues)** — bug reports and feature requests
 - **[Contributing Guide](../CONTRIBUTING.md)** — how to contribute to the project
 
 ## License

@@ -22,6 +22,7 @@ import {
 import { sendSocketMessage } from '../utils/socket';
 import {
   createHerdrTouchScrollHandler,
+  encodeHerdrRightClickInput,
   installTerminalInputSync,
 } from '../utils/terminalInput';
 import { ensureXtermFocusStyles } from '../utils/terminalStyles';
@@ -180,6 +181,35 @@ export function useShellTerminal({
       nextTerminal,
       terminalContainer,
       {
+        onTwoFingerTap: shellMode === 'herdr'
+          ? (touch) => {
+              sendSocketMessage(wsRef.current, {
+                type: 'input',
+                data: encodeHerdrRightClickInput(
+                  nextTerminal,
+                  touch,
+                  terminalContainer.getBoundingClientRect(),
+                ),
+              });
+            }
+          : undefined,
+        onPaste: async () => {
+          if (typeof navigator === 'undefined' || !navigator.clipboard?.readText) {
+            return;
+          }
+
+          try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+              sendSocketMessage(wsRef.current, {
+                type: 'input',
+                data: text,
+              });
+            }
+          } catch {
+            // Clipboard permissions vary across mobile browsers.
+          }
+        },
         onTouchScroll: handleHerdrTouchScroll,
         onTouchScrollReset: handleHerdrTouchScroll?.reset,
         onFontSizeChange: (fontSize) => {

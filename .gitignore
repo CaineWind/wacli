@@ -103,6 +103,7 @@ temp/
 
 # AI specific
 .claude/
+.codegraph/
 .cursor/
 .roo/
 .taskmaster/
