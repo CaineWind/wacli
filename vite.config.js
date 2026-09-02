@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 import { getConnectableHost, normalizeLoopbackHost } from './shared/networkHosts.js'
 
 const packageGroups = [
@@ -87,7 +88,77 @@ export default defineConfig(({ mode }) => {
   const serverPort = env.SERVER_PORT || env.PORT || 3001
 
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: 'prompt',
+        includeAssets: ['favicon.svg', 'favicon.png', 'logo-128.png', 'logo-256.png'],
+        manifest: {
+          id: '.',
+          name: 'WindCli',
+          short_name: 'WindCli',
+          description: 'A local-first web interface for AI coding agents.',
+          start_url: '.',
+          scope: '.',
+          display: 'standalone',
+          display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],
+          background_color: '#111111',
+          theme_color: '#111111',
+          orientation: 'any',
+          categories: ['developer', 'productivity', 'utilities'],
+          icons: [
+            { src: 'icons/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: 'icons/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: 'icons/icon-maskable-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+            { src: 'icons/icon-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          ],
+          screenshots: [
+            {
+              src: 'screenshots/setup-screen.png',
+              sizes: '4096x1593',
+              type: 'image/png',
+              form_factor: 'wide',
+              label: 'WindCli desktop setup',
+            },
+            {
+              src: 'screenshots/setup-screen-mobile.png',
+              sizes: '390x844',
+              type: 'image/png',
+              form_factor: 'narrow',
+              label: 'WindCli mobile setup',
+            },
+          ],
+        },
+        workbox: {
+          clientsClaim: true,
+          cleanupOutdatedCaches: true,
+          globIgnores: ['**/screenshots/**', 'api-docs.html', 'clear-cache.html'],
+          importScripts: ['push-sw.js'],
+          navigateFallback: 'index.html',
+          navigateFallbackDenylist: [/^\/(?:api|ws|shell|plugin-ws)(?:\/|$)/],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'windcli-google-fonts-stylesheets',
+                cacheableResponse: { statuses: [0, 200] },
+                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'windcli-google-fonts-webfonts',
+                cacheableResponse: { statuses: [0, 200] },
+                expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              },
+            },
+          ],
+        },
+      }),
+    ],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))

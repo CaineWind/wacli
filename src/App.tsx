@@ -7,6 +7,7 @@ import { TasksSettingsProvider } from './contexts/TasksSettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { PluginsProvider } from './contexts/PluginsContext';
 import AppContent from './components/app/AppContent';
+import PwaLifecycle from './components/app/PwaLifecycle';
 import i18n from './i18n/config.js';
 
 const DEPLOYMENT_ASSET_DIRECTORIES = new Set(['assets', 'static', 'icons', 'images']);
@@ -65,7 +66,9 @@ function detectRouterBasename() {
         const match = normalizedPathname.match(/^(.*)\/assets\//);
         normalized = match?.[1] ? match[1].replace(/\/+$/, '') : '';
       } else {
-        const manifestMatch = normalizedPathname.match(/^(.*)\/(?:manifest\.json|site\.webmanifest)$/);
+        const manifestMatch = normalizedPathname.match(
+          /^(.*)\/(?:manifest\.json|manifest\.webmanifest|site\.webmanifest)$/,
+        );
         const iconMatch = normalizedPathname.match(
           /^(.*)\/(?:favicon(?:\.[^/]+)?|apple-touch-icon(?:-[^/]+)?(?:\.[^/]+)?|mask-icon(?:\.[^/]+)?|[^/]*icon[^/]*)$/
         );
@@ -105,6 +108,7 @@ export default function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider>
+        <PwaLifecycle />
         <AuthProvider>
           <ProtectedRoute>
             <WebSocketProvider>
