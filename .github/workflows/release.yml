@@ -79,7 +79,17 @@ jobs:
         shell: bash
         run: |
           VERSION="$(node -p "require('./package.json').version")"
-          test "$(npm view "wind-agent-cli@${VERSION}" version)" = "$VERSION"
+          for attempt in {1..12}; do
+            PUBLISHED_VERSION="$(npm view "wind-agent-cli@${VERSION}" version --prefer-online 2>/dev/null || true)"
+            if [ "$PUBLISHED_VERSION" = "$VERSION" ]; then
+              exit 0
+            fi
+            echo "Waiting for npm registry propagation (attempt ${attempt}/12)..."
+            sleep 10
+          done
+
+          echo "wind-agent-cli@${VERSION} was not visible in the npm registry after 120 seconds."
+          exit 1
 
       - name: Create or update GitHub Release
         env:
