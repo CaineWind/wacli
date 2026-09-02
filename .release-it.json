@@ -19,7 +19,22 @@
     "@release-it/conventional-changelog": {
       "infile": "CHANGELOG.md",
       "header": "# Changelog\n\nAll notable changes to WindCli will be documented in this file.\n",
-      "preset": "conventionalcommits"
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          { "type": "feat", "section": "New Features" },
+          { "type": "feature", "section": "New Features" },
+          { "type": "fix", "section": "Bug Fixes" },
+          { "type": "perf", "section": "Performance" },
+          { "type": "refactor", "section": "Refactoring" },
+          { "type": "docs", "section": "Documentation" },
+          { "type": "style", "section": "Styling" },
+          { "type": "chore", "section": "Maintenance" },
+          { "type": "ci", "section": "CI/CD" },
+          { "type": "test", "section": "Tests" },
+          { "type": "build", "section": "Build" }
+        ]
+      }
     }
   }
 }
