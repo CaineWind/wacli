@@ -1,7 +1,7 @@
 {
-  "name": "CloudCLI UI",
-  "short_name": "CloudCLI UI",
-  "description": "CloudCLI UI web application",
+  "name": "WindCli",
+  "short_name": "WindCli",
+  "description": "WindCli web application",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
