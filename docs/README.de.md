@@ -1,15 +1,14 @@
 <div align="center">
- <img src="../public/logo.svg" alt="CloudCLI UI" width="64" height="64">
- <h1>Cloud CLI (auch bekannt als Claude Code UI)</h1>
+ <img src="../public/logo.svg" alt="WindCli" width="64" height="64">
+ <h1>WindCli</h1>
  <p>Eine Desktop- und Mobile-Oberfläche für <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a>, <a href="https://docs.cursor.com/en/cli/overview">Cursor CLI</a> und <a href="https://developers.openai.com/codex">Codex</a>.<br>Lokal oder remote nutzbar – verwalte deine aktiven Projekte und Sitzungen von überall.</p>
 </div>
 
 <p align="center">
- <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">Dokumentation</a> · <a href="https://github.com/CaineWind/wacli/issues">Fehler melden</a> · <a href="../CONTRIBUTING.md">Mitwirken</a>
+ <a href="https://github.com/CaineWind/wacli/issues">Fehler melden</a> · <a href="../CONTRIBUTING.md">Mitwirken</a>
 </p>
 
 <p align="center">
- <a href="https://cloudcli.ai"><img src="https://img.shields.io/badge/☁️_CloudCLI_Cloud-Try_Now-0066FF?style=for-the-badge" alt="CloudCLI Cloud"></a>
  <a href="https://discord.gg/buxwujPNRE"><img src="https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join Community"></a>
  <br><br>
  <a href="https://trendshift.io/repositories/15586" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15586" alt="siteboon%2Fclaudecodeui | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
@@ -18,6 +17,8 @@
 <div align="right"><i><a href="./README.md">English</a> · <a href="./README.ru.md">Русский</a> · <b>Deutsch</b> · <a href="./README.ko.md">한국어</a> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.zh-TW.md">繁體中文</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.tr.md">Türkçe</a></i></div>
 
 ---
+
+> CloudCLI Cloud ist ein externer Dienst des Upstream-Projekts und wird nicht vom WindCli-Projekt betrieben.
 
 ## Screenshots
 
@@ -60,7 +61,7 @@
 - **Datei-Explorer** – Interaktiver Dateibaum mit Syntaxhervorhebung und Live-Bearbeitung
 - **Git-Explorer** – Änderungen anzeigen, stagen und committen. Branches wechseln ebenfalls möglich
 - **Sitzungsverwaltung** – Gespräche fortsetzen, mehrere Sitzungen verwalten und Verlauf nachverfolgen
-- **Plugin-System** – CloudCLI mit eigenen Plugins erweitern – neue Tabs, Backend-Dienste und Integrationen hinzufügen. [Eigenes Plugin erstellen →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
+- **Plugin-System** – WindCli mit eigenen Plugins erweitern – neue Tabs, Backend-Dienste und Integrationen hinzufügen. [Eigenes Plugin erstellen →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
 - **TaskMaster AI Integration** *(Optional)* – Erweitertes Projektmanagement mit KI-gestützter Aufgabenplanung, PRD-Parsing und Workflow-Automatisierung
 - **Modell-Kompatibilität** – Funktioniert mit den Claude- und GPT-Modellfamilien (vollständige Liste unterstützter Modelle zur Laufzeit über `GET /api/providers/:provider/models`)
 
@@ -78,7 +79,7 @@ Der schnellste Einstieg – keine lokale Einrichtung erforderlich. Erhalte eine 
 
 #### npm
 
-CloudCLI UI sofort mit **npx** ausprobieren (erfordert **Node.js** v22+):
+WindCli sofort mit **npx** ausprobieren (erfordert **Node.js** v22+):
 
 ```bash
 npx wind-agent-cli
@@ -93,7 +94,7 @@ cloudcli
 
 Öffne `http://localhost:3001` – alle vorhandenen Sitzungen werden automatisch erkannt.
 
-Die **[Dokumentation →](https://cloudcli.ai/docs)** enthält weitere Konfigurationsoptionen, PM2, Remote-Server-Einrichtung und mehr.
+Die **[Dokumentation →](https://github.com/CaineWind/wacli/blob/main/docs/README.md)** enthält weitere Konfigurationsoptionen, PM2, Remote-Server-Einrichtung und mehr.
 
 #### Docker Sandboxes (Experimentell)
 
@@ -109,9 +110,9 @@ Unterstützt Claude Code und Codex. Weitere Details in der [Sandbox-Dokumentatio
 
 ## Welche Option passt zu dir?
 
-CloudCLI UI ist die Open-Source-UI-Schicht, die CloudCLI Cloud antreibt. Du kannst es auf deinem eigenen Rechner selbst hosten oder CloudCLI Cloud nutzen, das darauf aufbaut und eine vollständig verwaltete Cloud-Umgebung, Team-Funktionen und tiefere Integrationen bietet.
+WindCli ist die Open-Source-UI-Schicht, die CloudCLI Cloud antreibt. Du kannst es auf deinem eigenen Rechner selbst hosten oder CloudCLI Cloud nutzen, das darauf aufbaut und eine vollständig verwaltete Cloud-Umgebung, Team-Funktionen und tiefere Integrationen bietet.
 
-| | CloudCLI UI (Self-hosted) | CloudCLI Cloud |
+| | WindCli (Self-hosted) | CloudCLI Cloud |
 |---|---|---|
 | **Am besten für** | Entwickler:innen, die eine vollständige UI für lokale Agent-Sitzungen auf ihrem eigenen Rechner möchten | Teams und Entwickler:innen, die Agents in der Cloud betreiben möchten, überall erreichbar |
 | **Zugriff** | Browser via `[deineIP]:port` | Browser, jede IDE, REST API, n8n |
@@ -128,7 +129,7 @@ CloudCLI UI ist die Open-Source-UI-Schicht, die CloudCLI Cloud antreibt. Du kann
 | **Team-Sharing** | Nein | Ja |
 | **Plattformkosten** | Kostenlos, Open Source | Ab €7/Monat |
 
-> Beide Optionen verwenden deine eigenen KI-Abonnements (Claude, Cursor usw.) – CloudCLI stellt die Umgebung bereit, nicht die KI.
+> Beide Optionen verwenden deine eigenen KI-Abonnements (Claude, Cursor usw.) – WindCli stellt die Umgebung bereit, nicht die KI.
 
 ---
 
@@ -157,7 +158,7 @@ Um den vollen Funktionsumfang von Claude Code zu nutzen, müssen Tools manuell a
 
 ## Plugins
 
-CloudCLI verfügt über ein Plugin-System, mit dem benutzerdefinierte Tabs mit eigener Frontend-UI und optionalem Node.js-Backend hinzugefügt werden können. Plugins können direkt in **Einstellungen > Plugins** aus Git-Repos installiert oder selbst entwickelt werden.
+WindCli verfügt über ein Plugin-System, mit dem benutzerdefinierte Tabs mit eigener Frontend-UI und optionalem Node.js-Backend hinzugefügt werden können. Plugins können direkt in **Einstellungen > Plugins** aus Git-Repos installiert oder selbst entwickelt werden.
 
 ### Verfügbare Plugins
 
@@ -167,7 +168,7 @@ CloudCLI verfügt über ein Plugin-System, mit dem benutzerdefinierte Tabs mit e
 | **[Web Terminal](https://github.com/cloudcli-ai/cloudcli-plugin-terminal)** | Vollwertiges xterm.js-Terminal mit Multi-Tab-Unterstützung |
 | **[Claude Watch](https://github.com/satsuki19980613/cloudcli-claude-watch)** | Überwacht lange laufende Claude-Code-Sitzungen auf Hänger und stellt Prozesssteuerungen bereit |
 | **[CloudCLI Scheduler](https://github.com/grostim/cloudcli-cron)** | Erstellt arbeitsbereichsbezogene geplante Prompts und führt sie über eine lokale CLI wie Codex oder Claude Code aus |
-| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | Sitzungsintelligenz für Claude Code in CloudCLI, inklusive Sichtbarkeit des Token-Verbrauchs |
+| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | Sitzungsintelligenz für Claude Code in WindCli, inklusive Sichtbarkeit des Token-Verbrauchs |
 | **[Sessions](https://github.com/strykereye2/cloudcli-plugin-session-manager)** | Aktive Claude-Code-Sitzungen anzeigen, verwalten und beenden |
 | **[Token Cost Calculator](https://github.com/NightmareAway/cloudcli-plugin-token-cost-calculator)** | API-Kosten anhand von Modellpreisen und Token-Nutzung berechnen, mit Unterstützung für Preisvorlagen |
 | **[Task Queue](https://github.com/TadMSTR/cloudcli-plugin-task-queue)** | Task-Queue-Dashboard zum Anzeigen, Filtern und Starten von Agent-Aufgaben |
@@ -187,12 +188,12 @@ CloudCLI verfügt über ein Plugin-System, mit dem benutzerdefinierte Tabs mit e
 
 Claude Code Remote Control ermöglicht es, Nachrichten an eine bereits im lokalen Terminal laufende Sitzung zu senden. Der Rechner muss eingeschaltet bleiben, das Terminal muss offen bleiben, und Sitzungen laufen nach etwa 10 Minuten ohne Netzwerkverbindung ab.
 
-CloudCLI UI und CloudCLI Cloud erweitern Claude Code, anstatt neben ihm zu laufen – MCP-Server, Berechtigungen, Einstellungen und Sitzungen sind exakt dieselben, die Claude Code nativ verwendet. Nichts wird dupliziert oder separat verwaltet.
+WindCli und CloudCLI Cloud erweitern Claude Code, anstatt neben ihm zu laufen – MCP-Server, Berechtigungen, Einstellungen und Sitzungen sind exakt dieselben, die Claude Code nativ verwendet. Nichts wird dupliziert oder separat verwaltet.
 
 Das bedeutet in der Praxis:
 
-- **Alle Sitzungen, nicht nur eine** – CloudCLI UI erkennt automatisch jede Sitzung aus dem `~/.claude`-Ordner. Remote Control stellt nur die einzelne aktive Sitzung bereit, um sie in der Claude Mobile App verfügbar zu machen.
-- **Deine Einstellungen sind deine Einstellungen** – MCP-Server, Tool-Berechtigungen und Projektkonfiguration, die in CloudCLI UI geändert werden, werden direkt in die Claude Code-Konfiguration geschrieben und treten sofort in Kraft – und umgekehrt.
+- **Alle Sitzungen, nicht nur eine** – WindCli erkennt automatisch jede Sitzung aus dem `~/.claude`-Ordner. Remote Control stellt nur die einzelne aktive Sitzung bereit, um sie in der Claude Mobile App verfügbar zu machen.
+- **Deine Einstellungen sind deine Einstellungen** – MCP-Server, Tool-Berechtigungen und Projektkonfiguration, die in WindCli geändert werden, werden direkt in die Claude Code-Konfiguration geschrieben und treten sofort in Kraft – und umgekehrt.
 - **Funktioniert mit mehr Agents** – Claude Code, Cursor CLI und Codex, nicht nur Claude Code.
 - **Vollständige UI, nicht nur ein Chat-Fenster** – Datei-Explorer, Git-Integration, MCP-Verwaltung und ein Shell-Terminal sind alle eingebaut.
 - **CloudCLI Cloud läuft in der Cloud** – Laptop zuklappen, der Agent läuft weiter. Kein Terminal zu überwachen, kein Rechner, der laufen muss.
@@ -202,12 +203,12 @@ Das bedeutet in der Praxis:
 <details>
 <summary>Muss ich ein KI-Abonnement separat bezahlen?</summary>
 
-Ja. CloudCLI stellt die Umgebung bereit, nicht die KI. Du bringst dein eigenes Claude-, Cursor- oder Codex-Abonnement mit. CloudCLI Cloud beginnt bei €7/Monat für die gehostete Umgebung zusätzlich dazu.
+Ja. WindCli stellt die Umgebung bereit, nicht die KI. Du bringst dein eigenes Claude-, Cursor- oder Codex-Abonnement mit. CloudCLI Cloud beginnt bei €7/Monat für die gehostete Umgebung zusätzlich dazu.
 
 </details>
 
 <details>
-<summary>Kann ich CloudCLI UI auf meinem Smartphone nutzen?</summary>
+<summary>Kann ich WindCli auf meinem Smartphone nutzen?</summary>
 
 Ja. Bei Self-Hosted: Server auf dem eigenen Rechner starten und `[deineIP]:port` in einem beliebigen Browser im Netzwerk öffnen. Bei CloudCLI Cloud: Von jedem Gerät aus öffnen – kein VPN, keine Portweiterleitung, keine Einrichtung. Eine native App ist ebenfalls in Entwicklung.
 
@@ -216,7 +217,7 @@ Ja. Bei Self-Hosted: Server auf dem eigenen Rechner starten und `[deineIP]:port`
 <details>
 <summary>Wirken sich Änderungen in der UI auf mein lokales Claude Code-Setup aus?</summary>
 
-Ja, bei Self-Hosted. CloudCLI UI liest aus und schreibt in dieselbe `~/.claude`-Konfiguration, die Claude Code nativ verwendet. MCP-Server, die über die UI hinzugefügt werden, erscheinen sofort in Claude Code und umgekehrt.
+Ja, bei Self-Hosted. WindCli liest aus und schreibt in dieselbe `~/.claude`-Konfiguration, die Claude Code nativ verwendet. MCP-Server, die über die UI hinzugefügt werden, erscheinen sofort in Claude Code und umgekehrt.
 
 </details>
 
@@ -224,7 +225,7 @@ Ja, bei Self-Hosted. CloudCLI UI liest aus und schreibt in dieselbe `~/.claude`-
 
 ## Community & Support
 
-- **[Dokumentation](https://cloudcli.ai/docs)** — Installation, Konfiguration, Funktionen und Fehlerbehebung
+- **[Dokumentation](https://github.com/CaineWind/wacli/blob/main/docs/README.md)** — Installation, Konfiguration, Funktionen und Fehlerbehebung
 - **[Discord](https://discord.gg/buxwujPNRE)** — Hilfe erhalten und mit anderen Nutzer:innen in Kontakt treten
 - **[GitHub Issues](https://github.com/CaineWind/wacli/issues)** — Fehlerberichte und Feature-Anfragen
 - **[Beitragsrichtlinien](../CONTRIBUTING.md)** — So kannst du zum Projekt beitragen

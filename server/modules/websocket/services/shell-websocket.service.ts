@@ -315,7 +315,7 @@ function buildShellEnvironment(
 
   if (readString(message.shellMode) === 'herdr') {
     // The web terminal is a new Herdr client, not a pane nested inside the
-    // Herdr pane that may have launched CloudCLI. Keep HERDR_SOCKET_PATH so it
+    // Herdr pane that may have launched WindCli. Keep HERDR_SOCKET_PATH so it
     // attaches to the running session, but remove inherited pane identity.
     HERDR_PANE_ENVIRONMENT_KEYS.forEach((key) => delete environment[key]);
   }

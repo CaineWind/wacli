@@ -1,15 +1,14 @@
 <div align="center">
- <img src="../public/logo.svg" alt="CloudCLI UI" width="64" height="64">
+ <img src="../public/logo.svg" alt="WindCli" width="64" height="64">
  <h1>Cloud CLI (Claude Code UI olarak da bilinir)</h1>
  <p><a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a>, <a href="https://docs.cursor.com/en/cli/overview">Cursor CLI</a>, <a href="https://developers.openai.com/codex">Codex</a> için masaüstü ve mobil arayüz.<br>Yerel ya da uzaktan kullanarak aktif projelerine ve oturumlarına her yerden erişebilirsin.</p>
 </div>
 
 <p align="center">
- <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">Dokümantasyon</a> · <a href="https://github.com/CaineWind/wacli/issues">Sorun Bildir</a> · <a href="../CONTRIBUTING.md">Katkıda Bulun</a>
+ <a href="https://github.com/CaineWind/wacli/issues">Sorun Bildir</a> · <a href="../CONTRIBUTING.md">Katkıda Bulun</a>
 </p>
 
 <p align="center">
- <a href="https://cloudcli.ai"><img src="https://img.shields.io/badge/☁️_CloudCLI_Cloud-Hemen_Dene-0066FF?style=for-the-badge" alt="CloudCLI Cloud"></a>
  <a href="https://discord.gg/buxwujPNRE"><img src="https://img.shields.io/badge/Discord-Toplulu%C4%9Fa%20Kat%C4%B1l-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord'a Katıl"></a>
  <br><br>
  <a href="https://trendshift.io/repositories/15586" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15586" alt="siteboon%2Fclaudecodeui | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
@@ -18,6 +17,8 @@
 <div align="right"><i><a href="./README.md">English</a> · <a href="./README.ru.md">Русский</a> · <a href="./README.de.md">Deutsch</a> · <a href="./README.ko.md">한국어</a> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.zh-TW.md">繁體中文</a> · <a href="./README.ja.md">日本語</a> · <b>Türkçe</b></i></div>
 
 ---
+
+> CloudCLI Cloud, üst kaynak projenin üçüncü taraf hizmetidir ve WindCli projesi tarafından işletilmez.
 
 ## Ekran Görüntüleri
 
@@ -60,7 +61,7 @@
 - **Dosya Gezgini** — Sözdizimi vurgulama ve canlı düzenleme ile etkileşimli dosya ağacı
 - **Git Gezgini** — Değişikliklerini görüntüle, staging'e ekle ve commit'le. Dallar arası geçiş de yapabilirsin
 - **Oturum Yönetimi** — Konuşmalara devam et, birden fazla oturumu yönet ve geçmişi takip et
-- **Eklenti Sistemi** — CloudCLI'ı özel eklentilerle genişlet: yeni sekmeler, arka uç servisleri ve entegrasyonlar ekle. [Kendi eklentini yaz →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
+- **Eklenti Sistemi** — WindCli'ı özel eklentilerle genişlet: yeni sekmeler, arka uç servisleri ve entegrasyonlar ekle. [Kendi eklentini yaz →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
 - **TaskMaster AI Entegrasyonu** *(İsteğe Bağlı)* — AI destekli görev planlama, PRD ayrıştırma ve iş akışı otomasyonu ile gelişmiş proje yönetimi
 - **Model Uyumluluğu** — Claude ve GPT model aileleriyle çalışır (desteklenen tüm modeller için `GET /api/providers/:provider/models` API'sine bak)
 
@@ -78,7 +79,7 @@ Başlamanın en hızlı yolu — yerel kurulum yok. Web, mobil uygulama, API vey
 
 #### npm
 
-CloudCLI UI'yi **npx** ile anında dene (**Node.js** v22+ gerekir):
+WindCli'yi **npx** ile anında dene (**Node.js** v22+ gerekir):
 
 ```
 npx wind-agent-cli
@@ -93,7 +94,7 @@ cloudcli
 
 `http://localhost:3001` adresini aç — mevcut tüm oturumların otomatik olarak keşfedilir.
 
-Tam yapılandırma seçenekleri, PM2, uzak sunucu kurulumu ve daha fazlası için **[dokümantasyonu ziyaret et →](https://cloudcli.ai/docs)**.
+Tam yapılandırma seçenekleri, PM2, uzak sunucu kurulumu ve daha fazlası için **[dokümantasyonu ziyaret et →](https://github.com/CaineWind/wacli/blob/main/docs/README.md)**.
 
 #### Docker Sandbox'lar (Deneysel)
 
@@ -110,7 +111,7 @@ Claude Code ve Codex'i destekler. Kurulum ve gelişmiş seçenekler için [sandb
 
 ## Hangi seçenek sana uygun?
 
-CloudCLI UI, CloudCLI Cloud'u güçlendiren açık kaynak arayüz katmanıdır. Kendi makinende barındırabilir, izolasyon için Docker sandbox'ta çalıştırabilir veya tam yönetilen ortam için CloudCLI Cloud kullanabilirsin.
+WindCli, CloudCLI Cloud'u güçlendiren açık kaynak arayüz katmanıdır. Kendi makinende barındırabilir, izolasyon için Docker sandbox'ta çalıştırabilir veya tam yönetilen ortam için CloudCLI Cloud kullanabilirsin.
 
 | | Kendin Barındır (npm) | Kendin Barındır (Docker Sandbox) *(Deneysel)* | CloudCLI Cloud |
 |---|---|---|---|
@@ -127,7 +128,7 @@ CloudCLI UI, CloudCLI Cloud'u güçlendiren açık kaynak arayüz katmanıdır. 
 | **Ekip paylaşımı** | Hayır | Hayır | Evet |
 | **Platform maliyeti** | Ücretsiz, açık kaynak | Ücretsiz, açık kaynak | Aylık 7 €'dan başlar |
 
-> Tüm seçenekler kendi AI aboneliklerini (Claude, Cursor, vb.) kullanır — CloudCLI AI'ı değil, ortamı sağlar.
+> Tüm seçenekler kendi AI aboneliklerini (Claude, Cursor, vb.) kullanır — WindCli AI'ı değil, ortamı sağlar.
 
 ---
 
@@ -156,7 +157,7 @@ Claude Code'un tam işlevselliğinden yararlanmak için araçları manuel olarak
 
 ## Eklentiler
 
-CloudCLI, kendi frontend UI'sı ve isteğe bağlı Node.js arka ucu olan özel sekmeler eklemeni sağlayan bir eklenti sistemine sahiptir. Git depolarından eklentileri doğrudan **Ayarlar > Eklentiler**'den yükleyebilir veya kendi eklentini yazabilirsin.
+WindCli, kendi frontend UI'sı ve isteğe bağlı Node.js arka ucu olan özel sekmeler eklemeni sağlayan bir eklenti sistemine sahiptir. Git depolarından eklentileri doğrudan **Ayarlar > Eklentiler**'den yükleyebilir veya kendi eklentini yazabilirsin.
 
 ### Mevcut Eklentiler
 
@@ -166,7 +167,7 @@ CloudCLI, kendi frontend UI'sı ve isteğe bağlı Node.js arka ucu olan özel s
 | **[Web Terminal](https://github.com/cloudcli-ai/cloudcli-plugin-terminal)** | Çoklu sekme destekli tam xterm.js terminali |
 | **[Claude Watch](https://github.com/satsuki19980613/cloudcli-claude-watch)** | Uzun süren Claude Code oturumlarını takılmalara karşı izler ve süreç kontrolleri sunar |
 | **[CloudCLI Scheduler](https://github.com/grostim/cloudcli-cron)** | Çalışma alanı kapsamlı zamanlanmış prompt'lar oluşturur ve bunları Codex veya Claude Code gibi yerel CLI'larla çalıştırır |
-| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | CloudCLI içinde Claude Code oturum zekası ve token tüketimi görünürlüğü sağlar |
+| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | WindCli içinde Claude Code oturum zekası ve token tüketimi görünürlüğü sağlar |
 | **[Sessions](https://github.com/strykereye2/cloudcli-plugin-session-manager)** | Aktif Claude Code oturumlarını görüntülemeni, yönetmeni ve sonlandırmanı sağlar |
 | **[Token Cost Calculator](https://github.com/NightmareAway/cloudcli-plugin-token-cost-calculator)** | Model fiyatları ve token kullanımından API maliyetlerini hesaplar; model fiyatı hazır ayarlarını destekler |
 | **[Task Queue](https://github.com/TadMSTR/cloudcli-plugin-task-queue)** | Ajan görevlerini görüntülemek, filtrelemek ve başlatmak için görev kuyruğu paneli |
@@ -186,11 +187,11 @@ CloudCLI, kendi frontend UI'sı ve isteğe bağlı Node.js arka ucu olan özel s
 
 Claude Code Remote Control, yerel terminalinde zaten çalışan bir oturuma mesaj göndermeni sağlar. Makinen açık kalmak zorunda, terminalin açık kalmak zorunda ve ağ bağlantısı olmadan yaklaşık 10 dakika sonra oturumlar zaman aşımına uğrar.
 
-CloudCLI UI ve CloudCLI Cloud, Claude Code'un yanında değil içinde çalışır — MCP sunucuların, izinlerin, ayarların ve oturumların, Claude Code'un yerel olarak kullandığının birebir aynısıdır. Hiçbir şey çoğaltılmaz veya ayrı yönetilmez.
+WindCli ve CloudCLI Cloud, Claude Code'un yanında değil içinde çalışır — MCP sunucuların, izinlerin, ayarların ve oturumların, Claude Code'un yerel olarak kullandığının birebir aynısıdır. Hiçbir şey çoğaltılmaz veya ayrı yönetilmez.
 
 Pratikte bu ne demek:
 
-- **Tek oturum değil, tüm oturumların** — CloudCLI UI, `~/.claude` klasöründeki her oturumu otomatik keşfeder. Remote Control yalnızca tek aktif oturumu Claude mobil uygulamasına açar.
+- **Tek oturum değil, tüm oturumların** — WindCli, `~/.claude` klasöründeki her oturumu otomatik keşfeder. Remote Control yalnızca tek aktif oturumu Claude mobil uygulamasına açar.
 - **Ayarların sana ait** — UI'da değiştirdiğin MCP sunucuları, araç izinleri ve proje yapılandırması doğrudan Claude Code yapılandırmana yazılır ve anında etkili olur; tersi de geçerli.
 - **Daha fazla ajanla çalışır** — Sadece Claude Code değil; Cursor CLI ve Codex de.
 - **Sadece sohbet penceresi değil, tam UI** — dosya gezgini, Git entegrasyonu, MCP yönetimi ve shell terminali hepsi yerleşik.
@@ -201,12 +202,12 @@ Pratikte bu ne demek:
 <details>
 <summary>AI aboneliği için ayrıca ödeme yapmam gerekiyor mu?</summary>
 
-Evet. CloudCLI AI'yi değil, ortamı sağlar. Kendi Claude, Cursor veya Codex aboneliğini getirirsin. CloudCLI Cloud, barındırılan ortam için aylık 7 €'dan başlar — bunun üzerine eklenir.
+Evet. WindCli AI'yi değil, ortamı sağlar. Kendi Claude, Cursor veya Codex aboneliğini getirirsin. CloudCLI Cloud, barındırılan ortam için aylık 7 €'dan başlar — bunun üzerine eklenir.
 
 </details>
 
 <details>
-<summary>CloudCLI UI'yi telefonumda kullanabilir miyim?</summary>
+<summary>WindCli'yi telefonumda kullanabilir miyim?</summary>
 
 Evet. Kendin barındırdığında, sunucuyu makinende çalıştır ve ağındaki herhangi bir tarayıcıda `[yourip]:port` adresini aç. CloudCLI Cloud için, herhangi bir cihazdan aç — VPN yok, port yönlendirme yok, kurulum yok. Native bir uygulama da hazırlanıyor.
 
@@ -215,7 +216,7 @@ Evet. Kendin barındırdığında, sunucuyu makinende çalıştır ve ağındaki
 <details>
 <summary>UI'da yaptığım değişiklikler yerel Claude Code kurulumumu etkiler mi?</summary>
 
-Evet, kendin barındırdığında. CloudCLI UI, Claude Code'un yerel olarak kullandığı aynı `~/.claude` yapılandırmasından okur ve ona yazar. UI üzerinden eklediğin MCP sunucuları Claude Code'da anında görünür; tersi de geçerli.
+Evet, kendin barındırdığında. WindCli, Claude Code'un yerel olarak kullandığı aynı `~/.claude` yapılandırmasından okur ve ona yazar. UI üzerinden eklediğin MCP sunucuları Claude Code'da anında görünür; tersi de geçerli.
 
 </details>
 
@@ -223,7 +224,7 @@ Evet, kendin barındırdığında. CloudCLI UI, Claude Code'un yerel olarak kull
 
 ## Topluluk ve Destek
 
-- **[Dokümantasyon](https://cloudcli.ai/docs)** — kurulum, yapılandırma, özellikler ve sorun giderme
+- **[Dokümantasyon](https://github.com/CaineWind/wacli/blob/main/docs/README.md)** — kurulum, yapılandırma, özellikler ve sorun giderme
 - **[Discord](https://discord.gg/buxwujPNRE)** — yardım al ve diğer kullanıcılarla tanış
 - **[GitHub Issues](https://github.com/CaineWind/wacli/issues)** — hata raporları ve özellik istekleri
 - **[Katkı Rehberi](../CONTRIBUTING.md)** — projeye nasıl katkıda bulunulur
@@ -234,7 +235,7 @@ GNU Affero General Public License v3.0 veya sonrası (AGPL-3.0-or-later) — tam
 
 Bu proje açık kaynaklıdır ve AGPL-3.0-or-later lisansı altında özgürce kullanılabilir, değiştirilebilir ve dağıtılabilir. Bu yazılımı değiştirir ve bir ağ servisi olarak çalıştırırsan, değiştirilmiş kaynak kodunu o servisin kullanıcılarına sunmak zorundasın.
 
-CloudCLI UI — (https://cloudcli.ai).
+WindCli — https://github.com/CaineWind/wacli.
 
 ## Teşekkürler
 

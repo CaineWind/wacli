@@ -14,7 +14,7 @@ function GitHubIcon({ className }: { className?: string }) {
 }
 
 export default function GitHubStarBadge() {
-  const { formattedCount, isDismissed, dismiss } = useGitHubStars('siteboon', 'claudecodeui');
+  const { formattedCount, isDismissed, dismiss } = useGitHubStars('CaineWind', 'wacli');
 
   if (IS_PLATFORM || isDismissed) return null;
 

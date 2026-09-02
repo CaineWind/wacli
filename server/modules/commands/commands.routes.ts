@@ -249,7 +249,7 @@ const builtInHandlers = {
     const helpCommands = isCodex
       ? [...builtInCommands, ...codexNativeCommands]
       : builtInCommands;
-    const helpText = `# ${isCodex ? "Codex and CloudCLI" : "CloudCLI"} Commands
+    const helpText = `# ${isCodex ? "Codex and WindCli" : "WindCli"} Commands
 
 ## Built-in Commands
 

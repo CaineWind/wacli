@@ -86,7 +86,7 @@
     "openInEditor": "Editörde Aç"
   },
   "mainContent": {
-    "loading": "CloudCLI Yükleniyor",
+    "loading": "WindCli Yükleniyor",
     "settingUpWorkspace": "Çalışma alanın hazırlanıyor...",
     "chooseProject": "Projeni Seç",
     "selectProjectDescription": "Claude ile kodlamaya başlamak için kenar çubuğundan bir proje seç. Her proje kendi sohbet oturumlarını ve dosya geçmişini içerir.",
@@ -247,7 +247,7 @@
     "viewFullRelease": "Tam sürüm notlarını gör",
     "updateProgress": "Güncelleme İlerlemesi:",
     "manualUpgrade": "Manuel yükseltme:",
-    "npmUpgradeCommand": "npm install -g @cloudcli-ai/cloudcli@latest",
+    "npmUpgradeCommand": "npm install -g wind-agent-cli@latest",
     "manualUpgradeHint": "Veya güncellemeyi otomatik çalıştırmak için \"Şimdi Güncelle\"ye tıkla.",
     "updateCompleted": "Güncelleme başarıyla tamamlandı!",
     "restartServer": "Değişikliklerin uygulanması için sunucuyu yeniden başlat.",

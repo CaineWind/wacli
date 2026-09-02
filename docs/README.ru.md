@@ -1,15 +1,14 @@
 <div align="center">
- <img src="../public/logo.svg" alt="CloudCLI UI" width="64" height="64">
- <h1>Cloud CLI (aka Claude Code UI)</h1>
+ <img src="../public/logo.svg" alt="WindCli" width="64" height="64">
+ <h1>WindCli</h1>
  <p>Десктопный и мобильный UI для <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a>, <a href="https://docs.cursor.com/en/cli/overview">Cursor CLI</a>, <a href="https://developers.openai.com/codex">Codex</a>.<br>Используйте локально или удалённо, чтобы просматривать активные проекты и сессии отовсюду.</p>
 </div>
 
 <p align="center">
- <a href="https://cloudcli.ai">CloudCLI Cloud</a> · <a href="https://cloudcli.ai/docs">Документация</a> · <a href="https://github.com/CaineWind/wacli/issues">Сообщить об ошибке</a> · <a href="../CONTRIBUTING.md">Участие в разработке</a>
+ <a href="https://github.com/CaineWind/wacli/issues">Сообщить об ошибке</a> · <a href="../CONTRIBUTING.md">Участие в разработке</a>
 </p>
 
 <p align="center">
- <a href="https://cloudcli.ai"><img src="https://img.shields.io/badge/☁️_CloudCLI_Cloud-Try_Now-0066FF?style=for-the-badge" alt="CloudCLI Cloud"></a>
  <a href="https://discord.gg/buxwujPNRE"><img src="https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join our Discord"></a>
  <br><br>
  <a href="https://trendshift.io/repositories/15586" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15586" alt="siteboon%2Fclaudecodeui | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
@@ -18,6 +17,8 @@
 <div align="right"><i><a href="./README.md">English</a> · <b>Русский</b> · <a href="./README.de.md">Deutsch</a> · <a href="./README.ko.md">한국어</a> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.zh-TW.md">繁體中文</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.tr.md">Türkçe</a></i></div>
 
 ---
+
+> CloudCLI Cloud — сторонний сервис исходного проекта; проект WindCli его не обслуживает.
 
 ## Скриншоты
 
@@ -60,7 +61,7 @@
 - **Проводник файлов** - интерактивное дерево файлов с подсветкой синтаксиса и редактированием в реальном времени
 - **Git Explorer** - просмотр, stage и commit изменений. Также можно переключать ветки
 - **Управление сессиями** - возобновляйте диалоги, управляйте несколькими сессиями и отслеживайте историю
-- **Система плагинов** - расширяйте CloudCLI кастомными плагинами — добавляйте новые вкладки, бэкенд-сервисы и интеграции. [Создать свой →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
+- **Система плагинов** - расширяйте WindCli кастомными плагинами — добавляйте новые вкладки, бэкенд-сервисы и интеграции. [Создать свой →](https://github.com/cloudcli-ai/cloudcli-plugin-starter)
 - **Интеграция с TaskMaster AI** *(опционально)* - продвинутое управление проектами с планированием задач на базе AI, разбором PRD и автоматизацией workflow
 - **Совместимость с моделями** - работает с семействами моделей Claude и GPT (полный список поддерживаемых моделей доступен через `GET /api/providers/:provider/models`)
 
@@ -78,7 +79,7 @@
 
 #### npm
 
-Попробовать CloudCLI UI можно сразу через **npx** (требуется **Node.js** v22+):
+Попробовать WindCli можно сразу через **npx** (требуется **Node.js** v22+):
 
 ```bash
 npx wind-agent-cli
@@ -93,7 +94,7 @@ cloudcli
 
 Откройте `http://localhost:3001` — все ваши существующие сессии будут обнаружены автоматически.
 
-Посетите **[документацию →](https://cloudcli.ai/docs)**, чтобы узнать про дополнительные варианты конфигурации, PM2, настройку удалённого сервера и многое другое.
+Посетите **[документацию →](https://github.com/CaineWind/wacli/blob/main/docs/README.md)**, чтобы узнать про дополнительные варианты конфигурации, PM2, настройку удалённого сервера и многое другое.
 
 #### Docker Sandboxes (Экспериментально)
 
@@ -109,9 +110,9 @@ npx wind-agent-cli@latest sandbox ~/my-project
 
 ## Какой вариант подходит вам?
 
-CloudCLI UI — это open source UI-слой, на котором построен CloudCLI Cloud. Вы можете развернуть его на своей машине или использовать CloudCLI Cloud, который добавляет полностью управляемую облачную среду, командные функции и более глубокие интеграции.
+WindCli — это open source UI-слой, на котором построен CloudCLI Cloud. Вы можете развернуть его на своей машине или использовать CloudCLI Cloud, который добавляет полностью управляемую облачную среду, командные функции и более глубокие интеграции.
 
-| | CloudCLI UI (Self-hosted) | CloudCLI Cloud |
+| | WindCli (Self-hosted) | CloudCLI Cloud |
 |---|---|---|
 | **Лучше всего подходит для** | Разработчиков, которым нужен полноценный UI для локальных агентских сессий на своей машине | Команд и разработчиков, которым нужны агенты в облаке с доступом откуда угодно |
 | **Как вы получаете доступ** | Браузер через `[yourip]:port` | Браузер, любая IDE, REST API, n8n |
@@ -128,7 +129,7 @@ CloudCLI UI — это open source UI-слой, на котором постро
 | **Совместная работа** | Нет | Да |
 | **Стоимость платформы** | Бесплатно, open source | От €7/месяц |
 
-> В обоих вариантах используются ваши собственные AI-подписки (Claude, Cursor и т.д.) — CloudCLI предоставляет среду, а не сам AI.
+> В обоих вариантах используются ваши собственные AI-подписки (Claude, Cursor и т.д.) — WindCli предоставляет среду, а не сам AI.
 
 ---
 
@@ -157,7 +158,7 @@ CloudCLI UI — это open source UI-слой, на котором постро
 
 ## Плагины
 
-У CloudCLI есть система плагинов, которая позволяет добавлять кастомные вкладки со своим frontend UI и (опционально) Node.js бэкендом. Устанавливайте плагины напрямую из git-репозиториев в **Settings > Plugins** или создавайте свои.
+У WindCli есть система плагинов, которая позволяет добавлять кастомные вкладки со своим frontend UI и (опционально) Node.js бэкендом. Устанавливайте плагины напрямую из git-репозиториев в **Settings > Plugins** или создавайте свои.
 
 ### Доступные плагины
 
@@ -167,7 +168,7 @@ CloudCLI UI — это open source UI-слой, на котором постро
 | **[Web Terminal](https://github.com/cloudcli-ai/cloudcli-plugin-terminal)** | Полноценный терминал xterm.js с поддержкой нескольких вкладок |
 | **[Claude Watch](https://github.com/satsuki19980613/cloudcli-claude-watch)** | Отслеживает зависания долгих сессий Claude Code и предоставляет управление процессами |
 | **[CloudCLI Scheduler](https://github.com/grostim/cloudcli-cron)** | Создаёт запланированные промпты для рабочей области и запускает их через локальную CLI, например Codex или Claude Code |
-| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | Аналитика сессий Claude Code внутри CloudCLI, включая видимость расхода токенов |
+| **[PRISM CloudCLI](https://github.com/jakeefr/cloudcli-plugin-prism)** | Аналитика сессий Claude Code внутри WindCli, включая видимость расхода токенов |
 | **[Sessions](https://github.com/strykereye2/cloudcli-plugin-session-manager)** | Просмотр, управление и завершение активных сессий Claude Code |
 | **[Token Cost Calculator](https://github.com/NightmareAway/cloudcli-plugin-token-cost-calculator)** | Расчёт стоимости API по ценам моделей и использованию токенов, с поддержкой пресетов цен |
 | **[Task Queue](https://github.com/TadMSTR/cloudcli-plugin-task-queue)** | Дашборд очереди задач для просмотра, фильтрации и запуска агентских задач |
@@ -187,12 +188,12 @@ CloudCLI UI — это open source UI-слой, на котором постро
 
 Claude Code Remote Control позволяет отправлять сообщения в сессию, которая уже запущена в вашем локальном терминале. Ваша машина должна оставаться включённой, терминал — открытым, а сессии завершаются примерно через 10 минут без сетевого соединения.
 
-CloudCLI UI и CloudCLI Cloud расширяют Claude Code, а не работают рядом с ним — ваши MCP-серверы, разрешения, настройки и сессии остаются теми же самыми, что и в нативном Claude Code. Ничего не дублируется и не управляется отдельно.
+WindCli и CloudCLI Cloud расширяют Claude Code, а не работают рядом с ним — ваши MCP-серверы, разрешения, настройки и сессии остаются теми же самыми, что и в нативном Claude Code. Ничего не дублируется и не управляется отдельно.
 
 Вот что это означает на практике:
 
-- **Все ваши сессии, а не одна** — CloudCLI UI автоматически находит каждую сессию из папки `~/.claude`. Remote Control предоставляет только одну активную сессию, чтобы сделать её доступной в мобильном приложении Claude.
-- **Ваши настройки — это ваши настройки** — MCP-серверы, права инструментов и конфигурация проекта, изменённые в CloudCLI UI, записываются напрямую в конфиг Claude Code и вступают в силу сразу же, и наоборот.
+- **Все ваши сессии, а не одна** — WindCli автоматически находит каждую сессию из папки `~/.claude`. Remote Control предоставляет только одну активную сессию, чтобы сделать её доступной в мобильном приложении Claude.
+- **Ваши настройки — это ваши настройки** — MCP-серверы, права инструментов и конфигурация проекта, изменённые в WindCli, записываются напрямую в конфиг Claude Code и вступают в силу сразу же, и наоборот.
 - **Работает с большим числом агентов** — Claude Code, Cursor CLI и Codex, а не только Claude Code.
 - **Полноценный UI, а не просто окно чата** — проводник файлов, Git-интеграция, управление MCP и shell-терминал — всё встроено.
 - **CloudCLI Cloud работает в облаке** — закройте ноутбук, и агент продолжит работать. Не нужно следить за терминалом и держать машину постоянно активной.
@@ -202,12 +203,12 @@ CloudCLI UI и CloudCLI Cloud расширяют Claude Code, а не работ
 <details>
 <summary>Нужно ли отдельно платить за AI-подписку?</summary>
 
-Да. CloudCLI предоставляет среду, а не сам AI. Вы приносите свою подписку Claude, Cursor или Codex. CloudCLI Cloud начинается от €7/месяц за хостируемую среду поверх этого.
+Да. WindCli предоставляет среду, а не сам AI. Вы приносите свою подписку Claude, Cursor или Codex. CloudCLI Cloud начинается от €7/месяц за хостируемую среду поверх этого.
 
 </details>
 
 <details>
-<summary>Можно ли пользоваться CloudCLI UI с телефона?</summary>
+<summary>Можно ли пользоваться WindCli с телефона?</summary>
 
 Да. Для self-hosted запустите сервер на своей машине и откройте `[yourip]:port` в любом браузере в вашей сети. Для CloudCLI Cloud откройте сервис с любого устройства — без VPN, проброса портов и дополнительной настройки. Нативное приложение тоже в разработке.
 
@@ -216,7 +217,7 @@ CloudCLI UI и CloudCLI Cloud расширяют Claude Code, а не работ
 <details>
 <summary>Повлияют ли изменения, сделанные в UI, на мой локальный Claude Code?</summary>
 
-Да, в self-hosted режиме. CloudCLI UI читает и записывает тот же конфиг `~/.claude`, который Claude Code использует нативно. MCP-серверы, добавленные через UI, сразу появляются в Claude Code, и наоборот.
+Да, в self-hosted режиме. WindCli читает и записывает тот же конфиг `~/.claude`, который Claude Code использует нативно. MCP-серверы, добавленные через UI, сразу появляются в Claude Code, и наоборот.
 
 </details>
 
@@ -224,7 +225,7 @@ CloudCLI UI и CloudCLI Cloud расширяют Claude Code, а не работ
 
 ## Сообщество и поддержка
 
-- **[Документация](https://cloudcli.ai/docs)** — установка, настройка, возможности и устранение неполадок
+- **[Документация](https://github.com/CaineWind/wacli/blob/main/docs/README.md)** — установка, настройка, возможности и устранение неполадок
 - **[Discord](https://discord.gg/buxwujPNRE)** — помощь и общение с другими пользователями
 - **[GitHub Issues](https://github.com/CaineWind/wacli/issues)** — сообщения об ошибках и запросы новых функций
 - **[Руководство для контрибьюторов](../CONTRIBUTING.md)** — как участвовать в развитии проекта

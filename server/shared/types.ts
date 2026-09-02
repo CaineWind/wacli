@@ -77,7 +77,7 @@ export type ProviderModelOption = {
   description?: string;
   /** Stable SQLite row id used only by model-management actions. */
   recordId?: number;
-  /** True for user-created rows; false for immutable CloudCLI defaults. */
+  /** True for user-created rows; false for immutable WindCli defaults. */
   isCustom?: boolean;
   effort?: {
     default?: string;
@@ -302,7 +302,7 @@ export type ProviderRuntimeWriter = {
  *
  * The Codex JSON-RPC client emits this shape to its runtime adapter. Method and
  * parameter validation stays in the adapter because the protocol can add new
- * notification variants independently of CloudCLI releases.
+ * notification variants independently of WindCli releases.
  */
 export type CodexAppServerNotification = {
   method: string;
@@ -313,7 +313,7 @@ export type CodexAppServerNotification = {
  * Server-initiated Codex JSON-RPC request that may require a UI response.
  *
  * The Codex client forwards approval-capable requests to the runtime while it
- * rejects request methods that CloudCLI does not implement.
+ * rejects request methods that WindCli does not implement.
  */
 export type CodexAppServerRequest = {
   id: number;
@@ -723,7 +723,7 @@ export type WorktreePorcelainEntry = {
  *
  * Extends the porcelain entry with everything the Worktrees panel renders:
  * dirty-file count, ahead/behind relative to the base branch (the branch
- * checked out in the main worktree), last-commit metadata, and the CloudCLI
+ * checked out in the main worktree), last-commit metadata, and the WindCli
  * project row linked to the worktree directory (if one was registered).
  */
 export type WorktreeDescriptor = {
@@ -802,7 +802,7 @@ export type CreateAndOpenWorktreeResult = CreateWorktreeResult & {
 };
 
 /**
- * Input accepted when registering an existing worktree as a CloudCLI project.
+ * Input accepted when registering an existing worktree as a WindCli project.
  *
  * The service verifies that `worktreePath` belongs to the repository containing
  * `projectPath` before it creates or restores any project record.
@@ -813,7 +813,7 @@ export type OpenWorktreeInput = {
 };
 
 /**
- * Project view returned after a worktree is opened in CloudCLI.
+ * Project view returned after a worktree is opened in WindCli.
  *
  * This deliberately mirrors the project-selection payload used by the Projects
  * module so the frontend can switch to the worktree without another lookup.

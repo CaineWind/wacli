@@ -266,11 +266,11 @@ jobs:
         with:
           tag_name: ${{ needs.resolve-release.outputs.server_bundle_tag }}
           target_commitish: ${{ github.sha }}
-          name: CloudCLI Local Server Runtime (${{ needs.resolve-release.outputs.tag }})
+          name: WindCli Local Server Runtime (${{ needs.resolve-release.outputs.tag }})
           body: |
-            This prerelease contains the Local mode runtime for CloudCLI Desktop.
+            This prerelease contains the Local mode runtime for WindCli Desktop.
 
-            Download CloudCLI Desktop from the main ${{ needs.resolve-release.outputs.tag }} release. When you open Local CloudCLI, the desktop app automatically downloads the matching runtime from this prerelease.
+            Download WindCli Desktop from the main ${{ needs.resolve-release.outputs.tag }} release. When you open Local WindCli, the desktop app automatically downloads the matching runtime from this prerelease.
 
             You do not need to download these runtime files manually.
           prerelease: true

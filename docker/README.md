@@ -1,9 +1,9 @@
 <!-- Docker Hub short description (100 chars max): -->
 <!-- Sandbox templates for running AI coding agents with a web & mobile IDE (Claude Code, Codex) -->
 
-# Sandboxed coding agents with a web & mobile IDE (CloudCLI)
+# Sandboxed coding agents with a web & mobile IDE (WindCli)
 
-[Docker Sandbox](https://docs.docker.com/ai/sandboxes/) templates that add [CloudCLI](https://cloudcli.ai) on top of Claude Code and Codex. You get a full web and mobile IDE accessible from any browser on any device.
+[Docker Sandbox](https://docs.docker.com/ai/sandboxes/) templates that add [WindCli](https://github.com/CaineWind/wacli) on top of Claude Code and Codex. You get a full web and mobile IDE accessible from any browser on any device.
 
 ## Get started
 
@@ -29,7 +29,7 @@ sbx secret set -g anthropic
 ### 3. Launch Claude Code
 
 ```bash
-npx @cloudcli-ai/cloudcli@latest sandbox ~/my-project
+npx wind-agent-cli@latest sandbox ~/my-project
 ```
 
 Open **http://localhost:3001**. Set a password on first visit. Start building.
@@ -41,7 +41,7 @@ Store the matching API key and pass `--agent`:
 ```bash
 # OpenAI Codex
 sbx secret set -g openai
-npx @cloudcli-ai/cloudcli@latest sandbox ~/my-project --agent codex
+npx wind-agent-cli@latest sandbox ~/my-project --agent codex
 ```
 
 ### Available templates
@@ -63,12 +63,12 @@ sbx rm my-project                    # Remove everything
 sbx exec my-project bash             # Open a shell inside the sandbox
 ```
 
-If you install CloudCLI globally (`npm install -g @cloudcli-ai/cloudcli`), you can also use:
+If you install WindCli globally (`npm install -g wind-agent-cli`), you can also use:
 
 ```bash
-cloudcli sandbox ls
-cloudcli sandbox start my-project    # Restart and re-launch web UI
-cloudcli sandbox logs my-project     # View server logs
+wacli sandbox ls
+wacli sandbox start my-project    # Restart and re-launch web UI
+wacli sandbox logs my-project     # View server logs
 ```
 
 ## What you get
@@ -87,7 +87,7 @@ Your project directory is mounted bidirectionally — edits propagate in real ti
 Set variables at creation time with `--env`:
 
 ```bash
-npx @cloudcli-ai/cloudcli@latest sandbox ~/my-project --env SERVER_PORT=8080
+npx wind-agent-cli@latest sandbox ~/my-project --env SERVER_PORT=8080
 ```
 
 Or inside a running sandbox:
@@ -96,11 +96,11 @@ Or inside a running sandbox:
 sbx exec my-project bash -c 'echo "export SERVER_PORT=8080" >> /etc/sandbox-persistent.sh'
 ```
 
-Restart CloudCLI for changes to take effect:
+Restart WindCli for changes to take effect:
 
 ```bash
 sbx exec my-project bash -c 'pkill -f "server/index.js"'
-sbx exec -d my-project cloudcli start --port 3001
+sbx exec -d my-project wacli start --port 3001
 ```
 
 | Variable | Default | Description |
@@ -128,7 +128,7 @@ sbx run --template docker.io/cloudcliai/sandbox:claude-code claude ~/project ~/s
 sbx run --template docker.io/cloudcliai/sandbox:claude-code claude ~/my-project -- "Fix the auth bug"
 ```
 
-CloudCLI auto-starts via `.bashrc` when using `sbx run`.
+WindCli auto-starts via `.bashrc` when using `sbx run`.
 
 Full options in the [Docker Sandboxes usage guide](https://docs.docker.com/ai/sandboxes/usage/).
 
@@ -145,10 +145,8 @@ The web UI itself doesn't need a policy — access it via `sbx ports`.
 
 ## Links
 
-- [CloudCLI Cloud](https://cloudcli.ai) — fully managed, no setup required
-- [Documentation](https://cloudcli.ai/docs) — full configuration guide
-- [Discord](https://discord.gg/buxwujPNRE) — community support
-- [GitHub](https://github.com/siteboon/claudecodeui) — source code and issues
+- [Documentation](https://github.com/CaineWind/wacli/blob/main/docs/README.md) — full configuration guide
+- [GitHub](https://github.com/CaineWind/wacli) — source code and issues
 
 ## License
 
