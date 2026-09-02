@@ -1,5 +1,28 @@
 # Changelog
 
+All notable changes to WindCli will be documented in this file.
+
+
+## [1.38.0](https://github.com/CaineWind/wacli/compare/v1.37.3...v1.38.0) (2026-09-02)
+
+### New Features
+
+* **branding:** establish WindCli product identity ([#33](https://github.com/CaineWind/wacli/issues/33)) ([3d37b3e](https://github.com/CaineWind/wacli/commit/3d37b3e1c782647f821f9f80ebe60e17be902671))
+* **pwa:** add install and offline lifecycle support ([#31](https://github.com/CaineWind/wacli/issues/31)) ([25d4d51](https://github.com/CaineWind/wacli/commit/25d4d5100304429d3c826852a3c3aad1ac7a272a))
+* use new WindCli PWA app icon ([#36](https://github.com/CaineWind/wacli/issues/36)) ([b77dba9](https://github.com/CaineWind/wacli/commit/b77dba9627efb8a4a5a1c520fd40bd6eddb85fe4))
+
+### Bug Fixes
+
+* pin compatible changelog preset ([#35](https://github.com/CaineWind/wacli/issues/35)) ([135407e](https://github.com/CaineWind/wacli/commit/135407eea0ed2a53f4b8e45586dc1386650baece))
+* **release:** wait for npm registry propagation ([733bad3](https://github.com/CaineWind/wacli/commit/733bad3ceb4e5671135eb3a92fd32fab1346afbc))
+
+### Maintenance
+
+* enforce warning and dependency quality gates ([#28](https://github.com/CaineWind/wacli/issues/28)) ([236ab34](https://github.com/CaineWind/wacli/commit/236ab34b6a327b0412e5d78bc1a9f9f9f3a8626a))
+* update WindCli branding and sidebar ([#30](https://github.com/CaineWind/wacli/issues/30)) ([2ff8095](https://github.com/CaineWind/wacli/commit/2ff8095ddd32805e38f3c28893b72e139cc8a8b9))
+
+# Changelog
+
 All notable changes to CloudCLI UI will be documented in this file.
 
 
