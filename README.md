@@ -1,6 +1,10 @@
-# wind-agent-cli
+# WindCli
 
 A web-based UI for Claude Code, Codex, Cursor CLI, and OpenCode.
+
+WindCli is an independent secondary-development project based on
+[siteboon/claudecodeui](https://github.com/siteboon/claudecodeui). We are
+grateful to the original project and its contributors for the foundation.
 
 ## Run locally
 
