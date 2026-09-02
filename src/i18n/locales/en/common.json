@@ -240,6 +240,14 @@
       }
     }
   },
+  "pwa": {
+    "updateReady": "A new version of WindCli is ready.",
+    "reload": "Reload",
+    "installAvailable": "Install WindCli for faster access and offline support.",
+    "install": "Install",
+    "offlineReady": "WindCli is ready to use offline.",
+    "dismiss": "Dismiss"
+  },
   "versionUpdate": {
     "title": "Update Available",
     "newVersionReady": "A new version is ready",
