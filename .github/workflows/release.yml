@@ -57,7 +57,7 @@ jobs:
         id: pack
         shell: bash
         run: |
-          TARBALL="$(npm pack --ignore-scripts)"
+          TARBALL="$(npm --silent pack --ignore-scripts)"
           echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
 
       - name: Check whether this version is already published

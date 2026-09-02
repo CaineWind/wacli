@@ -50,7 +50,7 @@ jobs:
         run: npm run build
 
       - name: Pack npm artifact
-        run: npm pack --ignore-scripts
+        run: npm --silent pack --ignore-scripts
 
       - name: Upload npm artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -85,7 +85,7 @@ jobs:
       - name: Install packed package and run CLI
         shell: pwsh
         run: |
-          $tarball = npm pack --ignore-scripts
+          $tarball = npm --silent pack --ignore-scripts
           $prefix = Join-Path $env:RUNNER_TEMP 'wind-agent-cli-smoke'
           npm install --prefix $prefix --ignore-scripts --omit=dev ".\$tarball"
           & (Join-Path $prefix 'node_modules\.bin\wacli.cmd') --version
