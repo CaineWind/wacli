@@ -2,6 +2,8 @@
 
 A web-based UI for Claude Code, Codex, Cursor CLI, and OpenCode.
 
+![WindCli new session](docs/screenshots/windcli-new-session-v1.38.1.png)
+
 WindCli is an independent secondary-development project based on
 [siteboon/claudecodeui](https://github.com/siteboon/claudecodeui). We are
 grateful to the original project and its contributors for the foundation.
