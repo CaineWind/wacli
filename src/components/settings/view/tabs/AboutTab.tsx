@@ -1,8 +1,10 @@
-import { ExternalLink, MessageSquare, Star } from 'lucide-react';
+import { Check, Download, ExternalLink, MessageSquare, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { WINDCLI_WORDMARK_FONT_FAMILY } from '../../../../shared/constants';
 import { useVersionCheck } from '../../../../hooks/useVersionCheck';
+import { usePwaInstall } from '../../../../contexts/PwaInstallContext';
+import { Button } from '../../../../shared/view/ui';
 
 const GITHUB_REPO_URL = 'https://github.com/CaineWind/wacli';
 const DOCS_URL = `${GITHUB_REPO_URL}/blob/main/docs/README.md`;
@@ -18,6 +20,7 @@ function GitHubIcon({ className }: { className?: string }) {
 export default function AboutTab() {
   const { t } = useTranslation('settings');
   const { updateAvailable, latestVersion, currentVersion, releaseInfo } = useVersionCheck('CaineWind', 'wacli');
+  const { canInstall, install, isInstalled } = usePwaInstall();
   const releasesUrl = releaseInfo?.htmlUrl || `${GITHUB_REPO_URL}/releases`;
 
   return (
@@ -93,6 +96,31 @@ export default function AboutTab() {
           <ExternalLink className="h-3.5 w-3.5" />
           Docs
         </a>
+      </div>
+
+      <div className="border-t border-border/50 pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">{t('about.installApp.title')}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {isInstalled
+                ? t('about.installApp.installedDescription')
+                : t('about.installApp.description')}
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={!canInstall || isInstalled}
+            onClick={() => void install()}
+          >
+            {isInstalled ? <Check /> : <Download />}
+            {isInstalled
+              ? t('about.installApp.installed')
+              : t('about.installApp.install')}
+          </Button>
+        </div>
       </div>
 
       {/* License */}

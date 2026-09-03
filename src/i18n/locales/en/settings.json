@@ -114,6 +114,15 @@
     "plugins": "Plugins",
     "about": "About"
   },
+  "about": {
+    "installApp": {
+      "title": "Install WindCli",
+      "description": "Install this app from this browser.",
+      "install": "Install",
+      "installed": "Installed",
+      "installedDescription": "WindCli is installed on this device."
+    }
+  },
   "notifications": {
     "title": "Notifications",
     "description": "Control which notification events you receive.",

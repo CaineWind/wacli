@@ -114,6 +114,15 @@
     "plugins": "插件",
     "about": "关于"
   },
+  "about": {
+    "installApp": {
+      "title": "安装 WindCli",
+      "description": "将应用安装到当前设备。",
+      "install": "安装",
+      "installed": "已安装",
+      "installedDescription": "WindCli 已安装到当前设备。"
+    }
+  },
   "notifications": {
     "title": "通知",
     "description": "控制你希望接收的通知事件。",
