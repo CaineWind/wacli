@@ -3,6 +3,12 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.38.1](https://github.com/CaineWind/wacli/compare/v1.38.0...v1.38.1) (2026-09-03)
+
+### Bug Fixes
+
+* **chat:** publish session messages reactively ([#37](https://github.com/CaineWind/wacli/issues/37)) ([20511dc](https://github.com/CaineWind/wacli/commit/20511dc015a7c7ddeef50847cf9957d94380f3f6))
+
 ## [1.38.0](https://github.com/CaineWind/wacli/compare/v1.37.3...v1.38.0) (2026-09-02)
 
 ### New Features
