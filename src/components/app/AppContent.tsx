@@ -15,6 +15,8 @@ import { useQueuedMessageAutoSend } from '../../hooks/useQueuedMessageAutoSend';
 import { api } from '../../utils/api';
 import { TaskMasterProvider } from '../task-master/context/TaskMasterContext';
 
+import { calculateMobileKeyboardInset } from './mobileKeyboardViewport';
+
 type RunningSessionApiItem = {
   sessionId?: unknown;
   startedAt?: unknown;
@@ -199,11 +201,15 @@ function AppContentInner() {
       // Do NOT listen to scroll: on iOS Safari, scrolling content changes
       // vv.offsetTop which would make --keyboard-height fluctuate during
       // normal scrolling, causing the container to bounce up and down.
-      const kb = Math.max(0, window.innerHeight - vv.height);
+      const kb = calculateMobileKeyboardInset(window.innerHeight, vv.height, navigator);
       document.documentElement.style.setProperty('--keyboard-height', `${kb}px`);
     };
+    update();
     vv.addEventListener('resize', update);
-    return () => vv.removeEventListener('resize', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      document.documentElement.style.removeProperty('--keyboard-height');
+    };
   }, []);
 
   return (

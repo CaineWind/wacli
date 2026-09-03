@@ -516,9 +516,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     this.clearTapHoldTimeout();
     this.touchStart = null;
 
-    // Selection gestures keep the hidden textarea blurred. A plain Herdr tap
-    // restores focus in a microtask, after the browser's touch default action
-    // has finished moving focus away from xterm.
+    // Selection gestures keep the hidden textarea blurred.
     if (this.isSelecting || this.isHandleDragging) {
       event.preventDefault();
       this.blurTerminalInput();
@@ -531,6 +529,9 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
         && !this.isSelecting
         && !this.isHandleDragging
       ) {
+        // Prevent the synthetic click/default focus action from running after
+        // the scheduled xterm focus and dismissing the soft keyboard again.
+        event.preventDefault();
         this.scheduleTerminalFocus();
       }
       this.maybeStartInertia();
