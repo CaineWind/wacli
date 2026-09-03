@@ -6,7 +6,7 @@ import test from 'node:test';
 
 import Database from 'better-sqlite3';
 
-import { closeConnection, initializeDatabase, sessionsDb } from '@/modules/database/index.js';
+import { closeConnection, initializeDatabase, projectsDb, sessionsDb } from '@/modules/database/index.js';
 import { OpenCodeSessionSynchronizer } from '@/modules/providers/list/opencode/opencode-session-synchronizer.provider.js';
 import { OpenCodeSessionsProvider } from '@/modules/providers/list/opencode/opencode-sessions.provider.js';
 import { appendImagesInputTag } from '@/shared/image-attachments.js';
@@ -41,9 +41,15 @@ async function withIsolatedDatabase(runTest: () => void | Promise<void>): Promis
   }
 }
 
-const createOpenCodeDatabase = async (homeDir: string, workspacePath: string): Promise<void> => {
+const createOpenCodeDatabase = async (
+  homeDir: string,
+  workspacePath: string,
+  options: { projectId?: string; worktreePath?: string } = {},
+): Promise<void> => {
   const dataDir = path.join(homeDir, '.local', 'share', 'opencode');
   await mkdir(dataDir, { recursive: true });
+  const projectId = options.projectId ?? 'project-1';
+  const worktreePath = options.worktreePath ?? workspacePath;
 
   const db = new Database(path.join(dataDir, 'opencode.db'));
   try {
@@ -123,8 +129,8 @@ const createOpenCodeDatabase = async (homeDir: string, workspacePath: string): P
     db.prepare(
       'INSERT INTO project (id, worktree, time_created, time_updated, sandboxes) VALUES (?, ?, ?, ?, ?)',
     ).run(
-      'project-1',
-      workspacePath,
+      projectId,
+      worktreePath,
       1_700_000_000_000,
       1_700_000_001_000,
       '[]',
@@ -137,7 +143,7 @@ const createOpenCodeDatabase = async (homeDir: string, workspacePath: string): P
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       'open-session-1',
-      'project-1',
+      projectId,
       'open-session-1',
       workspacePath,
       'OpenCode indexed title',
@@ -253,7 +259,10 @@ test('OpenCode session synchronizer indexes sqlite sessions without deletable tr
   const restoreHomeDir = patchHomeDir(tempRoot);
 
   try {
-    await createOpenCodeDatabase(tempRoot, workspacePath);
+    await createOpenCodeDatabase(tempRoot, workspacePath, {
+      projectId: 'global',
+      worktreePath: '/',
+    });
     await withIsolatedDatabase(() => {
       const synchronizer = new OpenCodeSessionSynchronizer();
       const processed = synchronizer.synchronize();
@@ -266,6 +275,72 @@ test('OpenCode session synchronizer indexes sqlite sessions without deletable tr
         assert.equal(indexed?.custom_name, 'OpenCode indexed title');
         assert.equal(indexed?.jsonl_path, null);
       });
+    });
+  } finally {
+    restoreHomeDir();
+    await rm(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('OpenCode session synchronizer skips external Multica global workdirs', { concurrency: false }, async () => {
+  const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'opencode-session-sync-multica-'));
+  const workspacePath = path.join(
+    tempRoot,
+    'multica_workspaces_desktop-api.example.test',
+    'workspace-id',
+    'deadbeef',
+    'workdir',
+  );
+  await mkdir(workspacePath, { recursive: true });
+  const restoreHomeDir = patchHomeDir(tempRoot);
+
+  try {
+    await createOpenCodeDatabase(tempRoot, workspacePath, {
+      projectId: 'global',
+      worktreePath: '/',
+    });
+    await withIsolatedDatabase(async () => {
+      const count = await new OpenCodeSessionSynchronizer().synchronize();
+
+      assert.equal(count, 0);
+      assert.equal(sessionsDb.getSessionById('open-session-1'), null);
+      assert.equal(projectsDb.getProjectPath(workspacePath), null);
+    });
+  } finally {
+    restoreHomeDir();
+    await rm(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('OpenCode session synchronizer keeps WindCli sessions in Multica global workdirs', { concurrency: false }, async () => {
+  const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'opencode-session-sync-multica-app-'));
+  const workspacePath = path.join(
+    tempRoot,
+    'multica_workspaces_desktop-api.example.test',
+    'workspace-id',
+    'deadbeef',
+    'workdir',
+  );
+  await mkdir(workspacePath, { recursive: true });
+  const restoreHomeDir = patchHomeDir(tempRoot);
+
+  try {
+    await createOpenCodeDatabase(tempRoot, workspacePath, {
+      projectId: 'global',
+      worktreePath: '/',
+    });
+    await withIsolatedDatabase(async () => {
+      sessionsDb.createAppSession('app-session-multica', 'opencode', workspacePath);
+      sessionsDb.assignProviderSessionId('app-session-multica', 'open-session-1');
+
+      const count = await new OpenCodeSessionSynchronizer().synchronize();
+
+      assert.equal(count, 1);
+      assert.equal(sessionsDb.getAllSessions().length, 1);
+      assert.equal(
+        sessionsDb.getSessionById('app-session-multica')?.provider_session_id,
+        'open-session-1',
+      );
     });
   } finally {
     restoreHomeDir();

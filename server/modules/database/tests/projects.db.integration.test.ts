@@ -4,9 +4,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { closeConnection } from '@/modules/database/connection.js';
+import { closeConnection, getConnection } from '@/modules/database/connection.js';
 import { initializeDatabase } from '@/modules/database/init-db.js';
+import { runMigrations } from '@/modules/database/migrations.js';
 import { projectsDb } from '@/modules/database/repositories/projects.db.js';
+import { sessionsDb } from '@/modules/database/repositories/sessions.db.js';
 
 async function withIsolatedDatabase(runTest: () => void | Promise<void>): Promise<void> {
   const previousDatabasePath = process.env.DATABASE_PATH;
@@ -69,5 +71,30 @@ test('projectsDb.createProjectPath returns active_conflict for active duplicates
     assert.ok(conflict.project);
     assert.equal(conflict.project?.project_id, initial.project?.project_id);
     assert.equal(conflict.project?.isArchived, 0);
+  });
+});
+
+test('migrations remove only external OpenCode sessions indexed from Multica workdirs', async () => {
+  await withIsolatedDatabase(() => {
+    const transientOnlyPath = 'C:\\Users\\tester\\multica_workspaces_api.example.test\\workspace-id\\deadbeef\\workdir';
+    const sharedTransientPath = 'C:\\Users\\tester\\multica_workspaces_api.example.test\\workspace-id\\cafebabe\\workdir';
+    const regularWorkdirPath = 'C:\\Users\\tester\\projects\\workdir';
+
+    sessionsDb.createSession('external-only', 'opencode', transientOnlyPath);
+    sessionsDb.createSession('external-shared', 'opencode', sharedTransientPath);
+    sessionsDb.createAppSession('app-owned', 'opencode', sharedTransientPath);
+    sessionsDb.assignProviderSessionId('app-owned', 'provider-app-owned');
+    sessionsDb.createSession('regular-workdir', 'opencode', regularWorkdirPath);
+
+    runMigrations(getConnection());
+    runMigrations(getConnection());
+
+    assert.equal(sessionsDb.getSessionById('external-only'), null);
+    assert.equal(sessionsDb.getSessionById('external-shared'), null);
+    assert.ok(sessionsDb.getSessionById('app-owned'));
+    assert.ok(sessionsDb.getSessionById('regular-workdir'));
+    assert.equal(projectsDb.getProjectPath(transientOnlyPath), null);
+    assert.ok(projectsDb.getProjectPath(sharedTransientPath));
+    assert.ok(projectsDb.getProjectPath(regularWorkdirPath));
   });
 });

@@ -212,6 +212,29 @@ export function normalizeProjectPath(inputPath: string): string {
 }
 
 /**
+ * Identifies disposable Multica task directories that OpenCode records under
+ * its global project. The Providers module uses this to avoid indexing external
+ * automation runs, while the Database module uses the same rule to remove old
+ * WindCli index rows. A normal project named `workdir` does not match unless its
+ * trailing structure is `multica_workspaces_* / <workspace> / <8 hex> / workdir`.
+ */
+export function isTransientMulticaWorkdirPath(inputPath: string): boolean {
+  const normalizedPath = normalizeProjectPath(inputPath);
+  const segments = normalizedPath.split(/[\\/]+/).filter(Boolean);
+  if (segments.length < 4) {
+    return false;
+  }
+
+  const [multicaRoot, workspaceId, runId, directoryName] = segments.slice(-4);
+  return (
+    /^multica_workspaces_.+/i.test(multicaRoot)
+    && workspaceId.length > 0
+    && /^[0-9a-f]{8}$/i.test(runId)
+    && directoryName.toLowerCase() === 'workdir'
+  );
+}
+
+/**
  * Validates that a user-supplied workspace path is safe to use.
  *
  * Call this before any filesystem mutation that creates or registers projects.

@@ -11,6 +11,7 @@ import {
   USER_NOTIFICATION_PREFERENCES_TABLE_SCHEMA_SQL,
   VAPID_KEYS_TABLE_SCHEMA_SQL,
 } from '@/modules/database/schema.js';
+import { isTransientMulticaWorkdirPath } from '@/shared/utils.js';
 
 const SQLITE_UUID_SQL = `
 lower(hex(randomblob(4))) || '-' ||
@@ -430,6 +431,56 @@ const addSessionEffortColumn = (db: Database): void => {
   addColumnToTableIfNotExists(db, 'sessions', columnNames, 'effort', 'TEXT');
 };
 
+/**
+ * Removes WindCli's local index copies of external Multica automation sessions.
+ * Provider-owned source history remains in OpenCode's database. App-created
+ * sessions are retained because their stable app id differs from the provider id.
+ */
+const purgeTransientExternalOpenCodeSessions = (db: Database): void => {
+  const candidates = db.prepare(`
+    SELECT session_id, project_path
+    FROM sessions
+    WHERE provider = 'opencode'
+      AND provider_session_id IS NOT NULL
+      AND session_id = provider_session_id
+      AND project_path IS NOT NULL
+  `).all() as Array<{ session_id: string; project_path: string }>;
+  const transientSessions = candidates.filter((row) =>
+    isTransientMulticaWorkdirPath(row.project_path)
+  );
+  if (transientSessions.length === 0) {
+    return;
+  }
+
+  const purge = db.transaction(() => {
+    const affectedProjectPaths = new Set<string>();
+    const deleteSession = db.prepare('DELETE FROM sessions WHERE session_id = ?');
+    const deleteUnreferencedProject = db.prepare(`
+      DELETE FROM projects
+      WHERE project_path = ?
+        AND NOT EXISTS (
+          SELECT 1
+          FROM sessions
+          WHERE sessions.project_path = projects.project_path
+        )
+    `);
+
+    for (const session of transientSessions) {
+      deleteSession.run(session.session_id);
+      affectedProjectPaths.add(session.project_path);
+    }
+
+    for (const projectPath of affectedProjectPaths) {
+      deleteUnreferencedProject.run(projectPath);
+    }
+  });
+
+  purge();
+  console.log(
+    `Running migration: Removed ${transientSessions.length} transient external OpenCode session index row(s)`,
+  );
+};
+
 const ensureProjectsForSessionPaths = (db: Database): void => {
   if (!tableExists(db, 'sessions')) {
     return;
@@ -487,6 +538,7 @@ export const runMigrations = (db: Database) => {
     addProviderSessionIdMapping(db);
     addSessionModelColumn(db);
     addSessionEffortColumn(db);
+    purgeTransientExternalOpenCodeSessions(db);
     ensureProjectsForSessionPaths(db);
 
     db.exec('CREATE INDEX IF NOT EXISTS idx_session_ids_lookup ON sessions(session_id)');

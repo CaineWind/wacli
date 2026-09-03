@@ -7,6 +7,7 @@ import { sessionsDb } from '@/modules/database/index.js';
 import type { IProviderSessionSynchronizer } from '@/shared/interfaces.js';
 import {
   getOpenCodeDatabasePath,
+  isTransientMulticaWorkdirPath,
   normalizeProviderTimestamp,
   normalizeSessionName,
   readJsonRecord,
@@ -16,6 +17,7 @@ import {
 
 type OpenCodeSessionRow = {
   id: string;
+  project_id: string;
   directory: string | null;
   title: string | null;
   time_created: number | null;
@@ -68,6 +70,7 @@ export class OpenCodeSessionSynchronizer implements IProviderSessionSynchronizer
       const rows = db.prepare(`
         SELECT
           s.id AS id,
+          s.project_id AS project_id,
           s.directory AS directory,
           s.title AS title,
           s.time_created AS time_created,
@@ -116,6 +119,21 @@ export class OpenCodeSessionSynchronizer implements IProviderSessionSynchronizer
     const pendingAppSession = sessionsDb.getSessionByProviderSessionId(sessionId)
       ?? sessionsDb.getSessionById(sessionId)
       ?? sessionsDb.findLatestPendingAppSession(this.provider, projectPath);
+    const isWindCliSession = Boolean(
+      pendingAppSession
+      && (
+        pendingAppSession.session_id !== sessionId
+        || !pendingAppSession.provider_session_id
+      )
+    );
+    if (
+      row.project_id === 'global'
+      && isTransientMulticaWorkdirPath(projectPath)
+      && !isWindCliSession
+    ) {
+      return null;
+    }
+
     if (pendingAppSession && !pendingAppSession.provider_session_id) {
       // Slow networks can let the sqlite watcher index opencode.db before the
       // runtime reports its provider id back through the websocket mapping.
