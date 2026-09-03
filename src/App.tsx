@@ -6,6 +6,7 @@ import { AuthProvider, ProtectedRoute } from './components/auth';
 import { TasksSettingsProvider } from './contexts/TasksSettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { PluginsProvider } from './contexts/PluginsContext';
+import { PwaInstallProvider } from './contexts/PwaInstallProvider';
 import AppContent from './components/app/AppContent';
 import PwaLifecycle from './components/app/PwaLifecycle';
 import i18n from './i18n/config.js';
@@ -108,23 +109,25 @@ export default function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider>
-        <PwaLifecycle />
-        <AuthProvider>
-          <ProtectedRoute>
-            <WebSocketProvider>
-              <PluginsProvider>
-                <TasksSettingsProvider>
-                  <Router basename={routerBasename}>
-                    <Routes>
-                      <Route path="/" element={<AppContent />} />
-                      <Route path="/session/:sessionId" element={<AppContent />} />
-                    </Routes>
-                  </Router>
-                </TasksSettingsProvider>
-              </PluginsProvider>
-            </WebSocketProvider>
-          </ProtectedRoute>
-        </AuthProvider>
+        <PwaInstallProvider>
+          <PwaLifecycle />
+          <AuthProvider>
+            <ProtectedRoute>
+              <WebSocketProvider>
+                <PluginsProvider>
+                  <TasksSettingsProvider>
+                    <Router basename={routerBasename}>
+                      <Routes>
+                        <Route path="/" element={<AppContent />} />
+                        <Route path="/session/:sessionId" element={<AppContent />} />
+                      </Routes>
+                    </Router>
+                  </TasksSettingsProvider>
+                </PluginsProvider>
+              </WebSocketProvider>
+            </ProtectedRoute>
+          </AuthProvider>
+        </PwaInstallProvider>
       </ThemeProvider>
     </I18nextProvider>
   );

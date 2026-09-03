@@ -3,26 +3,23 @@ import { Download, RefreshCw, Wifi, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
+import { usePwaInstall } from '../../contexts/PwaInstallContext';
+
 import { resolvePwaPromptKind } from './pwaLifecycleState';
-
-type InstallChoice = {
-  outcome: 'accepted' | 'dismissed';
-  platform: string;
-};
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<InstallChoice>;
-}
 
 const UPDATE_INTERVAL_MS = 60 * 60 * 1000;
 
 export default function PwaLifecycle() {
   const { t } = useTranslation('common');
   const [registration, setRegistration] = useState<ServiceWorkerRegistration>();
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent>();
-  const [installDismissed, setInstallDismissed] = useState(false);
   const [offlineDismissed, setOfflineDismissed] = useState(false);
+  const {
+    automaticPromptVisible,
+    canInstall,
+    dismissAutomaticPrompt,
+    install,
+    recordAutomaticPromptShown,
+  } = usePwaInstall();
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     offlineReady: [offlineReady, setOfflineReady],
@@ -44,34 +41,22 @@ export default function PwaLifecycle() {
   }, [registration]);
 
   useEffect(() => {
-    const handleInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setInstallPrompt(event as BeforeInstallPromptEvent);
-      setInstallDismissed(false);
-    };
-    const handleInstalled = () => setInstallPrompt(undefined);
-
-    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
-    window.addEventListener('appinstalled', handleInstalled);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
-      window.removeEventListener('appinstalled', handleInstalled);
-    };
-  }, []);
-
-  useEffect(() => {
     if (!offlineReady) return undefined;
     const timeout = window.setTimeout(() => setOfflineDismissed(true), 8000);
     return () => window.clearTimeout(timeout);
   }, [offlineReady]);
 
   const promptKind = resolvePwaPromptKind({
-    installAvailable: Boolean(installPrompt),
-    installDismissed,
+    installAvailable: canInstall && automaticPromptVisible,
+    installDismissed: false,
     needRefresh,
     offlineDismissed,
     offlineReady,
   });
+
+  useEffect(() => {
+    if (promptKind === 'install') recordAutomaticPromptShown();
+  }, [promptKind, recordAutomaticPromptShown]);
 
   if (!promptKind) return null;
 
@@ -96,7 +81,7 @@ export default function PwaLifecycle() {
 
   const dismiss = () => {
     if (promptKind === 'update') setNeedRefresh(false);
-    if (promptKind === 'install') setInstallDismissed(true);
+    if (promptKind === 'install') dismissAutomaticPrompt();
     if (promptKind === 'offline') {
       setOfflineDismissed(true);
       setOfflineReady(false);
@@ -108,11 +93,7 @@ export default function PwaLifecycle() {
       await updateServiceWorker(true);
       return;
     }
-    if (promptKind === 'install' && installPrompt) {
-      await installPrompt.prompt();
-      await installPrompt.userChoice;
-      setInstallPrompt(undefined);
-    }
+    if (promptKind === 'install') await install();
   };
 
   return (
