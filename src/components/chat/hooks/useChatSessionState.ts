@@ -13,6 +13,7 @@ import { createCachedDiffCalculator, type DiffCalculator } from '../utils/messag
 import { normalizedToChatMessages } from './useChatMessages';
 
 const INITIAL_VISIBLE_MESSAGES = 100;
+const EMPTY_SESSION_MESSAGES: NormalizedMessage[] = [];
 
 interface UseChatSessionStateArgs {
   isActive: boolean;
@@ -157,6 +158,7 @@ export function useChatSessionState({
   const loadAllFinishedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadAllOverlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLoadedSessionKeyRef = useRef<string | null>(null);
+  const initialHistoryRequestGenerationRef = useRef(0);
   /**
    * Tracks the last processed value from `useProjectsState.newSessionTrigger`.
    *
@@ -324,10 +326,12 @@ export function useChatSessionState({
     setPendingUserMessage(null);
   }, [activeSessionId, pendingUserMessage, sessionStore]);
 
-  const storeMessages = useMemo(
-    () => (activeSessionId ? sessionStore.getMessages(activeSessionId) : []),
-    [activeSessionId, sessionStore],
-  );
+  // The store mutates its session map and uses an internal tick to publish
+  // changes. Read on every published render; memoizing by the stable store
+  // object would retain the first array forever.
+  const storeMessages = activeSessionId
+    ? sessionStore.getMessages(activeSessionId)
+    : EMPTY_SESSION_MESSAGES;
 
   // Reset viewHiddenCount when store messages change
   const prevStoreLenRef = useRef(0);
@@ -610,6 +614,8 @@ export function useChatSessionState({
       setTotalMessages(0);
       setTokenBudget(null);
       lastLoadedSessionKeyRef.current = null;
+      initialHistoryRequestGenerationRef.current += 1;
+      setIsLoadingSessionMessages(false);
       return;
     }
 
@@ -621,9 +627,19 @@ export function useChatSessionState({
     const sessionKey = `${selectedSessionId}:${selectedProject.projectId}`;
 
     const existingSlot = sessionStore.getSessionSlot(selectedSessionId);
+    const isCurrentLoadingSession =
+      lastLoadedSessionKeyRef.current === sessionKey
+      && existingSlot?.status === 'loading';
     const isCurrentHydratedSession =
       lastLoadedSessionKeyRef.current === sessionKey
       && Boolean(existingSlot?.fetchedAt);
+
+    // Setting currentSessionId publishes another render while the first
+    // history request is still pending. Keep that render attached to the
+    // in-flight store request instead of starting another fetch.
+    if (isCurrentLoadingSession) {
+      return;
+    }
 
     // Returning from another tab must not reset pagination or scroll. Refresh
     // a stale hydrated session through the bounded tail path instead.
@@ -661,6 +677,7 @@ export function useChatSessionState({
     setCurrentSessionId(selectedSessionId);
 
     lastLoadedSessionKeyRef.current = sessionKey;
+    const requestGeneration = ++initialHistoryRequestGenerationRef.current;
 
     // Fetch from server → store updates → chatMessages re-derives automatically
     setIsLoadingSessionMessages(true);
@@ -672,6 +689,12 @@ export function useChatSessionState({
         && activeSessionIdRef.current === selectedSessionId
       ),
     }).then(slot => {
+      if (
+        initialHistoryRequestGenerationRef.current !== requestGeneration
+        || activeSessionIdRef.current !== selectedSessionId
+      ) {
+        return;
+      }
       if (slot) {
         setHasMoreMessages(slot.hasMore);
         setTotalMessages(slot.total);
@@ -680,9 +703,13 @@ export function useChatSessionState({
           setTokenBudget((slot.tokenUsage as Record<string, unknown> | null) ?? null);
         }
       }
-      setIsLoadingSessionMessages(false);
-    }).catch(() => {
-      setIsLoadingSessionMessages(false);
+    }).catch(() => undefined).finally(() => {
+      if (
+        initialHistoryRequestGenerationRef.current === requestGeneration
+        && activeSessionIdRef.current === selectedSessionId
+      ) {
+        setIsLoadingSessionMessages(false);
+      }
     });
   }, [
     isActive,
@@ -846,22 +873,30 @@ export function useChatSessionState({
       setTokenBudget(null);
       return;
     }
+    let cancelled = false;
     const fetchInitialTokenUsage = async () => {
       try {
         // The provider module resolves storage and provider details from the session id.
         const url = `/api/providers/sessions/${encodeURIComponent(selectedSession.id)}/token-usage`;
         const response = await authenticatedFetch(url);
+        if (cancelled) return;
         if (response.ok) {
           const payload = await response.json();
+          if (cancelled) return;
           setTokenBudget(payload.data ?? null);
         } else {
           setTokenBudget(null);
         }
       } catch (error) {
-        console.error('Failed to fetch initial token usage:', error);
+        if (!cancelled) {
+          console.error('Failed to fetch initial token usage:', error);
+        }
       }
     };
-    fetchInitialTokenUsage();
+    void fetchInitialTokenUsage();
+    return () => {
+      cancelled = true;
+    };
   }, [selectedSession?.id]);
 
   const visibleMessages = useMemo(() => {
