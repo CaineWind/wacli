@@ -3,6 +3,16 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.38.2](https://github.com/CaineWind/wacli/compare/v1.38.1...v1.38.2) (2026-09-03)
+
+### Bug Fixes
+
+* **herdr:** stabilize mobile keyboard focus ([cd01375](https://github.com/CaineWind/wacli/commit/cd01375f6956accda1799d1e1b379b4552f1d4ae))
+
+### Documentation
+
+* add privacy-safe new session screenshot ([bcb0390](https://github.com/CaineWind/wacli/commit/bcb0390af1ed65009188c7cab7aca72dc4f6a68a))
+
 ## [1.38.1](https://github.com/CaineWind/wacli/compare/v1.38.0...v1.38.1) (2026-09-03)
 
 ### Bug Fixes
