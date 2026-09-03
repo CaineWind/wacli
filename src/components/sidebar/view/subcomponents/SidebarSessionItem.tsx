@@ -40,6 +40,7 @@ const PROVIDER_LABELS: Record<LLMProvider, string> = {
   codex: 'Codex',
   cursor: 'Cursor',
   opencode: 'OpenCode',
+  pi: 'Pi',
 };
 
 type CopyState = 'loading' | 'idle' | 'copying' | 'copied' | 'error';

@@ -313,8 +313,10 @@ test('providerMcpService global adder writes to all providers and rejects unsupp
       workspacePath,
     });
 
-    assert.equal(globalResult.length, 4);
-    assert.ok(globalResult.every((entry) => entry.created === true));
+    assert.equal(globalResult.length, 5);
+    assert.ok(globalResult.filter((entry) => entry.provider !== 'pi').every((entry) => entry.created === true));
+    assert.equal(globalResult.find((entry) => entry.provider === 'pi')?.created, false);
+    assert.match(globalResult.find((entry) => entry.provider === 'pi')?.error ?? '', /does not provide native MCP/);
 
     const claudeProject = await readJson(path.join(workspacePath, '.mcp.json'));
     assert.ok((claudeProject.mcpServers as Record<string, unknown>)['global-http']);

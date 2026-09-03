@@ -13,6 +13,8 @@ const PROVIDER_LABELS = {
   claude: 'Claude',
   cursor: 'Cursor',
   codex: 'Codex',
+  opencode: 'OpenCode',
+  pi: 'Pi',
   system: 'System'
 };
 

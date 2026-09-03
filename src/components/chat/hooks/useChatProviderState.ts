@@ -22,9 +22,10 @@ const FALLBACK_DEFAULT_MODEL: Record<LLMProvider, string> = {
   cursor: 'gpt-5.3-codex',
   codex: 'gpt-5.4',
   opencode: 'anthropic/claude-sonnet-4-5',
+  pi: '',
 };
 
-const PROVIDERS: LLMProvider[] = ['claude', 'cursor', 'codex', 'opencode'];
+const PROVIDERS: LLMProvider[] = ['claude', 'cursor', 'codex', 'opencode', 'pi'];
 
 const readStoredProvider = (): LLMProvider => {
   const storedProvider = localStorage.getItem('selected-provider');
@@ -44,6 +45,7 @@ const FALLBACK_PERMISSION_MODES: Record<LLMProvider, PermissionMode[]> = {
   cursor: ['default', 'acceptEdits', 'bypassPermissions', 'plan'],
   codex: ['default', 'acceptEdits', 'bypassPermissions'],
   opencode: ['default', 'acceptEdits', 'bypassPermissions', 'plan'],
+  pi: ['default'],
 };
 
 type ProviderCapabilities = {
@@ -56,6 +58,9 @@ type ProviderCapabilities = {
   supportsPermissionRequests: boolean;
   supportsTokenUsage: boolean;
   supportsEffort?: boolean;
+  supportsMcp?: boolean;
+  supportsSkills?: boolean;
+  supportsPermissionSettings?: boolean;
 };
 
 type ProviderCapabilitiesApiResponse = {
@@ -137,6 +142,9 @@ export function useChatProviderState({ selectedSession, selectedProject: _select
   const [opencodeModel, setOpenCodeModel] = useState<string>(() => {
     return localStorage.getItem('opencode-model') || FALLBACK_DEFAULT_MODEL.opencode;
   });
+  const [piModel, setPiModel] = useState<string>(() => {
+    return localStorage.getItem('pi-model') || FALLBACK_DEFAULT_MODEL.pi;
+  });
 
   /**
    * Backend-owned capability matrix keyed by provider. Drives the permission
@@ -175,6 +183,12 @@ export function useChatProviderState({ selectedSession, selectedProject: _select
     if (targetProvider === 'codex') {
       setCodexModel(model);
       localStorage.setItem('codex-model', model);
+      return;
+    }
+
+    if (targetProvider === 'pi') {
+      setPiModel(model);
+      localStorage.setItem('pi-model', model);
       return;
     }
 
@@ -366,7 +380,8 @@ export function useChatProviderState({ selectedSession, selectedProject: _select
     cursor: cursorModel,
     codex: codexModel,
     opencode: opencodeModel,
-  }), [claudeModel, cursorModel, codexModel, opencodeModel]);
+    pi: piModel,
+  }), [claudeModel, cursorModel, codexModel, opencodeModel, piModel]);
 
   useEffect(() => {
     const claude = providerModelCatalog.claude;
@@ -419,6 +434,15 @@ export function useChatProviderState({ selectedSession, selectedProject: _select
       }
     }
   }, [providerModelCatalog.opencode, opencodeModel]);
+
+  useEffect(() => {
+    const pi = providerModelCatalog.pi;
+    if (pi) {
+      const next = pickStoredOrCurrent('pi-model', piModel, pi);
+      if (next !== piModel) setPiModel(next);
+      if (localStorage.getItem('pi-model') !== next) localStorage.setItem('pi-model', next);
+    }
+  }, [providerModelCatalog.pi, piModel]);
 
   useEffect(() => {
     const nextEfforts: Partial<Record<LLMProvider, string>> = {};
@@ -867,6 +891,8 @@ export function useChatProviderState({ selectedSession, selectedProject: _select
     currentProviderModelOptions,
     opencodeModel,
     setOpenCodeModel,
+    piModel,
+    setPiModel,
     permissionMode,
     setPermissionMode,
     pendingPermissionRequests,

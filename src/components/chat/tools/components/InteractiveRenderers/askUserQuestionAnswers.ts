@@ -8,6 +8,7 @@ const PROVIDER_LABELS: Record<Provider, string> = {
   codex: 'Codex',
   cursor: 'Cursor',
   opencode: 'OpenCode',
+  pi: 'Pi',
 };
 
 export function getUserInputProviderLabel(provider?: Provider): string {

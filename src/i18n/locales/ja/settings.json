@@ -322,6 +322,9 @@
       },
       "codex": {
         "description": "OpenAI Codex AIアシスタント"
+      },
+      "pi": {
+        "description": "Pi Coding Agent CLI"
       }
     },
     "connectionStatus": "接続状態",

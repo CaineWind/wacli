@@ -1,11 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { authenticatedFetch } from '../../../../../utils/api';
 import type { AgentCategory, AgentProvider } from '../../../types/types';
 
 import type { AgentContext, AgentsSettingsTabProps } from './types';
+import {
+  getVisibleAgentCategories,
+  type SettingsProviderCapabilities,
+} from './agentCategories';
 import AgentCategoryContentSection from './sections/AgentCategoryContentSection';
 import AgentCategoryTabsSection from './sections/AgentCategoryTabsSection';
 import AgentSelectorSection from './sections/AgentSelectorSection';
+
+const FALLBACK_CAPABILITIES: Record<AgentProvider, SettingsProviderCapabilities> = {
+  claude: { supportsMcp: true, supportsSkills: true, supportsPermissionSettings: true },
+  cursor: { supportsMcp: true, supportsSkills: true, supportsPermissionSettings: true },
+  codex: { supportsMcp: true, supportsSkills: true, supportsPermissionSettings: true },
+  opencode: { supportsMcp: true, supportsSkills: false, supportsPermissionSettings: false },
+  pi: { supportsMcp: false, supportsSkills: true, supportsPermissionSettings: false },
+};
 
 export default function AgentsSettingsTab({
   providerAuthStatus,
@@ -20,14 +33,14 @@ export default function AgentsSettingsTab({
 }: AgentsSettingsTabProps) {
   const [selectedAgent, setSelectedAgent] = useState<AgentProvider>('claude');
   const [selectedCategory, setSelectedCategory] = useState<AgentCategory>('account');
-  const visibleCategories = useMemo<AgentCategory[]>(() => (
-    selectedAgent === 'opencode'
-      ? ['account', 'permissions', 'mcp']
-      : ['account', 'permissions', 'mcp', 'skills']
-  ), [selectedAgent]);
+  const [capabilities, setCapabilities] = useState(FALLBACK_CAPABILITIES);
+  const visibleCategories = useMemo(
+    () => getVisibleAgentCategories(capabilities[selectedAgent]),
+    [capabilities, selectedAgent],
+  );
 
   const visibleAgents = useMemo<AgentProvider[]>(() => {
-    return ['claude', 'cursor', 'codex', 'opencode'];
+    return ['claude', 'cursor', 'codex', 'opencode', 'pi'];
   }, []);
 
   const agentContextById = useMemo<Record<AgentProvider, AgentContext>>(() => ({
@@ -47,13 +60,37 @@ export default function AgentsSettingsTab({
       authStatus: providerAuthStatus.opencode,
       onLogin: () => onProviderLogin('opencode'),
     },
+    pi: {
+      authStatus: providerAuthStatus.pi,
+      onLogin: () => onProviderLogin('pi'),
+    },
   }), [
     onProviderLogin,
     providerAuthStatus.claude,
     providerAuthStatus.codex,
     providerAuthStatus.cursor,
     providerAuthStatus.opencode,
+    providerAuthStatus.pi,
   ]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void authenticatedFetch('/api/providers/capabilities')
+      .then((response) => response.json())
+      .then((body: { data?: { providers?: Array<{ provider: AgentProvider } & SettingsProviderCapabilities> } }) => {
+        if (cancelled || !body.data?.providers) return;
+        setCapabilities(body.data.providers.reduce((result, entry) => ({
+          ...result,
+          [entry.provider]: {
+            supportsMcp: entry.supportsMcp,
+            supportsSkills: entry.supportsSkills,
+            supportsPermissionSettings: entry.supportsPermissionSettings,
+          },
+        }), FALLBACK_CAPABILITIES));
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (!visibleCategories.includes(selectedCategory)) {

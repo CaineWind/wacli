@@ -489,7 +489,7 @@
                                 <span class="endpoint-path"><span class="api-url">http://localhost:3001</span>/api/agent</span>
                             </div>
 
-                            <p>Trigger an AI agent (Claude, Cursor, Codex, or OpenCode) to work on a project.</p>
+                            <p>Trigger an AI agent (Claude, Cursor, Codex, OpenCode, or Pi) to work on a project.</p>
 
                             <h4>Request Body Parameters</h4>
                             <table>
@@ -537,14 +537,14 @@
                                         <td>string</td>
                                         <td><span class="badge badge-optional">Optional</span></td>
                                         <td id="model-options-cell">
-                                            Model identifier for the AI provider (loading from constants...)
+                                            Model identifier for the AI provider. Pi model identifiers use the complete <code>provider/model</code> value (loading from providers...)
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><code>effort</code></td>
                                         <td>string</td>
                                         <td><span class="badge badge-optional">Optional</span></td>
-                                        <td>Reasoning effort for Claude, Codex, and OpenCode models that expose effort metadata. Use <code>default</code> or omit it to let the provider decide.</td>
+                                        <td>Reasoning effort for Claude, Codex, OpenCode, and Pi models that expose effort metadata. Pi accepts <code>off</code>, <code>minimal</code>, <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code>, and <code>max</code>. Use <code>default</code> or omit it to let the provider decide.</td>
                                     </tr>
                                     <tr>
                                         <td><code>cleanup</code></td>
@@ -839,6 +839,7 @@ data: {"type":"done"}</code></pre>
             { id: 'codex',    name: 'OpenAI' },
             { id: 'cursor',   name: 'Cursor' },
             { id: 'opencode', name: 'OpenCode' },
+            { id: 'pi',       name: 'Pi' },
         ];
 
         async function populateModels() {

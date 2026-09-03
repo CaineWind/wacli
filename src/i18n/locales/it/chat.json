@@ -17,7 +17,8 @@
     "tool": "Strumento",
     "claude": "Claude",
     "cursor": "Cursor",
-    "codex": "Codex"
+    "codex": "Codex",
+    "pi": "Pi"
   },
   "tools": {
     "settings": "Impostazioni strumento",
@@ -133,6 +134,7 @@
       "claude": "Pronto a usare Claude con {{model}}. Inizia a digitare il tuo messaggio qui sotto.",
       "cursor": "Pronto a usare Cursor con {{model}}. Inizia a digitare il tuo messaggio qui sotto.",
       "codex": "Pronto a usare Codex con {{model}}. Inizia a digitare il tuo messaggio qui sotto.",
+      "pi": "Pi è pronto con {{model}}. Inizia a digitare il tuo messaggio qui sotto.",
       "default": "Seleziona un provider sopra per iniziare"
     },
     "pressToSearch": "Premi <kbd>{{shortcut}}</kbd> per cercare sessioni, file e commit"

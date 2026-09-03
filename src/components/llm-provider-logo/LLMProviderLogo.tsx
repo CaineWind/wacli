@@ -4,6 +4,7 @@ import ClaudeLogo from './ClaudeLogo';
 import CodexLogo from './CodexLogo';
 import CursorLogo from './CursorLogo';
 import OpenCodeLogo from './OpenCodeLogo';
+import PiLogo from './PiLogo';
 
 type LLMProviderLogoProps = {
   provider?: LLMProvider | string | null;
@@ -24,6 +25,10 @@ export default function LLMProviderLogo({
 
   if (provider === 'opencode') {
     return <OpenCodeLogo className={className} />;
+  }
+
+  if (provider === 'pi') {
+    return <PiLogo className={className} />;
   }
 
   return <ClaudeLogo className={className} />;

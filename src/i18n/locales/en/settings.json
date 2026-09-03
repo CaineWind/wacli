@@ -360,6 +360,9 @@
       },
       "opencode": {
         "description": "OpenCode CLI assistant"
+      },
+      "pi": {
+        "description": "Pi Coding Agent CLI"
       }
     },
     "connectionStatus": "Connection Status",

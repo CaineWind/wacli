@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { providerRegistry } from '@/modules/providers/provider.registry.js';
+import { providerCapabilitiesService } from '@/modules/providers/services/provider-capabilities.service.js';
 import { createProviderRuntimeService } from '@/modules/providers/services/provider-runtime.service.js';
 import type { IProvider, IProviderRuntime } from '@/shared/interfaces.js';
 import type { LLMProvider } from '@/shared/types.js';
@@ -76,9 +77,18 @@ test('providerRegistry owns one runtime for every registered provider', () => {
     'codex',
     'cursor',
     'opencode',
+    'pi',
   ]);
   assert.equal(providers.every((provider) => typeof provider.runtime.run === 'function'), true);
   assert.equal(providers.every((provider) => typeof provider.runtime.abort === 'function'), true);
+});
+
+test('Pi capabilities expose skills while hiding MCP and permission settings', () => {
+  const capabilities = providerCapabilitiesService.getProviderCapabilities('pi');
+  assert.equal(capabilities.supportsSkills, true);
+  assert.equal(capabilities.supportsMcp, false);
+  assert.equal(capabilities.supportsPermissionSettings, false);
+  assert.equal(capabilities.supportsPermissionRequests, false);
 });
 
 test('dispatches runs and aborts through the runtime owned by providerRegistry', async () => {

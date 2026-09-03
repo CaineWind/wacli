@@ -351,6 +351,9 @@
       },
       "opencode": {
         "description": "OpenCode CLI 어시스턴트"
+      },
+      "pi": {
+        "description": "Pi Coding Agent CLI"
       }
     },
     "connectionStatus": "연결 상태",

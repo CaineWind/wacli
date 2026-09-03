@@ -42,6 +42,8 @@ interface ChatMessagesPaneProps {
   setCodexModel: (model: string) => void;
   opencodeModel: string;
   setOpenCodeModel: (model: string) => void;
+  piModel: string;
+  setPiModel: (model: string) => void;
   providerModelCatalog: Partial<Record<LLMProvider, ProviderModelsDefinition>>;
   providerModelActions: ProviderModelActions;
   providerModelsLoading: boolean;
@@ -91,6 +93,8 @@ function ChatMessagesPane({
   setCodexModel,
   opencodeModel,
   setOpenCodeModel,
+  piModel,
+  setPiModel,
   providerModelCatalog,
   providerModelActions,
   providerModelsLoading,
@@ -198,6 +202,8 @@ function ChatMessagesPane({
           setCodexModel={setCodexModel}
           opencodeModel={opencodeModel}
           setOpenCodeModel={setOpenCodeModel}
+          piModel={piModel}
+          setPiModel={setPiModel}
           providerModelCatalog={providerModelCatalog}
           providerModelActions={providerModelActions}
           providerModelsLoading={providerModelsLoading}

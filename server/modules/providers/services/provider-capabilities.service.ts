@@ -25,6 +25,12 @@ type ProviderCapabilities = {
   supportsTokenUsage: boolean;
   /** Whether the provider runtime can accept model-level reasoning effort. */
   supportsEffort: boolean;
+  /** Whether the provider exposes configurable MCP servers. */
+  supportsMcp: boolean;
+  /** Whether the provider exposes discoverable/installable skills. */
+  supportsSkills: boolean;
+  /** Whether the Settings UI has provider permission controls. */
+  supportsPermissionSettings: boolean;
 };
 
 /**
@@ -44,6 +50,9 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     supportsPermissionRequests: true,
     supportsTokenUsage: true,
     supportsEffort: true,
+    supportsMcp: true,
+    supportsSkills: true,
+    supportsPermissionSettings: true,
   },
   cursor: {
     provider: 'cursor',
@@ -55,6 +64,9 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     supportsPermissionRequests: false,
     supportsTokenUsage: false,
     supportsEffort: false,
+    supportsMcp: true,
+    supportsSkills: true,
+    supportsPermissionSettings: true,
   },
   codex: {
     provider: 'codex',
@@ -66,6 +78,9 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     supportsPermissionRequests: false,
     supportsTokenUsage: true,
     supportsEffort: true,
+    supportsMcp: true,
+    supportsSkills: true,
+    supportsPermissionSettings: true,
   },
   opencode: {
     provider: 'opencode',
@@ -80,6 +95,23 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     supportsPermissionRequests: false,
     supportsTokenUsage: true,
     supportsEffort: true,
+    supportsMcp: true,
+    supportsSkills: false,
+    supportsPermissionSettings: false,
+  },
+  pi: {
+    provider: 'pi',
+    permissionModes: ['default'],
+    defaultPermissionMode: 'default',
+    supportsImages: true,
+    supportsFiles: true,
+    supportsAbort: true,
+    supportsPermissionRequests: false,
+    supportsTokenUsage: true,
+    supportsEffort: true,
+    supportsMcp: false,
+    supportsSkills: true,
+    supportsPermissionSettings: false,
   },
 };
 

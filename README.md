@@ -1,6 +1,6 @@
 # WindCli
 
-A web-based UI for Claude Code, Codex, Cursor CLI, and OpenCode.
+A web-based UI for Claude Code, Codex, Cursor CLI, OpenCode, and Pi Coding Agent.
 
 ![WindCli new session](docs/screenshots/windcli-new-session-v1.38.1.png)
 
@@ -11,6 +11,13 @@ grateful to the original project and its contributors for the foundation.
 ## Run locally
 
 Requires Node.js 22 or newer.
+
+Pi support uses the external `pi` executable from
+`@earendil-works/pi-coding-agent` 0.84.2 or newer. Install it separately and
+authenticate a model in the Pi TUI with `/login` (or configure the relevant
+provider environment variable). WindCli does not read or manage upstream API
+keys. Pi sessions are discovered from `PI_CODING_AGENT_SESSION_DIR`, then the
+global Pi `sessionDir` setting, then `~/.pi/agent/sessions`.
 
 ```sh
 npx wind-agent-cli

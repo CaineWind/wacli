@@ -65,7 +65,7 @@ server/modules/providers/list/<provider>/
   <provider>-session-synchronizer.provider.ts
 ```
 
-The existing provider folders are `claude`, `codex`, `cursor`, and `opencode`.
+The existing provider folders are `claude`, `codex`, `cursor`, `opencode`, and `pi`.
 
 Each provider wrapper owns its SDK/CLI runtime alongside its auth, model, and
 session facets. Runtime adapters receive registry-backed model and session
@@ -143,6 +143,7 @@ Current MCP formats in this repo are:
 | Codex | `.codex/config.toml` | `user`, `project` | `stdio`, `http` |
 | Cursor | `.cursor/mcp.json` | `user`, `project` | `stdio`, `http` |
 | OpenCode | `~/.config/opencode/opencode.json` or `<workspace>/opencode.json` (`.jsonc` is read when present) | `user`, `project` | `stdio`, `http` |
+| Pi | Not supported by Pi core | none | none |
 
 5. Implement skills.
 
@@ -163,6 +164,7 @@ Current skill discovery roots are:
 | Codex | `~/.agents/skills`, `~/.codex/skills/.system`, `/etc/codex/skills` | `<workspace>/.agents/skills`, `path.dirname(workspacePath)/.agents/skills`, topmost git root `.agents/skills` | `$` | Overlapping roots are deduplicated before scanning. |
 | Cursor | `~/.cursor/skills` | `<workspace>/.cursor/skills`, `<workspace>/.agents/skills` | `/` | Uses slash-style commands. |
 | OpenCode | `~/.config/opencode/skills`, `~/.claude/skills`, `~/.agents/skills` | Cwd-to-topmost-git-root `.opencode/skills`, `.claude/skills`, and `.agents/skills` | `/` | Reuses OpenCode, Claude, and Agents skill locations. Overlapping roots are deduplicated before scanning. |
+| Pi | `~/.pi/agent/skills`, `~/.agents/skills` | `<workspace>/.pi/skills` plus cwd-to-topmost-git-root `.agents/skills` | `/skill:` | Project skill paths are passed explicitly while project packages and extensions remain untrusted. |
 
 Command forms currently used by the providers are:
 
@@ -171,6 +173,7 @@ Command forms currently used by the providers are:
 - Codex skills: `$skill-name`
 - Cursor skills: `/skill-name`
 - OpenCode skills: `/skill-name`
+- Pi skills: `/skill:skill-name`
 
 6. Implement sessions.
 
@@ -208,6 +211,7 @@ Current session sync roots are:
 | Codex | `~/.codex/sessions/**/*.jsonl` | Uses `~/.codex/session_index.jsonl` for title lookup and the last `task_complete` message for a fallback title. |
 | Cursor | `~/.cursor/projects/**/*.jsonl` | Uses sibling `worker.log` to recover `workspacePath`, then derives the session title from the first user prompt. |
 | OpenCode | `~/.local/share/opencode/opencode.db` | Reads active sessions/messages/parts from OpenCode's shared SQLite database and stores `jsonl_path` as `null` so deleting one app session cannot remove the shared DB. |
+| Pi | `PI_CODING_AGENT_SESSION_DIR`, global `sessionDir`, or `~/.pi/agent/sessions/**/*.jsonl` | Uses the v3 session header, indexes the latest session info/first user prompt, and reconstructs the active `id`/`parentId` branch for history. |
 
 8. Register the provider.
 

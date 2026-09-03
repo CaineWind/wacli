@@ -18,7 +18,8 @@
     "claude": "Claude",
     "cursor": "Cursor",
     "codex": "Codex",
-    "opencode": "OpenCode"
+    "opencode": "OpenCode",
+    "pi": "Pi"
   },
   "tools": {
     "settings": "Ajustes de herramientas",
@@ -161,6 +162,7 @@
       "cursor": "Listo para usar Cursor con {{model}}. Escribe tu mensaje abajo.",
       "codex": "Listo para usar Codex con {{model}}. Escribe tu mensaje abajo.",
       "opencode": "Listo para usar OpenCode con {{model}}. Escribe tu mensaje abajo.",
+      "pi": "Pi está listo con {{model}}. Escribe tu mensaje abajo.",
       "default": "Selecciona un proveedor arriba para empezar"
     },
     "pressToSearch": "Pulsa <kbd>{{shortcut}}</kbd> para buscar sesiones, archivos y commits"

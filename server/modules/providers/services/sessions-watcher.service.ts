@@ -10,6 +10,7 @@ import { WS_OPEN_STATE, connectedClients } from '@/modules/websocket/index.js';
 import type { LLMProvider } from '@/shared/types.js';
 import { generateDisplayName } from '@/modules/projects/index.js';
 import { SessionWatchScheduler } from '@/modules/providers/services/session-watch-scheduler.js';
+import { getPiSessionDirectory } from '@/modules/providers/list/pi/index.js';
 
 const PROVIDER_WATCH_PATHS: Array<{ provider: LLMProvider; rootPath: string }> = [
   {
@@ -27,6 +28,10 @@ const PROVIDER_WATCH_PATHS: Array<{ provider: LLMProvider; rootPath: string }> =
   {
     provider: 'opencode',
     rootPath: path.join(os.homedir(), '.local', 'share', 'opencode'),
+  },
+  {
+    provider: 'pi',
+    rootPath: getPiSessionDirectory(),
   },
 ];
 
