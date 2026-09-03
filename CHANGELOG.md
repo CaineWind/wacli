@@ -3,6 +3,12 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.38.3](https://github.com/CaineWind/wacli/compare/v1.38.2...v1.38.3) (2026-09-03)
+
+### Bug Fixes
+
+* **pwa:** show install prompt only once ([edbfc14](https://github.com/CaineWind/wacli/commit/edbfc14bbb7fe6210d19096c382e23e38db6fa2d))
+
 ## [1.38.2](https://github.com/CaineWind/wacli/compare/v1.38.1...v1.38.2) (2026-09-03)
 
 ### Bug Fixes
