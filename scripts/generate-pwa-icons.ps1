@@ -1,5 +1,5 @@
 param(
-  [string]$Source = "public/icons/new-icon.png"
+  [string]$Source = "public/icons/new.png"
 )
 
 $ErrorActionPreference = "Stop"
