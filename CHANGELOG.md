@@ -3,6 +3,12 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.39.4](https://github.com/CaineWind/wacli/compare/v1.39.3...v1.39.4) (2026-09-04)
+
+### Performance
+
+* **server:** compress HTTP responses ([e3a6b9d](https://github.com/CaineWind/wacli/commit/e3a6b9d9756c3a50eaeed3dbacd5266c92217c67))
+
 ## [1.39.3](https://github.com/CaineWind/wacli/compare/v1.39.2...v1.39.3) (2026-09-04)
 
 ### New Features
