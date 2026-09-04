@@ -215,6 +215,11 @@
       "connect": "在 Shell 中繼續",
       "connectTitle": "連線到 Shell"
     },
+    "clipboard": {
+      "retry": "瀏覽器阻止了自動複製，請點擊「複製」完成操作。",
+      "copy": "複製",
+      "dismiss": "關閉"
+    },
     "loading": "正在載入終端機...",
     "connecting": "正在連線到 Shell...",
     "startSession": "啟動新的 Claude 工作階段",

@@ -65,6 +65,7 @@ export type UseShellRuntimeOptions = {
   isRestarting: boolean;
   onProcessComplete?: ((exitCode: number) => void) | null;
   onOutputRef?: MutableRefObject<(() => void) | null>;
+  onClipboardWriteFailure?: (text: string) => void;
   shellSessionId?: string | null;
   shellMode?: ShellMode;
 };

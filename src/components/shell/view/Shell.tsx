@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Copy, X } from 'lucide-react';
 
 import '@xterm/xterm/css/xterm.css';
 import type { Project, ProjectSession } from '../../../types/app';
@@ -16,6 +17,7 @@ import { useShellRuntime } from '../hooks/useShellRuntime';
 import { sendSocketMessage } from '../utils/socket';
 import { getSessionDisplayName } from '../utils/auth';
 import { resolveShellProjectPath } from '../utils/shellProject';
+import { copyTextToClipboardFromUserGesture } from '../../../utils/clipboard';
 
 import ShellConnectionOverlay from './subcomponents/ShellConnectionOverlay';
 import ShellEmptyState from './subcomponents/ShellEmptyState';
@@ -53,6 +55,7 @@ export default function Shell({
   const { t } = useTranslation('chat');
   const [isRestarting, setIsRestarting] = useState(false);
   const [cliPromptOptions, setCliPromptOptions] = useState<CliPromptOption[] | null>(null);
+  const [pendingClipboardText, setPendingClipboardText] = useState<string | null>(null);
   const promptCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const restartAfterInitRef = useRef(false);
@@ -77,6 +80,7 @@ export default function Shell({
     isRestarting,
     onProcessComplete,
     onOutputRef,
+    onClipboardWriteFailure: setPendingClipboardText,
     shellSessionId,
     shellMode,
   });
@@ -160,6 +164,7 @@ export default function Shell({
         promptCheckTimer.current = null;
       }
       setCliPromptOptions(null);
+      setPendingClipboardText(null);
     }
   }, [isConnected]);
 
@@ -187,6 +192,17 @@ export default function Shell({
     },
     [wsRef],
   );
+
+  const retryClipboardCopy = useCallback(async () => {
+    const text = pendingClipboardText;
+    if (!text) {
+      return;
+    }
+
+    if (await copyTextToClipboardFromUserGesture(text)) {
+      setPendingClipboardText((current) => current === text ? null : current);
+    }
+  }, [pendingClipboardText]);
 
   const sessionDisplayName = useMemo(() => getSessionDisplayName(selectedSession), [selectedSession]);
   const sessionDisplayNameShort = useMemo(
@@ -315,6 +331,35 @@ export default function Shell({
             connectingLabel={t('shell.connecting')}
             onConnect={handleRestartShell}
           />
+        )}
+
+        {pendingClipboardText && (
+          <div className="absolute inset-x-3 top-3 z-20 flex items-center gap-2 rounded-md border border-amber-400/30 bg-gray-950/95 px-3 py-2 text-gray-100 shadow-lg backdrop-blur-sm">
+            <span className="min-w-0 flex-1 text-xs">
+              {t('shell.clipboard.retry', {
+                defaultValue: 'Browser clipboard access was blocked. Tap Copy to finish.',
+              })}
+            </span>
+            <button
+              type="button"
+              onPointerDown={(event) => event.preventDefault()}
+              onClick={() => void retryClipboardCopy()}
+              className="flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-blue-600 px-2.5 text-xs font-medium text-white hover:bg-blue-500"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              {t('shell.clipboard.copy', { defaultValue: 'Copy' })}
+            </button>
+            <button
+              type="button"
+              onPointerDown={(event) => event.preventDefault()}
+              onClick={() => setPendingClipboardText(null)}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-300 hover:bg-gray-800 hover:text-white"
+              title={t('shell.clipboard.dismiss', { defaultValue: 'Dismiss' })}
+              aria-label={t('shell.clipboard.dismiss', { defaultValue: 'Dismiss' })}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         )}
 
         {cliPromptOptions && isConnected && (

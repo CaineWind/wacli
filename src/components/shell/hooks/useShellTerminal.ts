@@ -21,6 +21,7 @@ import {
   installMobileTerminalSelection,
   type MobileTerminalSelectionManager,
 } from '../utils/mobileTerminalSelection';
+import { createOscClipboardProvider } from '../utils/terminalClipboard';
 import { sendSocketMessage } from '../utils/socket';
 import {
   createHerdrTouchScrollHandler,
@@ -30,34 +31,6 @@ import {
 } from '../utils/terminalInput';
 import { ensureXtermFocusStyles } from '../utils/terminalStyles';
 import { resolveShellProjectPath } from '../utils/shellProject';
-
-// CLIs running inside the pty (e.g. `claude auth login`'s "press c to copy"
-// device-flow prompt) write to the clipboard via an OSC 52 escape sequence,
-// not a browser event — xterm.js ignores OSC 52 unless a clipboard addon is
-// loaded. Routes writes through the same fallback-aware helper the terminal's
-// own selection-copy shortcut uses, since `navigator.clipboard` is often
-// unavailable on self-hosted, non-HTTPS deployments.
-// `ClipboardSelectionType.SYSTEM` is `'c'` (vs. `'p'` for the X11 primary
-// selection) — compared as a literal since the addon ships it as a const
-// enum, which isolatedModules builds (esbuild/Vite) can't import as a value.
-const oscClipboardProvider: IClipboardProvider = {
-  readText: async (selection) => {
-    if (selection !== 'c') {
-      return '';
-    }
-    try {
-      return (await navigator.clipboard?.readText?.()) || '';
-    } catch {
-      return '';
-    }
-  },
-  writeText: async (selection, text) => {
-    if (selection !== 'c') {
-      return;
-    }
-    await copyTextToClipboard(text);
-  },
-};
 
 // The addon's published typings declare a single `(provider?)` constructor
 // param, but the shipped runtime actually takes `(base64?, provider?)` — see
@@ -69,6 +42,7 @@ const ClipboardAddonCtor = ClipboardAddon as unknown as new (
 ) => ClipboardAddon;
 
 let herdrFontLoadPromise: Promise<void> | null = null;
+const ignoreClipboardWriteFailure = () => undefined;
 
 function loadHerdrFont(fontSize: number): Promise<void> {
   if (!document.fonts) {
@@ -97,6 +71,7 @@ type UseShellTerminalOptions = {
   shellMode?: ShellMode;
   minimal: boolean;
   isRestarting: boolean;
+  onClipboardWriteFailure?: (text: string) => void;
   closeSocket: () => void;
 };
 
@@ -115,6 +90,7 @@ export function useShellTerminal({
   shellMode,
   minimal,
   isRestarting,
+  onClipboardWriteFailure = ignoreClipboardWriteFailure,
   closeSocket,
 }: UseShellTerminalOptions): UseShellTerminalResult {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -171,6 +147,9 @@ export function useShellTerminal({
     fitAddonRef.current = nextFitAddon;
     nextTerminal.loadAddon(nextFitAddon);
 
+    const oscClipboardProvider = createOscClipboardProvider({
+      onCopyFailed: onClipboardWriteFailure,
+    });
     nextTerminal.loadAddon(new ClipboardAddonCtor(undefined, oscClipboardProvider));
 
     // Avoid wrapped partial links in compact login flows.
@@ -443,6 +422,7 @@ export function useShellTerminal({
     isRestarting,
     canInitializeTerminal,
     minimal,
+    onClipboardWriteFailure,
     selectedProjectKey,
     shellMode,
     terminalContainerRef,

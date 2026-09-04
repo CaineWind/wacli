@@ -19,6 +19,7 @@ export function useShellRuntime({
   isRestarting,
   onProcessComplete,
   onOutputRef,
+  onClipboardWriteFailure,
   shellSessionId,
   shellMode,
 }: UseShellRuntimeOptions): UseShellRuntimeResult {
@@ -64,6 +65,7 @@ export function useShellRuntime({
     shellMode,
     minimal,
     isRestarting,
+    onClipboardWriteFailure,
     closeSocket,
   });
 

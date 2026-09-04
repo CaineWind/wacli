@@ -1,6 +1,6 @@
 import type { IDisposable, Terminal } from '@xterm/xterm';
 
-import { copyTextToClipboard } from '../../../utils/clipboard';
+import { copyTextToClipboardFromUserGesture } from '../../../utils/clipboard';
 
 type TerminalCoords = {
   col: number;
@@ -275,7 +275,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     const [pasteLabel, copyLabel, selectAllLabel] = getMobileTerminalContextMenuLabels();
     const items: ContextMenuItem[] = [
       { label: pasteLabel, action: () => void this.pasteFromClipboard() },
-      { label: copyLabel, action: () => this.copySelection() },
+      { label: copyLabel, action: () => void this.copySelection() },
       { label: selectAllLabel, action: () => this.selectAllText() },
     ];
 
@@ -820,12 +820,15 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
     this.contextMenu.style.top = `${menuY}px`;
   }
 
-  private copySelection(): void {
+  private async copySelection(): Promise<void> {
     const selectionText = this.terminal.getSelection();
-    if (selectionText) {
-      void copyTextToClipboard(selectionText);
+    if (!selectionText) {
+      return;
     }
-    this.clearSelection();
+
+    if (await copyTextToClipboardFromUserGesture(selectionText)) {
+      this.clearSelection();
+    }
   }
 
   private async pasteFromClipboard(): Promise<void> {

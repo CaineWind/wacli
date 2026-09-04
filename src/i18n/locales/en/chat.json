@@ -207,6 +207,11 @@
       "connect": "Continue in Shell",
       "connectTitle": "Connect to shell"
     },
+    "clipboard": {
+      "retry": "Browser clipboard access was blocked. Tap Copy to finish.",
+      "copy": "Copy",
+      "dismiss": "Dismiss"
+    },
     "loading": "Loading terminal...",
     "connecting": "Connecting to shell...",
     "startSession": "Start a new Claude session",

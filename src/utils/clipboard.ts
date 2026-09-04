@@ -48,3 +48,17 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
 
   return copied;
 }
+
+export async function copyTextToClipboardFromUserGesture(text: string): Promise<boolean> {
+  if (!text) {
+    return false;
+  }
+
+  // execCommand must run synchronously while the click/touch gesture is still
+  // active. This is the only available clipboard path on many HTTP-hosted PWAs.
+  if (fallbackCopyToClipboard(text)) {
+    return true;
+  }
+
+  return copyTextToClipboard(text);
+}
