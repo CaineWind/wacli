@@ -36,7 +36,7 @@ test('Herdr terminal focus waits for touch defaults and skips stale requests', a
   assert.equal(focusCount, 2);
 });
 
-test('a plain Herdr tap prevents the browser default before restoring focus', async (t) => {
+test('a handled Herdr tap forwards its position without stealing focus', async (t) => {
   const dom = new JSDOM('<!doctype html><html><body></body></html>');
   const globalNames = ['window', 'document', 'navigator', 'HTMLElement', 'Node'] as const;
   const previousGlobals = new Map(
@@ -67,6 +67,7 @@ test('a plain Herdr tap prevents the browser default before restoring focus', as
   document.body.appendChild(terminalContent);
 
   let focusCount = 0;
+  const tapPoints: Array<{ clientX: number; clientY: number }> = [];
   const disposable = { dispose: () => undefined };
   const terminal = {
     element: terminalElement,
@@ -82,7 +83,8 @@ test('a plain Herdr tap prevents the browser default before restoring focus', as
 
   const manager = installMobileTerminalSelection(terminal, terminalContent, {
     onTouchScroll: () => false,
-  });
+    onTap: (touch: { clientX: number; clientY: number }) => tapPoints.push(touch),
+  } as Parameters<typeof installMobileTerminalSelection>[2]);
   assert.ok(manager);
 
   const touchStart = new dom.window.Event('touchstart', { bubbles: true, cancelable: true });
@@ -96,7 +98,8 @@ test('a plain Herdr tap prevents the browser default before restoring focus', as
   terminalElement.dispatchEvent(touchEnd);
 
   assert.equal(touchEnd.defaultPrevented, true);
+  assert.deepEqual(tapPoints, [{ clientX: 20, clientY: 20 }]);
   await Promise.resolve();
-  assert.equal(focusCount, 1);
+  assert.equal(focusCount, 0);
   manager.dispose();
 });

@@ -22,6 +22,7 @@ import {
 import { sendSocketMessage } from '../utils/socket';
 import {
   createHerdrTouchScrollHandler,
+  encodeHerdrLeftClickInput,
   encodeHerdrRightClickInput,
   installTerminalInputSync,
 } from '../utils/terminalInput';
@@ -181,6 +182,18 @@ export function useShellTerminal({
       nextTerminal,
       terminalContainer,
       {
+        onTap: shellMode === 'herdr'
+          ? (touch) => {
+              sendSocketMessage(wsRef.current, {
+                type: 'input',
+                data: encodeHerdrLeftClickInput(
+                  nextTerminal,
+                  touch,
+                  terminalContainer.getBoundingClientRect(),
+                ),
+              });
+            }
+          : undefined,
         onTwoFingerTap: shellMode === 'herdr'
           ? (touch) => {
               sendSocketMessage(wsRef.current, {

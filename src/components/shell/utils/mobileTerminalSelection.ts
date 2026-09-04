@@ -73,6 +73,7 @@ export type MobileTerminalSelectionOptions = {
   minFontSize?: number;
   maxFontSize?: number;
   onFontSizeChange?: (fontSize: number) => void;
+  onTap?: (touch: TouchCoords) => void;
   onTwoFingerTap?: (touch: TouchCoords) => void;
   onPaste?: () => void | Promise<void>;
   onTouchScrollReset?: () => void;
@@ -160,6 +161,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
   private readonly minFontSize: number;
   private readonly maxFontSize: number;
   private readonly onFontSizeChange: (fontSize: number) => void;
+  private readonly onTap: ((touch: TouchCoords) => void) | null;
   private readonly onTwoFingerTap: ((touch: TouchCoords) => void) | null;
   private readonly onPaste: () => void | Promise<void>;
   private readonly onTouchScrollReset: () => void;
@@ -203,6 +205,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       });
     this.onTouchScroll = options.onTouchScroll ?? null;
     this.onTouchScrollReset = options.onTouchScrollReset ?? (() => undefined);
+    this.onTap = options.onTap ?? null;
     this.onTwoFingerTap = options.onTwoFingerTap ?? null;
     this.onPaste = options.onPaste ?? (() => undefined);
 
@@ -513,6 +516,7 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
       return;
     }
 
+    const completedTouch = this.touchStart;
     this.clearTapHoldTimeout();
     this.touchStart = null;
 
@@ -532,7 +536,11 @@ class ShellMobileSelectionCore implements MobileTerminalSelectionManager {
         // Prevent the synthetic click/default focus action from running after
         // the scheduled xterm focus and dismissing the soft keyboard again.
         event.preventDefault();
-        this.scheduleTerminalFocus();
+        if (completedTouch && this.onTap) {
+          this.onTap(completedTouch);
+        } else {
+          this.scheduleTerminalFocus();
+        }
       }
       this.maybeStartInertia();
       return;

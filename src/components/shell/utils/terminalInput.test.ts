@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   createHerdrTouchScrollHandler,
   encodeTerminalBinaryInput,
+  encodeHerdrLeftClickInput,
   encodeHerdrRightClickInput,
   installTerminalInputSync,
 } from './terminalInput';
@@ -32,6 +33,27 @@ test('Herdr mobile control panel action emits an SGR right click at the tapped c
       } as DOMRect,
     ),
     '\x1b[<2;21;7M\x1b[<2;21;7m',
+  );
+});
+
+test('Herdr mobile tap emits an SGR left click at the tapped cell', () => {
+  assert.equal(
+    encodeHerdrLeftClickInput(
+      { cols: 80, rows: 24 },
+      { clientX: 100, clientY: 60 },
+      {
+        bottom: 240,
+        height: 240,
+        left: 0,
+        right: 400,
+        top: 0,
+        width: 400,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      } as DOMRect,
+    ),
+    '\x1b[<0;21;7M\x1b[<0;21;7m',
   );
 });
 

@@ -63,7 +63,8 @@ export function encodeTerminalBinaryInput(data: string): string {
   return btoa(data);
 }
 
-export function encodeHerdrRightClickInput(
+function encodeHerdrMouseClickInput(
+  button: number,
   terminal: Pick<Terminal, 'cols' | 'rows'>,
   touch?: TouchPoint,
   rect?: DOMRect,
@@ -82,7 +83,23 @@ export function encodeHerdrRightClickInput(
         terminal.rows,
       )
     : Math.max(1, Math.ceil(terminal.rows / 2));
-  return `\x1b[<2;${col};${row}M\x1b[<2;${col};${row}m`;
+  return `\x1b[<${button};${col};${row}M\x1b[<${button};${col};${row}m`;
+}
+
+export function encodeHerdrLeftClickInput(
+  terminal: Pick<Terminal, 'cols' | 'rows'>,
+  touch?: TouchPoint,
+  rect?: DOMRect,
+): string {
+  return encodeHerdrMouseClickInput(0, terminal, touch, rect);
+}
+
+export function encodeHerdrRightClickInput(
+  terminal: Pick<Terminal, 'cols' | 'rows'>,
+  touch?: TouchPoint,
+  rect?: DOMRect,
+): string {
+  return encodeHerdrMouseClickInput(2, terminal, touch, rect);
 }
 
 function clamp(value: number, min: number, max: number): number {
