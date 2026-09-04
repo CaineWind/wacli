@@ -31,6 +31,13 @@ const formatToolResult = (result: unknown): string => {
   try { return JSON.stringify(content ?? result, null, 2); } catch { return String(result ?? ''); }
 };
 
+const readAssistantError = (message: AnyRecord | null | undefined): string | null => {
+  if (readOptionalString(message?.role) !== 'assistant' || readOptionalString(message?.stopReason) !== 'error') {
+    return null;
+  }
+  return readOptionalString(message?.errorMessage) ?? 'Pi model request failed.';
+};
+
 const tokenBudgetFromEntries = (entries: AnyRecord[]): AnyRecord | undefined => {
   let input = 0;
   let output = 0;
@@ -104,6 +111,12 @@ export class PiSessionsProvider implements IProviderSessions {
         toolResult: { content: formatToolResult(raw.result), isError: Boolean(raw.isError) },
       })];
     }
+    if (type === 'message_end') {
+      const error = readAssistantError(readObjectRecord(raw.message));
+      if (error) {
+        return [createNormalizedMessage({ ...base, kind: 'error', content: error })];
+      }
+    }
     if (type === 'agent_end' && raw.willRetry !== true) {
       return [createNormalizedMessage({ ...base, kind: 'stream_end' })];
     }
@@ -159,6 +172,13 @@ export class PiSessionsProvider implements IProviderSessions {
             content: parsed.text, ...(parsed.attachments.length ? { files: parsed.attachments } : {}),
           }));
         } else if (role === 'assistant') {
+          const error = readAssistantError(message);
+          if (error) {
+            messages.push(createNormalizedMessage({
+              id, provider: 'pi', sessionId, timestamp, kind: 'error', content: error,
+            }));
+            continue;
+          }
           const content = Array.isArray(message?.content) ? message.content : [];
           content.forEach((part, index) => {
             const block = readObjectRecord(part);

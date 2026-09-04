@@ -127,6 +127,7 @@ export async function runPi(
     let terminalSent = false;
     let settled = false;
     let agentEnded = false;
+    let providerFailed = false;
     let protocolError: Error | null = null;
 
     const cleanup = () => {
@@ -167,7 +168,10 @@ export async function runPi(
         setTimeout(() => { if (child.exitCode === null) child.kill(); }, ABORT_GRACE_MS).unref();
         return;
       }
-      for (const message of context.normalizeMessage(event, sessionId)) writer.send(message);
+      for (const message of context.normalizeMessage(event, sessionId)) {
+        if (message.kind === 'error') providerFailed = true;
+        writer.send(message);
+      }
       if (event.type === 'agent_end' && event.willRetry !== true) {
         agentEnded = true;
         const tokenBudget = readTokenBudget(event);
@@ -176,7 +180,7 @@ export async function runPi(
         }));
         if (!terminalSent) {
           terminalSent = true;
-          writer.send(createCompleteMessage({ provider: 'pi', sessionId, exitCode: 0 }));
+          writer.send(createCompleteMessage({ provider: 'pi', sessionId, exitCode: providerFailed ? 1 : 0 }));
         }
         child.stdin?.end();
         setTimeout(() => {

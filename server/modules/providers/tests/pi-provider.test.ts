@@ -56,6 +56,23 @@ test('Pi sessions normalize RPC deltas and tool lifecycle events', () => {
   assert.equal(end[0].toolResult?.content, 'done');
 });
 
+test('Pi sessions expose assistant provider errors emitted inside message events', () => {
+  const sessions = new PiSessionsProvider();
+  const errors = sessions.normalizeMessage({
+    type: 'message_end',
+    message: {
+      role: 'assistant',
+      stopReason: 'error',
+      errorMessage: '401: Authentication failed',
+      content: [],
+    },
+  }, 'session-1');
+
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0].kind, 'error');
+  assert.equal(errors[0].content, '401: Authentication failed');
+});
+
 test('Pi synchronizer and history reader restore only the active JSONL branch', { concurrency: false }, async () => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'pi-history-'));
   const previousDatabasePath = process.env.DATABASE_PATH;
@@ -137,10 +154,21 @@ const seen = [];
 fs.writeFileSync(capture, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd(), seen }));
 const rl = readline.createInterface({ input: process.stdin });
 rl.on('line', (line) => {
-  seen.push(JSON.parse(line));
+  const command = JSON.parse(line);
+  seen.push(command);
   fs.writeFileSync(capture, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd(), seen }));
   const write = (event) => process.stdout.write(JSON.stringify(event) + '\\r\\n');
   write({ type: 'response', command: 'prompt', success: true });
+  if (command.message === 'Trigger provider error') {
+    const failedMessage = {
+      role: 'assistant', content: [], stopReason: 'error', errorMessage: '401: Authentication failed',
+      usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    };
+    write({ type: 'message_end', message: failedMessage });
+    write({ type: 'agent_end', messages: [failedMessage], willRetry: false });
+    rl.close();
+    return;
+  }
   write({ type: 'message_update', assistantMessageEvent: { type: 'text_delta', delta: 'Hello' } });
   write({ type: 'message_update', assistantMessageEvent: { type: 'thinking_delta', delta: 'Think' } });
   write({ type: 'tool_execution_start', toolCallId: 't1', toolName: 'read', args: { path: 'x' } });
@@ -190,6 +218,15 @@ rl.on('line', (line) => {
     assert.ok(sent.some((message) => message.kind === 'tool_result'));
     assert.ok(sent.some((message) => message.kind === 'status' && (message.tokenBudget as AnyRecord).used === 6));
     assert.equal(sent.filter((message) => message.kind === 'complete').length, 1);
+
+    const failed: AnyRecord[] = [];
+    await runPi('Trigger provider error', {
+      sessionId: '66666666-6666-4666-8666-666666666666',
+      cwd: workspace,
+      model: 'anthropic/claude-sonnet-4-5',
+    }, { send: (message) => failed.push(message as AnyRecord) }, context);
+    assert.ok(failed.some((message) => message.kind === 'error' && message.content === '401: Authentication failed'));
+    assert.equal(failed.find((message) => message.kind === 'complete')?.success, false);
   } finally {
     process.env.PATH = originalPath;
     if (originalCapture === undefined) delete process.env.PI_FAKE_CAPTURE;
