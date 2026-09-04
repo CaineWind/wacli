@@ -42,6 +42,7 @@ interface UseChatRealtimeHandlersArgs {
   onWebSocketReconnect?: () => void;
   requestLatestMessages: (sessionId: string, allowNetwork?: boolean) => Promise<void>;
   sessionStore: SessionStore;
+  onTokenRateEvent?: (event: ServerEvent, sessionId: string | null) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -75,6 +76,7 @@ export function useChatRealtimeHandlers({
   onWebSocketReconnect,
   requestLatestMessages,
   sessionStore,
+  onTokenRateEvent,
 }: UseChatRealtimeHandlersArgs) {
   // Session switches can send `chat.subscribe` before this effect has a chance
   // to rebind the websocket listener. Read the visible session id from a ref
@@ -102,6 +104,8 @@ export function useChatRealtimeHandlers({
 
       const activeViewSessionId = activeViewSessionIdRef.current;
       const sid = (typeof msg.sessionId === 'string' && msg.sessionId) || activeViewSessionId;
+
+      onTokenRateEvent?.(msg, sid);
 
       // Record replay progress for every sequenced live event.
       if (sid && typeof msg.seq === 'number') {
@@ -204,6 +208,9 @@ export function useChatRealtimeHandlers({
           streamTimerRef.current = null;
         }
         if (sid) {
+          if (typeof msg.content === 'string' && msg.content) {
+            accumulatedStreamRef.current = msg.content;
+          }
           if (accumulatedStreamRef.current) {
             sessionStore.updateStreaming(sid, accumulatedStreamRef.current, provider);
           }
@@ -352,5 +359,6 @@ export function useChatRealtimeHandlers({
     onWebSocketReconnect,
     requestLatestMessages,
     sessionStore,
+    onTokenRateEvent,
   ]);
 }

@@ -104,6 +104,8 @@
     "technicalDetails": "技術細節"
   },
   "input": {
+    "tokenRateLive": "估算輸出速度，正在即時更新",
+    "tokenRateLast": "上次估算的輸出速度",
     "placeholder": "輸入 / 叫用指令，@ 選取檔案，或向 {{provider}} 提問...",
     "placeholderDefault": "輸入您的訊息...",
     "disabled": "輸入已停用",

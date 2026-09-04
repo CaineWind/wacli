@@ -113,6 +113,8 @@
     "loading": "加载中…"
   },
   "input": {
+    "tokenRateLive": "估算输出速度，正在实时更新",
+    "tokenRateLast": "上次估算的输出速度",
     "placeholder": "输入 / 调用命令，@ 选择文件，或向 {{provider}} 提问...",
     "placeholderDefault": "输入您的消息...",
     "disabled": "输入已禁用",

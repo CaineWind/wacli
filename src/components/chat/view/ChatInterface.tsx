@@ -10,6 +10,7 @@ import { useChatProviderState } from '../hooks/useChatProviderState';
 import { useChatSessionState } from '../hooks/useChatSessionState';
 import { useChatRealtimeHandlers } from '../hooks/useChatRealtimeHandlers';
 import { useChatComposerState } from '../hooks/useChatComposerState';
+import { useTokenRate } from '../hooks/useTokenRate';
 import { useSessionStore } from '../../../stores/useSessionStore';
 
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
@@ -140,6 +141,9 @@ function ChatInterface({
     sessionStore,
   });
 
+  const visibleSessionId = selectedSession?.id || currentSessionId;
+  const { tokenRate, recordTokenRateEvent } = useTokenRate(visibleSessionId, sessionActivity);
+
   // Brand-new conversation: the composer allocated a stable session id via
   // the session gateway before the first send. Record it locally and put it
   // in the URL — this id never changes again, so there is no later handoff.
@@ -259,6 +263,7 @@ function ChatInterface({
     onWebSocketReconnect: handleWebSocketReconnect,
     requestLatestMessages,
     sessionStore,
+    onTokenRateEvent: recordTokenRateEvent,
   });
 
   useEffect(() => {
@@ -427,6 +432,7 @@ function ChatInterface({
           onSelectModel={handleSelectComposerModel}
           modelsLoading={providerModelsLoading}
           tokenBudget={tokenBudget}
+          tokenRate={tokenRate}
           onShowTokenUsage={showCostModal}
           slashCommandsCount={slashCommandsCount}
           onToggleCommandMenu={handleToggleCommandMenu}

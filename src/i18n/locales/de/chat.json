@@ -104,6 +104,8 @@
     "technicalDetails": "Technische Details"
   },
   "input": {
+    "tokenRateLive": "Geschätzte Ausgabegeschwindigkeit, live aktualisiert",
+    "tokenRateLast": "Letzte geschätzte Ausgabegeschwindigkeit",
     "placeholder": "/ für Befehle, @ für Dateien eingeben oder {{provider}} etwas fragen...",
     "placeholderDefault": "Nachricht eingeben...",
     "disabled": "Eingabe deaktiviert",

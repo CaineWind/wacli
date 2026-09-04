@@ -17,6 +17,7 @@ import { useVoiceAvailable } from '../../hooks/useVoiceAvailable';
 import type { QueuedDraft } from '../../hooks/useChatComposerState';
 import type { SessionActivity } from '../../../../hooks/useSessionProtection';
 import type { PendingPermissionRequest, PermissionMode } from '../../types/types';
+import type { TokenRateSnapshot } from '../../utils/tokenRate';
 import type { ProviderModelOption } from '../../../../types/app';
 import {
   PromptInput,
@@ -35,6 +36,7 @@ import ComposerAttachment from './ComposerAttachment';
 import VoiceInputButton from './VoiceInputButton';
 import PermissionRequestsBanner from './PermissionRequestsBanner';
 import TokenUsageSummary from './TokenUsageSummary';
+import TokenRateIndicator from './TokenRateIndicator';
 import QueuedMessageCard from './QueuedMessageCard';
 import ComposerModelMenu from './ComposerModelMenu';
 import ComposerPermissionMenu from './ComposerPermissionMenu';
@@ -76,6 +78,7 @@ interface ChatComposerProps {
   onSelectModel: (model: string) => void;
   modelsLoading: boolean;
   tokenBudget: Record<string, unknown> | null;
+  tokenRate: TokenRateSnapshot;
   onShowTokenUsage: () => void;
   slashCommandsCount: number;
   onToggleCommandMenu: () => void;
@@ -140,6 +143,7 @@ export default function ChatComposer({
   onSelectModel,
   modelsLoading,
   tokenBudget,
+  tokenRate,
   onShowTokenUsage,
   slashCommandsCount,
   onToggleCommandMenu,
@@ -419,6 +423,7 @@ export default function ChatComposer({
             )}
 
             <TokenUsageSummary usage={tokenBudget} onClick={onShowTokenUsage} />
+            <TokenRateIndicator rate={tokenRate} />
 
             <PromptInputButton
               tooltip={{ content: t('input.showAllCommands') }}

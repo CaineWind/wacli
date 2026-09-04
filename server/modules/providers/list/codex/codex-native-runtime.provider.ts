@@ -41,6 +41,13 @@ type AppServerTurnResponse = {
   reviewThreadId?: string;
 };
 
+type CodexStreamItem = {
+  kind: 'answer' | 'plan' | 'thinking';
+  content: string;
+};
+
+type CodexStreamState = Map<string, CodexStreamItem>;
+
 const planModeSessions = new Set<string>();
 const activeAppServerRuns = new Map<string, AppServerRun>();
 const pendingCodexApprovals = new Map<string, {
@@ -146,9 +153,56 @@ function forwardNotification(
   context: ProviderRuntimeContext,
   writer: ProviderRuntimeWriter,
   sessionId: string,
+  streamState: CodexStreamState,
 ): void {
+  const itemId = typeof event.params.itemId === 'string' ? event.params.itemId : '';
+  const delta = typeof event.params.delta === 'string' ? event.params.delta : '';
+  const deltaKinds: Record<string, CodexStreamItem['kind']> = {
+    'item/agentMessage/delta': 'answer',
+    'item/plan/delta': 'plan',
+    'item/reasoning/summaryTextDelta': 'thinking',
+    'item/reasoning/textDelta': 'thinking',
+  };
+  const deltaKind = deltaKinds[event.method];
+
+  if (deltaKind && itemId && delta) {
+    const existing = streamState.get(itemId);
+    const prefix = deltaKind === 'plan' && !existing ? '<proposed_plan>\n' : '';
+    const content = `${existing?.content || prefix}${delta}`;
+    streamState.set(itemId, { kind: deltaKind, content });
+    send(writer, createNormalizedMessage({
+      kind: deltaKind === 'thinking' ? 'thinking' : 'stream_delta',
+      provider: 'codex',
+      sessionId,
+      role: 'assistant',
+      content: `${prefix}${delta}`,
+    }));
+    return;
+  }
+
   if (event.method === 'item/completed') {
-    const raw = transformCompletedItem(event.params.item || {});
+    const item = event.params.item || {};
+    const completedItemId = typeof item.id === 'string' ? item.id : '';
+    const streamed = completedItemId ? streamState.get(completedItemId) : undefined;
+    const raw = transformCompletedItem(item);
+    if (streamed) {
+      streamState.delete(completedItemId);
+      if (streamed.kind === 'thinking') {
+        return;
+      }
+
+      const finalContent = streamed.kind === 'plan'
+        ? `<proposed_plan>\n${String(item.text || '')}\n</proposed_plan>`
+        : String(item.text || '');
+      send(writer, createNormalizedMessage({
+        kind: 'stream_end',
+        provider: 'codex',
+        sessionId,
+        role: 'assistant',
+        content: finalContent || streamed.content,
+      }));
+      return;
+    }
     if (raw) {
       for (const message of context.normalizeMessage(raw, sessionId)) {
         send(writer, message);
@@ -315,6 +369,7 @@ async function runThroughAppServer(
   let threadId = providerSessionId || '';
   let turnId: string | null = null;
   const terminalState: { error: Error | null } = { error: null };
+  const streamState: CodexStreamState = new Map();
   let resolveFinished!: (exitCode: number) => void;
   const finished = new Promise<number>((resolve) => {
     resolveFinished = resolve;
@@ -324,7 +379,7 @@ async function runThroughAppServer(
     if (event.method === 'error' && event.params.willRetry === false) {
       terminalState.error = new Error(event.params.error?.message || 'Codex turn failed');
     }
-    forwardNotification(event, context, writer, threadId || appSessionId);
+    forwardNotification(event, context, writer, threadId || appSessionId, streamState);
     if (operation === 'compact' && event.method === 'thread/compacted') {
       resolveFinished(0);
     }

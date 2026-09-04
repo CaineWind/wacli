@@ -104,6 +104,8 @@
     "technicalDetails": "技術的な詳細"
   },
   "input": {
+    "tokenRateLive": "推定出力速度をリアルタイムで更新中",
+    "tokenRateLast": "直近の推定出力速度",
     "placeholder": "/ でコマンド、@ でファイル指定、または {{provider}} に何でも聞いてください...",
     "placeholderDefault": "メッセージを入力...",
     "disabled": "入力無効",

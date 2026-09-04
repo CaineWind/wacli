@@ -104,6 +104,8 @@
     "technicalDetails": "Dettagli tecnici"
   },
   "input": {
+    "tokenRateLive": "Velocità di output stimata, aggiornata in tempo reale",
+    "tokenRateLast": "Ultima velocità di output stimata",
     "placeholder": "Digita / per i comandi, @ per i file, o chiedi qualcosa a {{provider}}...",
     "placeholderDefault": "Scrivi il tuo messaggio...",
     "disabled": "Input disabilitato",

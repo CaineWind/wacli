@@ -104,6 +104,8 @@
     "technicalDetails": "Teknik ayrıntılar"
   },
   "input": {
+    "tokenRateLive": "Tahmini çıktı hızı, canlı güncelleniyor",
+    "tokenRateLast": "Son tahmini çıktı hızı",
     "placeholder": "Komutlar için /, dosyalar için @ yaz ya da {{provider}}'a her şeyi sor...",
     "placeholderDefault": "Mesajını yaz...",
     "disabled": "Girdi devre dışı",

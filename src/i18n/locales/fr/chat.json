@@ -105,6 +105,8 @@
     "technicalDetails": "Détails techniques"
   },
   "input": {
+    "tokenRateLive": "Vitesse de sortie estimée, mise à jour en direct",
+    "tokenRateLast": "Dernière vitesse de sortie estimée",
     "placeholder": "Tapez / pour les commandes, @ pour les fichiers, ou posez une question à {{provider}}...",
     "placeholderDefault": "Tapez votre message...",
     "disabled": "Saisie désactivée",

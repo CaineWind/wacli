@@ -113,6 +113,8 @@
     "loading": "Cargando…"
   },
   "input": {
+    "tokenRateLive": "Velocidad de salida estimada, actualizada en tiempo real",
+    "tokenRateLast": "Última velocidad de salida estimada",
     "placeholder": "Escribe / para comandos, @ para archivos, o pregúntale lo que quieras a {{provider}}...",
     "placeholderDefault": "Escribe tu mensaje...",
     "disabled": "Entrada deshabilitada",

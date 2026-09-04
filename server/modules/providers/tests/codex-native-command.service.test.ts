@@ -221,3 +221,81 @@ test('an unexpected app-server exit terminates the chat run with an error', { co
   assert.equal(messages.at(-1)?.kind, 'complete');
   assert.equal(messages.at(-1)?.success, false);
 });
+
+test('plan turns stream answer and reasoning deltas without duplicating completed items', { concurrency: false }, async () => {
+  let notificationListener = (_event: any) => {};
+  const fake: FakeAppServer = {
+    async request(method) {
+      if (method === 'thread/start') {
+        return { thread: { id: 'native-stream-thread' } };
+      }
+      if (method === 'turn/start') {
+        setImmediate(() => {
+          notificationListener({
+            method: 'item/reasoning/summaryTextDelta',
+            params: { itemId: 'reasoning-1', delta: '分析' },
+          });
+          notificationListener({
+            method: 'item/reasoning/textDelta',
+            params: { itemId: 'reasoning-1', delta: '完成' },
+          });
+          notificationListener({
+            method: 'item/completed',
+            params: { item: { id: 'reasoning-1', type: 'reasoning', summary: ['分析'], content: ['完成'] } },
+          });
+          notificationListener({
+            method: 'item/plan/delta',
+            params: { itemId: 'plan-1', delta: 'Ship' },
+          });
+          notificationListener({
+            method: 'item/plan/delta',
+            params: { itemId: 'plan-1', delta: ' it' },
+          });
+          notificationListener({
+            method: 'item/completed',
+            params: { item: { id: 'plan-1', type: 'plan', text: 'Ship it' } },
+          });
+          notificationListener({
+            method: 'turn/completed',
+            params: { turn: { status: 'completed' } },
+          });
+        });
+        return { turn: { id: 'turn-stream' } };
+      }
+      return {};
+    },
+    onNotification(listener) {
+      notificationListener = listener;
+      return () => {};
+    },
+    onRequest: () => () => {},
+    onExit: () => () => {},
+    respond() {},
+    close() {},
+  };
+  const messages: Array<Record<string, any>> = [];
+
+  await withFakeAppServer(fake, async () => {
+    await codexNativeRuntime.run(
+      '/plan build the release',
+      { sessionId: 'stream-app-session', projectPath: 'D:/workspace' },
+      { send: (message) => messages.push(message as Record<string, any>) },
+      createRuntimeContext(),
+    );
+  });
+
+  assert.deepEqual(
+    messages.filter((message) => message.kind === 'thinking').map((message) => message.content),
+    ['分析', '完成'],
+  );
+  assert.deepEqual(
+    messages.filter((message) => message.kind === 'stream_delta').map((message) => message.content),
+    ['<proposed_plan>\nShip', ' it'],
+  );
+  assert.equal(
+    messages.find((message) => message.kind === 'stream_end')?.content,
+    '<proposed_plan>\nShip it\n</proposed_plan>',
+  );
+  assert.equal(messages.some((message) => message.kind === 'text'), false);
+  assert.equal(messages.at(-1)?.kind, 'complete');
+});

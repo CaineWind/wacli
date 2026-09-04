@@ -113,6 +113,8 @@
     "loading": "로딩 중…"
   },
   "input": {
+    "tokenRateLive": "예상 출력 속도, 실시간 업데이트 중",
+    "tokenRateLast": "최근 예상 출력 속도",
     "placeholder": "/를 입력하여 명령어, @를 입력하여 파일, 또는 {{provider}}에게 무엇이든 물어보세요...",
     "placeholderDefault": "메시지를 입력하세요...",
     "disabled": "입력 비활성화",
