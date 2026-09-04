@@ -3,6 +3,16 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.39.1](https://github.com/CaineWind/wacli/compare/v1.39.0...v1.39.1) (2026-09-04)
+
+### Bug Fixes
+
+* **pi:** surface model request failures ([59e5487](https://github.com/CaineWind/wacli/commit/59e548737146a054112df6a2f48d0717685df3a4))
+
+### Styling
+
+* **chat:** use GitHub system font stack ([717dac3](https://github.com/CaineWind/wacli/commit/717dac33dc1c7ef72a2d885d442ac563667606c4))
+
 ## [1.39.0](https://github.com/CaineWind/wacli/compare/v1.38.3...v1.39.0) (2026-09-04)
 
 ### New Features
