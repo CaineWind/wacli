@@ -92,7 +92,13 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'prompt',
-        includeAssets: ['favicon.svg', 'favicon.png', 'logo-128.png', 'logo-256.png'],
+        includeAssets: [
+          'favicon.svg',
+          'favicon.png',
+          'logo-128.png',
+          'logo-256.png',
+          'fonts/**/*.woff2',
+        ],
         manifest: {
           id: '.',
           name: 'WindCli',

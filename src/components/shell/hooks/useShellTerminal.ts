@@ -12,7 +12,9 @@ import { copyTextToClipboard } from '../../../utils/clipboard';
 import {
   canApplyResponsiveTerminalFontSize,
   getTerminalOptions,
+  HERDR_FONT_FAMILY,
   TERMINAL_INIT_DELAY_MS,
+  TERMINAL_OPTIONS,
   TERMINAL_RESIZE_DELAY_MS,
 } from '../constants/constants';
 import {
@@ -65,6 +67,26 @@ const ClipboardAddonCtor = ClipboardAddon as unknown as new (
   base64?: unknown,
   provider?: IClipboardProvider,
 ) => ClipboardAddon;
+
+let herdrFontLoadPromise: Promise<void> | null = null;
+
+function loadHerdrFont(fontSize: number): Promise<void> {
+  if (!document.fonts) {
+    return Promise.resolve();
+  }
+
+  if (!herdrFontLoadPromise) {
+    herdrFontLoadPromise = Promise.all([
+      document.fonts.load(`400 ${fontSize}px ${HERDR_FONT_FAMILY}`),
+      document.fonts.load(`700 ${fontSize}px ${HERDR_FONT_FAMILY}`),
+    ]).then(() => undefined).catch((error: unknown) => {
+      herdrFontLoadPromise = null;
+      throw error;
+    });
+  }
+
+  return herdrFontLoadPromise;
+}
 
 type UseShellTerminalOptions = {
   terminalContainerRef: RefObject<HTMLDivElement>;
@@ -168,6 +190,29 @@ export function useShellTerminal({
     }
 
     nextTerminal.open(terminalContainer);
+
+    if (shellMode === 'herdr' && document.fonts) {
+      const fontSize = terminalOptions.fontSize ?? 14;
+      void loadHerdrFont(fontSize).then(() => {
+        if (terminalRef.current !== nextTerminal) {
+          return;
+        }
+
+        // Re-apply the family so xterm recalculates cell metrics and its WebGL atlas.
+        nextTerminal.options.fontFamily = TERMINAL_OPTIONS.fontFamily;
+        nextTerminal.options.fontFamily = HERDR_FONT_FAMILY;
+        nextTerminal.clearTextureAtlas();
+        nextFitAddon.fit();
+        nextTerminal.refresh(0, nextTerminal.rows - 1);
+        sendSocketMessage(wsRef.current, {
+          type: 'resize',
+          cols: nextTerminal.cols,
+          rows: nextTerminal.rows,
+        });
+      }).catch((error: unknown) => {
+        console.warn('[Herdr] Failed to load JetBrainsMono Nerd Font Mono', error);
+      });
+    }
 
     const handleHerdrTouchScroll =
       shellMode === 'herdr'

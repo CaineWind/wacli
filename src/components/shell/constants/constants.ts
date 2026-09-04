@@ -9,6 +9,7 @@ export const TERMINAL_MOBILE_BREAKPOINT_PX = 768;
 export const HERDR_NARROW_MOBILE_BREAKPOINT_PX = 480;
 export const HERDR_NARROW_MOBILE_FONT_SIZE = 9;
 export const HERDR_MOBILE_FONT_SIZE = 12;
+export const HERDR_FONT_FAMILY = '"JetBrainsMono Nerd Font Mono", monospace';
 export const HERDR_MOUSE_TRACKING_SEQUENCE = '\x1b[?1002h\x1b[?1006h';
 
 // CLI prompt overlay detection
@@ -93,6 +94,7 @@ export function getTerminalOptions(
 
   return {
     ...TERMINAL_OPTIONS,
+    fontFamily: HERDR_FONT_FAMILY,
     fontSize: viewportWidth <= HERDR_NARROW_MOBILE_BREAKPOINT_PX
       ? HERDR_NARROW_MOBILE_FONT_SIZE
       : viewportWidth < TERMINAL_MOBILE_BREAKPOINT_PX
