@@ -3,6 +3,12 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.39.2](https://github.com/CaineWind/wacli/compare/v1.39.1...v1.39.2) (2026-09-04)
+
+### New Features
+
+* **chat:** show live token generation rate ([df10f21](https://github.com/CaineWind/wacli/commit/df10f213c6abea20e2e9d95402b4b73c2c9c4aad))
+
 ## [1.39.1](https://github.com/CaineWind/wacli/compare/v1.39.0...v1.39.1) (2026-09-04)
 
 ### Bug Fixes
