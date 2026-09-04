@@ -3,6 +3,18 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.39.0](https://github.com/CaineWind/wacli/compare/v1.38.3...v1.39.0) (2026-09-04)
+
+### New Features
+
+* **branding:** refresh PWA icons ([d21c0b5](https://github.com/CaineWind/wacli/commit/d21c0b518418c3b7bdb5946bafec83e5415aca7b))
+* **providers:** add Pi coding agent ([c32a2aa](https://github.com/CaineWind/wacli/commit/c32a2aaeba1bcf138249c1f968d7091bad9e38bd))
+
+### Bug Fixes
+
+* **herdr:** forward mobile taps without stealing focus ([dac899f](https://github.com/CaineWind/wacli/commit/dac899fe2e30bd188ea367f449050b20e4073c38))
+* **sessions:** ignore transient external OpenCode sessions ([f3e44a7](https://github.com/CaineWind/wacli/commit/f3e44a708abe17513824d85aad4ce5025443fb1f))
+
 ## [1.38.3](https://github.com/CaineWind/wacli/compare/v1.38.2...v1.38.3) (2026-09-03)
 
 ### Bug Fixes
