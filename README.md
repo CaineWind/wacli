@@ -30,6 +30,12 @@ npm install -g wind-agent-cli
 wacli
 ```
 
+Update a global installation to the latest stable release:
+
+```sh
+wacli update
+```
+
 Open `http://localhost:3001` after the server starts.
 
 For configuration, desktop builds, sandbox support, and development instructions, see the [full documentation](https://github.com/CaineWind/wacli/blob/main/docs/README.md).

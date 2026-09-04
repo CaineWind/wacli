@@ -85,7 +85,13 @@ npx wind-agent-cli
 
 ```bash
 npm install -g wind-agent-cli
-cloudcli
+wacli
+```
+
+将全局安装更新到最新稳定版本：
+
+```bash
+wacli update
 ```
 
 打开 `http://localhost:3001`，系统会自动发现所有现有会话。

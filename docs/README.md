@@ -82,6 +82,12 @@ npm install -g wind-agent-cli
 wacli
 ```
 
+Update a global installation to the latest stable release:
+
+```
+wacli update
+```
+
 Open `http://localhost:3001` — all your existing sessions are discovered automatically.
 
 Browse this document for configuration, Docker, desktop, and development instructions.

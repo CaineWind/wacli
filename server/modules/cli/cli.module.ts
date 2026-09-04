@@ -1,4 +1,4 @@
-import { execFileSync, execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -10,6 +10,23 @@ import { findApplicationRoot, getModuleDirectory } from '@/shared/utils.js';
 
 import { createCliService } from './cli.service.js';
 import { createSandboxCommandService } from './sandbox.service.js';
+
+function runNpmCommand(argumentsList: string[], inheritOutput = false): string {
+  const result = spawn.sync('npm', argumentsList, {
+    encoding: 'utf8',
+    stdio: inheritOutput ? 'inherit' : ['ignore', 'pipe', 'pipe'],
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    const stderr = typeof result.stderr === 'string' ? result.stderr.trim() : '';
+    throw new Error(stderr || `npm exited with status ${result.status ?? 'unknown'}`);
+  }
+
+  return typeof result.stdout === 'string' ? result.stdout.trim() : '';
+}
 
 /**
  * Creates the production CLI application for the executable entrypoint. This is
@@ -73,13 +90,24 @@ export function createCliApplication(): CliApplication {
       // Yield first so the default `start` command can begin loading the server
       // before this best-effort npm registry check runs.
       await new Promise<void>((resolve) => setImmediate(resolve));
-      return execSync(
-        'npm show wind-agent-cli version',
-        { encoding: 'utf8' },
-      ).trim();
+      const output = runNpmCommand([
+        'view',
+        'wind-agent-cli@latest',
+        'version',
+        '--json',
+      ]);
+      const version = JSON.parse(output) as unknown;
+      if (typeof version !== 'string' || !version.trim()) {
+        throw new Error('npm returned an invalid latest version');
+      }
+      return version.trim();
     },
-    updateGlobalPackage: () => {
-      execSync('npm update -g wind-agent-cli', { stdio: 'inherit' });
+    updateGlobalPackage: (version) => {
+      runNpmCommand([
+        'install',
+        '--global',
+        `wind-agent-cli@${version}`,
+      ], true);
     },
     startServer: async () => {
       // The server executable is an entrypoint rather than a feature module,
