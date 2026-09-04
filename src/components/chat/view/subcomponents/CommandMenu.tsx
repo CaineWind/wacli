@@ -226,7 +226,7 @@ export default function CommandMenu({
     return renderInPortal(
       <div
         ref={menuRef}
-        className="command-menu command-menu-empty border border-border bg-popover/95 text-sm text-muted-foreground"
+        className="font-github command-menu command-menu-empty border border-border bg-popover/95 text-sm text-muted-foreground"
         style={{
           ...menuBaseStyle,
           ...menuPosition,
@@ -247,7 +247,7 @@ export default function CommandMenu({
       ref={menuRef}
       role="listbox"
       aria-label="Available commands"
-      className="command-menu border border-border bg-popover/95 text-popover-foreground"
+      className="font-github command-menu border border-border bg-popover/95 text-popover-foreground"
       style={{ ...menuBaseStyle, ...menuPosition, opacity: 1, transform: 'translateY(0)' }}
     >
       {orderedNamespaces.map((namespace) => (

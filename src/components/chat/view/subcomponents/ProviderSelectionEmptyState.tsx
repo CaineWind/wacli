@@ -260,7 +260,7 @@ export default function ProviderSelectionEmptyState({
               </Card>
             </DialogTrigger>
 
-            <DialogContent className="max-w-md overflow-hidden p-0">
+            <DialogContent className="font-github max-w-md overflow-hidden p-0">
               <DialogTitle>Model Selector</DialogTitle>
               <div className="flex items-center justify-between gap-3 border-b border-border/60 bg-muted/20 px-4 py-3">
                 <div>
@@ -363,7 +363,7 @@ export default function ProviderSelectionEmptyState({
               }
             }}
           >
-            <DialogContent className="flex h-[min(90dvh,46rem)] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden rounded-3xl p-4 sm:p-5">
+            <DialogContent className="font-github flex h-[min(90dvh,46rem)] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden rounded-3xl p-4 sm:p-5">
               <DialogTitle>
                 {t("providerSelection.manageModels", {
                   defaultValue: "Manage models",

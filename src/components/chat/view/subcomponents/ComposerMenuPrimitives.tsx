@@ -24,7 +24,7 @@ export function ComposerMenuSurface({
       ref={menuRef}
       role="menu"
       aria-label={ariaLabel}
-      className="fixed z-[100] min-w-48 overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-xl"
+      className="font-github fixed z-[100] min-w-48 overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-xl"
       style={{
         right: anchor.right,
         bottom: anchor.bottom,

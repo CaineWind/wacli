@@ -326,7 +326,7 @@ function ChatInterface({
 
   if (!selectedProject) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="font-github flex h-full items-center justify-center">
         <div className="text-center text-muted-foreground">
           <p className="text-sm">
             {t('projectSelection.startChatWithProvider', {
@@ -341,7 +341,7 @@ function ChatInterface({
 
   return (
     <PermissionContext.Provider value={permissionContextValue}>
-      <div className="flex h-full min-h-0 flex-col">
+      <div className="font-github flex h-full min-h-0 flex-col">
         <ChatMessagesPane
           scrollContainerRef={scrollContainerRef}
           onWheel={handleScroll}
