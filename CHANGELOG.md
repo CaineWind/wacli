@@ -3,6 +3,16 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.39.3](https://github.com/CaineWind/wacli/compare/v1.39.2...v1.39.3) (2026-09-04)
+
+### New Features
+
+* **cli:** make self-update reliable ([5de8c24](https://github.com/CaineWind/wacli/commit/5de8c24f89567867d5f0a64f51339432c00964a5))
+
+### Styling
+
+* **herdr:** bundle JetBrainsMono Nerd Font ([c74036a](https://github.com/CaineWind/wacli/commit/c74036a978d54535e3c9a230b0f5f9f5587fb5b6))
+
 ## [1.39.2](https://github.com/CaineWind/wacli/compare/v1.39.1...v1.39.2) (2026-09-04)
 
 ### New Features
