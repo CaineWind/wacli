@@ -3,6 +3,12 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.39.5](https://github.com/CaineWind/wacli/compare/v1.39.4...v1.39.5) (2026-09-04)
+
+### Bug Fixes
+
+* **herdr:** make clipboard copies reliable ([1ae8b02](https://github.com/CaineWind/wacli/commit/1ae8b023b1643af5eb8ef4f24c60ff86ff9125ce))
+
 ## [1.39.4](https://github.com/CaineWind/wacli/compare/v1.39.3...v1.39.4) (2026-09-04)
 
 ### Performance

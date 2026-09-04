@@ -1,6 +1,6 @@
 {
   "name": "wind-agent-cli",
-  "version": "1.39.4",
+  "version": "1.39.5",
   "productName": "WindCli",
   "description": "A local-first web interface for AI coding agents",
   "type": "module",
