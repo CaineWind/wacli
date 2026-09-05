@@ -57,6 +57,50 @@ test('Herdr mobile tap emits an SGR left click at the tapped cell', () => {
   );
 });
 
+test('Herdr mobile taps hit the rendered bottom row, excluding container remainder', () => {
+  const screen = { left: 8, top: 48, width: 378, height: 600 } as DOMRect;
+  const container = { left: 0, top: 48, width: 390, height: 611 } as DOMRect;
+  const terminal = {
+    cols: 63,
+    rows: 50,
+    element: {
+      querySelector: () => ({ getBoundingClientRect: () => screen }),
+    },
+  } as unknown as import('@xterm/xterm').Terminal;
+  const touch = { clientX: 17, clientY: 642 };
+
+  assert.equal(encodeHerdrLeftClickInput(terminal, touch, container),
+    '\x1b[<0;2;50M\x1b[<0;2;50m');
+  assert.equal(encodeHerdrRightClickInput(terminal, touch, container),
+    '\x1b[<2;2;50M\x1b[<2;2;50m');
+});
+
+test('Herdr touch reports follow live font/viewport changes and CSS-scaled screen bounds', () => {
+  let screen = { left: 8, top: 48, width: 378, height: 600 } as DOMRect;
+  let rows = 50;
+  const container = { left: 0, top: 0, width: 390, height: 700 } as DOMRect;
+  const terminal = {
+    cols: 63, get rows() { return rows; },
+    element: { querySelector: () => ({ getBoundingClientRect: () => screen }) },
+  } as unknown as import('@xterm/xterm').Terminal;
+  const messages: unknown[] = [];
+  const scroll = createHerdrTouchScrollHandler({
+    terminal, getBoundingClientRect: () => container, send: (message) => messages.push(message),
+  });
+  scroll(12, { clientX: 17, clientY: 642 });
+  assert.deepEqual(messages, [{ type: 'input', data: '\x1b[<65;2;50M' }]);
+
+  screen = { left: 16, top: 64, width: 756, height: 600 } as DOMRect;
+  rows = 25;
+  const touch = { clientX: 34, clientY: 652 };
+  assert.equal(encodeHerdrLeftClickInput(terminal, touch, container),
+    '\x1b[<0;2;25M\x1b[<0;2;25m');
+  scroll(24, touch);
+  assert.deepEqual(messages[1], { type: 'input', data: '\x1b[<65;2;25M' });
+  assert.equal(encodeHerdrLeftClickInput(terminal, { clientX: -1, clientY: 9999 }, container),
+    '\x1b[<0;1;25M\x1b[<0;1;25m');
+});
+
 function createTouchEvent(
   type: string,
   touches: Array<{ clientX: number; clientY: number }>,

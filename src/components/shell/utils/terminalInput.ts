@@ -20,6 +20,13 @@ type TerminalContainer = Pick<
 >;
 
 type TouchPoint = Pick<Touch, 'clientX' | 'clientY'>;
+type MouseTerminal = Pick<Terminal, 'cols' | 'rows'> & Partial<Pick<Terminal, 'element'>>;
+
+function getMouseScreenRect(terminal: MouseTerminal, fallback?: DOMRect): DOMRect | undefined {
+  // FitAddon rounds down to whole cells; container remainder is not part of the grid.
+  const rect = terminal.element?.querySelector('.xterm-screen')?.getBoundingClientRect();
+  return rect && rect.width > 0 && rect.height > 0 ? rect : fallback;
+}
 
 const MAX_HERDR_WHEEL_STEPS_PER_EVENT = 12;
 const HERDR_WHEEL_UP_BUTTON = 64;
@@ -47,7 +54,7 @@ type InstallTerminalInputSyncOptions = {
 };
 
 type CreateHerdrTouchScrollHandlerOptions = {
-  terminal: Pick<Terminal, 'cols' | 'rows'>;
+  terminal: MouseTerminal;
   getBoundingClientRect: () => DOMRect;
   send: (message: ShellInputMessage) => void;
 };
@@ -65,10 +72,11 @@ export function encodeTerminalBinaryInput(data: string): string {
 
 function encodeHerdrMouseClickInput(
   button: number,
-  terminal: Pick<Terminal, 'cols' | 'rows'>,
+  terminal: MouseTerminal,
   touch?: TouchPoint,
   rect?: DOMRect,
 ): string {
+  rect = getMouseScreenRect(terminal, rect);
   const col = touch && rect
     ? clamp(
         Math.floor(((touch.clientX - rect.left) / Math.max(1, rect.width)) * terminal.cols) + 1,
@@ -87,7 +95,7 @@ function encodeHerdrMouseClickInput(
 }
 
 export function encodeHerdrLeftClickInput(
-  terminal: Pick<Terminal, 'cols' | 'rows'>,
+  terminal: MouseTerminal,
   touch?: TouchPoint,
   rect?: DOMRect,
 ): string {
@@ -95,7 +103,7 @@ export function encodeHerdrLeftClickInput(
 }
 
 export function encodeHerdrRightClickInput(
-  terminal: Pick<Terminal, 'cols' | 'rows'>,
+  terminal: MouseTerminal,
   touch?: TouchPoint,
   rect?: DOMRect,
 ): string {
@@ -136,7 +144,7 @@ export function createHerdrTouchScrollHandler({
 
   const handleTouchScroll = ((deltaY, touch) => {
     remainder += deltaY;
-    const rect = getBoundingClientRect();
+    const rect = getMouseScreenRect(terminal) ?? getBoundingClientRect();
     const rowHeight = rect.height / Math.max(1, terminal.rows);
     if (!Number.isFinite(rowHeight) || rowHeight <= 0) {
       return true;
