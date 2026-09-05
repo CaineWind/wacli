@@ -177,7 +177,7 @@
     "cors": "^2.8.5",
     "cross-spawn": "^7.0.3",
     "dompurify": "^3.4.14",
-    "express": "^4.22.2",
+    "express": "^5.2.1",
     "fuse.js": "^7.0.0",
     "gray-matter": "^4.0.3",
     "i18next": "^25.7.4",
