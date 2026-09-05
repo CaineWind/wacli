@@ -3,6 +3,12 @@
 All notable changes to WindCli will be documented in this file.
 
 
+## [1.39.6](https://github.com/CaineWind/wacli/compare/v1.39.5...v1.39.6) (2026-09-05)
+
+### Bug Fixes
+
+* **herdr:** align mobile touch input with rendered terminal grid ([10475ea](https://github.com/CaineWind/wacli/commit/10475eabc7d2d31c2f9d140f50d3569ee5e0c677))
+
 ## [1.39.5](https://github.com/CaineWind/wacli/compare/v1.39.4...v1.39.5) (2026-09-04)
 
 ### Bug Fixes
